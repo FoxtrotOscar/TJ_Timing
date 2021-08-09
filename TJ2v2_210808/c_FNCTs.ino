@@ -53,12 +53,12 @@ void writeInfoBigscreen(void){
       sendSerialS( /*colour(R1G2O3)=*/ 1, /*column=*/ 0, /*line=*/ lnNumber, "FLINT Round", ""); 
     }else{
       sendSerialS( /*colour(R1G2O3)=*/ 1, /*column=*/ 0, /*line=*/ lnNumber, 
-      (paramStore.Details == 1 ? "Single " : "Double "), "Detail");         // either 1 OR 2
+      (paramStore.Details == 1 ? "Single " : "Double "), "Detail");                   // either 1 OR 2
     }
   }
   delay(tick);
   
-  lnNumber += 7;                                                            // Practice?
+  lnNumber += 7;                                                                      // Practice?
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "Practice");
   colNumber = 56, txtColour = orange;
   delay (tick/4);
@@ -66,9 +66,9 @@ void writeInfoBigscreen(void){
   delay(tick/4);  
   
   txtColour = green;
-  lnNumber += 7;  // End duration
+  lnNumber += 7;                                                                      // End duration
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "END ","Time: ");
-  colNumber = 48 +  ( startCounts[paramStore.startCountsIndex] < 10   ? 8 :       // centering the number on the matrix
+  colNumber = 48 +  ( startCounts[paramStore.startCountsIndex] < 10   ? 8 :           // centering the number on the matrix
                       startCounts[paramStore.startCountsIndex] < 20   ? 5 :
                       startCounts[paramStore.startCountsIndex] < 100  ? 3 : 
                       startCounts[paramStore.startCountsIndex] < 200  ? 0 : -2);
@@ -79,7 +79,7 @@ void writeInfoBigscreen(void){
   delay(tick/4);  
 
   txtColour = green;
-  lnNumber += 7;  // Number of Ends
+  lnNumber += 7;                                                                      // Number of Ends
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "END ","Count: ");
   colNumber = 48 + (paramStore.maxEnds < 10 ? 8 : paramStore.maxEnds < 20 ? 5 : 3);
   txtColour = orange;

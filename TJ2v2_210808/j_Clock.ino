@@ -117,11 +117,11 @@ void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, cons
 }
 
 void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0, const char* i1) {
-  return sendSerialS(txtColour1, colNumber1, lnNumber1, i0, i1, nullptr); // this one calls the big one above 
+  return sendSerialS(txtColour1, colNumber1, lnNumber1, i0, i1, nullptr);             // this overload calls the big one above 
 }
 
 void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0) {
-  return sendSerialS(txtColour1, colNumber1, lnNumber1, i0, nullptr, nullptr); // same 
+  return sendSerialS(txtColour1, colNumber1, lnNumber1, i0, nullptr, nullptr);        // ditto
 }
 
 /*
@@ -130,7 +130,7 @@ void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, cons
 void writeHalt(){
   clearFromLine(5); 
   u8x8.draw2x2String(0, 6, "..HALT..");
-  HC12.print(F("font 11\r"));                         //Change font for the text msg
+  HC12.print(F("font 11\r"));                                                         //Change font for the text msg
   lnNumber = 24;  // Print text Centre and in RED  
   HC12.print(F("rect 1 0 32 64 32\r"));    HC12.flush();
   HC12.print(F("rect 0 0 25 64 18\r"));    HC12.flush();
@@ -147,9 +147,9 @@ void writeHalt(){
   if (paramStore.Details == 2){
     writeReady();
       txtColour = orange, lnNumber = 31; 
-      if (paramStore.Details == 2){                           // Double detail?
+      if (paramStore.Details == 2){                                                 // Double detail?
         if (paramStore.isFinals 
-          && sE_iter == 1){                                   // First end of FINALS
+          && sE_iter == 1){                                                         // First end of FINALS
           writeArcher(paramStore.whichArcher);
           sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 8, /*line=*/ lnNumber, "FINALS");
         }else{
@@ -173,7 +173,7 @@ void writeReady(void){
                 sEcount < 7  ? " COLLECT " : " ");
   const char* i0; const char* i1;
   i0 = (paramStore.notFlint)? " " : 
-       sEcount < 7 && countPractice == 0 ? "--> " :  "";
+          sEcount < 7 && countPractice == 0 ? "--> " :  "";
 
 
 
@@ -184,7 +184,7 @@ void writeReady(void){
     i1 = sEcount > 6 ? "" : flintWalk[sEcount-6];
   }
   else i1 = "";
-  sendSerialS( /*colour=*/ orange, /*column=*/ 1, /*line=*/ 30, i0,i1);          //30
+  sendSerialS( /*colour=*/ orange, /*column=*/ 1, /*line=*/ 30, i0,i1);          
   
 }
 
@@ -192,7 +192,7 @@ void writeReady(void){
 /*
  * Handle the bargraph count on the screen, for "walkup" secs countdown
  */
-void doBarCount(uint8_t archerIndex){                     //set to paramStore.whichArcher
+void doBarCount(uint8_t archerIndex){                                           //set to paramStore.whichArcher
   const char* i0; const char* i1;
   clearFromLine(5); 
   u8x8.draw2x2String(0, 6, ".WALKUP.");
