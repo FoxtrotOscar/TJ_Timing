@@ -1,16 +1,6 @@
 /**
  * ----------------------------------------------------------------------------
  * This is a MFRC522 library example; see https://github.com/miguelbalboa/rfid
- * for further details and other examples.
- *
- * NOTE: The library file MFRC522.h has a lot of useful info. Please read it.
- *
- * Released into the public domain.
- * ----------------------------------------------------------------------------
- * This sample shows how to read and write data blocks on a MIFARE Classic PICC
- * (= card/tag).
- *
- * BEWARE: Data will be written to the PICC, in sector #1 (blocks #4 to #7).
  *
  *
  * Typical pin layout used:
