@@ -151,12 +151,12 @@ int bright = 255;                                 // Set brightness of the scree
 */
 
 #ifdef DEBUG
-uint16_t    tick          = 500;                  // short "second" interval <<(nominally 1000)>>
+constexpr uint16_t tick   = 500;                  // short "second" interval <<(nominally 1000)>>
 #else
-uint16_t    tick          = 1000;
+constexpr uint16_t tick   = 1000;
 #endif
-uint16_t    tock          = 5;
-int16_t     n_Count;                              // The main count index
+constexpr uint16_t tock   = 5;
+int16_t     n_Count;                              // This is the main count index!!!
 bool        shootDetail   = 0;                    // toggled for Details AB or CD: 0=AB, 1=CD
 int8_t      sE_iter       = 1;                    // Count of End iterations
 int8_t      sEcount       = 1;                    // Count of  actual Ends, from 1 to maxEnds
@@ -165,9 +165,8 @@ int         barWidth      = 5;                    // ***************************
 int         rectWide      = 49;                   // *********************************************************
 uint8_t     lnNumber;                             // y pos formatter
 uint8_t     colNumber;                            // x pos
-const int   red           = 1;
-const int   green         = 2;
-const int   orange        = 3;
+enum        Colours:  
+    int     { red = 1, green = 2, orange = 3};
 uint8_t     txtColour;
 int         continueOn    = 0;
 bool        next          = 0;
@@ -204,7 +203,7 @@ enum ButtonValueMask {
   const int button3Pin = 4;
   const int button4Pin = 5; 
 #else
-  #error Unsupported board selection.
+  #error    Unsupported board selection.
 #endif
 int currState1 = HIGH;
 int prevState1 = HIGH;

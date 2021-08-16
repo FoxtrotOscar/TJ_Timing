@@ -57,10 +57,6 @@ switch(n_Count ){
   }
 }
 
-void goBlanking(uint8_t tOffset){                                 // writes a blanking frame on switch from 
-  txtColour = 0, colNumber = tOffset, lnNumber = 30;              // 3 digits to 2 digits etc; No colour (0)         
-  sendNumber(n_Count + 1);                                                // overwrite with last larger digit
-}
  
 /*
  * Function to output the actual clock output to the screen
@@ -80,6 +76,10 @@ void sendNumber(int digits) {
   HC12.print(F("paint\r"));    HC12.flush();
 }
 
+void goBlanking(uint8_t tOffset){                                 // writes a blanking frame on switch from 
+  txtColour = 0, colNumber = tOffset, lnNumber = 30;              // 3 digits to 2 digits etc; No colour (0)         
+  sendNumber(n_Count + 1);                                        // overwrite with last larger digit
+}
 
 /*
  * ===========================================================================================
