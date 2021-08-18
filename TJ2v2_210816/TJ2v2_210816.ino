@@ -155,19 +155,22 @@ constexpr uint16_t tick   = 500;                  // short "second" interval <<(
 #else
 constexpr uint16_t tick   = 1000;
 #endif
+
 constexpr uint16_t tock   = 5;
+
+//struct ShootingContext {
 int16_t     n_Count;                              // This is the main count index!!!
 bool        shootDetail   = 0;                    // toggled for Details AB or CD: 0=AB, 1=CD
 int8_t      sE_iter       = 1;                    // Count of End iterations
 int8_t      sEcount       = 1;                    // Count of  actual Ends, from 1 to maxEnds
 int8_t      countPractice = 0;                    // marker to decrement for sighters test
-int         barWidth      = 5;                    // **********************************************************
-int         rectWide      = 49;                   // *********************************************************
+int         barWidth      = 5;                    // *
+int         rectWide      = 49;                   // *
 uint8_t     lnNumber;                             // y pos formatter
 uint8_t     colNumber;                            // x pos
+uint8_t     txtColour;
 enum        Colours:  
     int     { red = 1, green = 2, orange = 3};
-uint8_t     txtColour;
 int         continueOn    = 0;
 bool        next          = 0;
 bool        startOver     = false;
@@ -179,6 +182,8 @@ uint16_t    lapsed        = 0;
 uint16_t    tempOffset    = 0;                    // used to hold the last format value in Clock
 long long   intervalTimer = 0;
 long long   secondsTimer  = 0;
+//};
+//struct      ShootingContext context; 
 
 enum ButtonValueMask {
   BUTTON1       = 1,                              // in binary: 00001
