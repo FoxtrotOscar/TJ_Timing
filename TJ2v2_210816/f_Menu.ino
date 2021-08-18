@@ -628,10 +628,8 @@ void doButtonMenu(void) {
  */
 void writeMenuCommands(void){
   u8x8.setCursor(0, 5); 
-  //if (!intervalOn) u8x8.print("Continue: BTN[1]");
   intervalOn ? u8x8.print      ("COUNTDOWN is ON-") : u8x8.print("Continue: BTN[1]");
   u8x8.setCursor(0, 6);
-  //if (!intervalOn) u8x8.print("Change:   BTN[2]");
   intervalOn ? u8x8.print      ("-to QUIT: BTN[4]") : u8x8.print("Change:   BTN[2]");
   u8x8.setCursor(0, 7);
   u8x8.inverse();

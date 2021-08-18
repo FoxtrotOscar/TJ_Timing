@@ -54,8 +54,9 @@ uint16_t goCountdownTimer(){
     sendSerialS(green, /*column=*/ 2, /*line=*/ 5, "Shooting in:");
   
     HC12.print(F("font 9\r"));    HC12.flush();
+    --lapsed;
     sendSerialS((lapsed <= 120 ? 3 : 2), 13, 25,
-                  TimeToString(--lapsed));                          // choose digit colour and decrement
+                  TimeToString(lapsed));                          // choose digit colour and decrement
   }
     
   HC12.print(F("font 5\r"));     HC12.flush();
@@ -89,8 +90,15 @@ char* SecToString(unsigned long t) {
 void showWaiting(bool enAble){
   if (enAble){
     clearMatrix();
-    
     sendScroll();
+    u8x8.setCursor(0, 5); 
+    u8x8.print      ("STANDING BY:-   ");
+    u8x8.setCursor(0, 6);
+    u8x8.print      ("PROCEED:  BTN[1]");
+    u8x8.setCursor(0, 7);
+    u8x8.inverse();
+    u8x8.print("or TIME-TAP now ");
+    u8x8.noInverse();
 
   } else {
     HC12.print("scrollloop 0\r") ;
