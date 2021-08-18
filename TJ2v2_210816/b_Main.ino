@@ -89,7 +89,9 @@ void loop() {
       delay(tick);
       HC12.print(F("font 9\r"));   HC12.flush();
       sendSerialS( /*colour=*/ 2, /*column=*/ 2, /*line=*/ 29, "ENDS -- ");
-      txtColour = orange, colNumber = 54, lnNumber = 30;
+      txtColour = orange;
+      colNumber = 54;
+      lnNumber = 30;
       sendNumber(paramStore.maxPrac);
       delay(3 * tick);
     }

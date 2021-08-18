@@ -296,7 +296,7 @@ void setup() {
 
   writeSplash(false);
   delay(2 * tick);
-  shootDetail = 0,   sEcount = 1;                 // bool for Detail odd/even, counters
+  shootDetail = 0;  sEcount = 1;                 // bool for Detail odd/even, counters
   sE_iter = 0;
   countPractice = paramStore.maxPrac;  
   checkEEPROM(0, 25);

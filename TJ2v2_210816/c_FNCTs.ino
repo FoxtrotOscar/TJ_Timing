@@ -60,7 +60,7 @@ void writeInfoBigscreen(void){
   
   lnNumber += 7;                                                            // Practice?
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "Practice");
-  colNumber = 56, txtColour = orange;
+  colNumber = 56; txtColour = orange;
   delay (tick/4);
   sendNumber(paramStore.maxPrac);
   delay(tick/4);  

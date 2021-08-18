@@ -29,29 +29,35 @@ void goClock(uint8_t offSet){
 switch(n_Count ){
   case 0 ... 9:
     if (n_Count == 9) goBlanking(tempOffset);
-    txtColour = orange, colNumber = (paramStore.isFinals  ? 11 : 15) + offSet, lnNumber = 30; //Orange, 1 digit
+    txtColour = orange;
+    colNumber = (paramStore.isFinals  ? 11 : 15) + offSet; 
+    lnNumber = 30;                                                  //Orange, 1 digit
     break;
   case 10 ... 19:
     if (n_Count == 19) goBlanking(tempOffset);
-    txtColour = orange, colNumber = (paramStore.isFinals  ? 2 : 4) + offSet, lnNumber = 30; //Orange, 2 digits
+    txtColour = orange;
+    colNumber = (paramStore.isFinals  ? 2 : 4) + offSet;
+    lnNumber = 30;                                                  //Orange, 2 digits
     tempOffset = (paramStore.isFinals  ? 2 : 4) + offSet;
     break;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
   case 20 ... 29:
-    txtColour = orange, colNumber = (paramStore.isFinals  ? 4 : 6) + offSet, lnNumber = 30;  //Green, 2 digits
+    txtColour = orange;
+    colNumber = (paramStore.isFinals  ? 4 : 6) + offSet;
+    lnNumber = 30;                                                  //Green, 2 digits
     tempOffset = (paramStore.isFinals  ? 4 : 6) + offSet;
     break;
   case 30 ... 99:
     if (n_Count == 99) goBlanking(tempOffset);
-    txtColour = green, colNumber = 6 + offSet, lnNumber = 30;   //Green, 3 digits
+    txtColour = green; colNumber = 6 + offSet; lnNumber = 30;       //Green, 3 digits
     //tempOffset = 6 + offSet;
     break;
   case 100 ... 199:
     if (n_Count == 199) goBlanking(tempOffset);
-    txtColour = green, colNumber = -4 + offSet, lnNumber = 30;    //Green, 3 digits
+    txtColour = green; colNumber = -4 + offSet; lnNumber = 30;      //Green, 3 digits
     tempOffset = -4 + offSet;
     break;
   default:
-    txtColour = green, colNumber = -2 + offSet, lnNumber = 30;    //Green, 3digits
+    txtColour = green; colNumber = -2 + offSet; lnNumber = 30;      //Green, 3digits
     tempOffset = -2 + offSet;
     break;     
   }
@@ -77,7 +83,7 @@ void sendNumber(int digits) {
 }
 
 void goBlanking(uint8_t tOffset){                                 // writes a blanking frame on switch from 
-  txtColour = 0, colNumber = tOffset, lnNumber = 30;              // 3 digits to 2 digits etc; No colour (0)         
+  txtColour = 0; colNumber = tOffset; lnNumber = 30;              // 3 digits to 2 digits etc; No colour (0)         
   sendNumber(n_Count + 1);                                        // overwrite with last larger digit
 }
 
@@ -146,7 +152,7 @@ void writeHalt(){
                                                 
   if (paramStore.Details == 2){
     writeReady();
-      txtColour = orange, lnNumber = 31; 
+      txtColour = orange; lnNumber = 31; 
       if (paramStore.Details == 2){                           // Double detail?
         if (paramStore.isFinals 
           && sE_iter == 1){                                   // First end of FINALS
