@@ -34,7 +34,7 @@ uint8_t readButtons() {
       && digitalRead(button2Pin)  == HIGH 
       && digitalRead(button3Pin)  == HIGH 
       && digitalRead(button4Pin)  == HIGH) {
-    return 0;                                       // all are high - no buttons pressed 
+    return 0;                                         // all are high - no buttons pressed 
   }
   delay(2);                                           // delay for level de-bouncing; 2nd read to confirm low
   if (digitalRead(button1Pin) == LOW)
