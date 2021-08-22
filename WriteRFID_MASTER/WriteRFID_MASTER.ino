@@ -1,6 +1,15 @@
 /**
  * Arduino Mega2650
  * 
+ * Writes Parameters to the RFID cards used in the TimeJudge system
+ * By Fiachra Judge; Aug 2021
+ * 
+ * Write parameters as set by pressing            Button 1
+ * A basic Menu structure is enabled by pressing  Button 2
+ * Up / Down selection of parameters and values   Button 2/3                                        
+ * Exit Write mode and edit Menu                  Button 4
+ * 
+ * 
  * ----------------------------------------------------------------------------
  * This is a MFRC522 library example; see https://github.com/miguelbalboa/rfid
  *
