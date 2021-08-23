@@ -53,6 +53,8 @@
 #include <SPI.h>
 #include <MFRC522.h>
 
+//#include <f_Menu1.h>
+
 #define HC12 Serial1          // HC12 transmitter serial port
 #define __CS0 10              // SSD1325 CS   OLED
 #define __DC  9               // SSD1325 DC   OLED
@@ -103,31 +105,61 @@ MFRC522::MIFARE_Key key;
 
 //SPI.setSCK(13);
 
+
+/*
+   These are the Function Declarations
+*/
+void  wipeOLED            (void);
+void  readChannel         (void);
+void  clearFromLine       (uint8_t lineNo);
+void  changeGlob_Chan     (bool alterGlobally);
+void  displayParamsOnOLED (void);
+void  sendSerialS         (uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0);
+void  sendSerialS         (uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0, const char* i1);
+void  sendSerialS         (uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0, const char* i1, const char* i2);
+void  showWaiting         (bool enAble);
+void  sendNumber          (int digits);
+void  doButtonMenu        (void);
+void  writeOLED_Data      (uint8_t archerIndex);
+void  sendDetail          (bool cdHigh);
+void  doBarCount          (uint8_t archerIndex);
+void  goClock             (uint8_t offSet);
+void  writeStopwatch      (uint16_t n );
+void  handleCount         (unsigned long secCount);
+int   doCountdownBar      (int n_Loc, int& rectWide, int& barWidth);
+void  writeReady          (void);
+void  writeHalt           (void);
+void  writeArcher         (uint8_t which);
+void  checkIntervalTimer  (void);
+void  getRFID             (struct PARAMSTORE *ps);
+void  doButtonMenu        (void);
+void  displayMenuPage     (uint8_t idx, uint8_t selectionIdx);
+
+
 /*
    These are the main variables which will be addressable by the user
-   via RFID card and, as a backup, via a button menu (LCD)
+   via RFID card and, as a backup, via a button menu (OLED)
 */
 uint8_t     startCounts[] = {240, 120, 80, 40, 20, 180, 90, 180, 30};
 const char* flintWalk[5]  = {"30 YD", "25 YD", "20 YD", "15 YD", ""};
 const char* flint[6]      = {"25 YD", "20 FT", "30 YD", "15 YD", "20 YD", "10 YD"};
 
-
 struct PARAMSTORE {
 
-  uint8_t   startCountsIndex  = 1;                  // (0)  Number from 0 to 4 indentifying startCounts[] used, default 120
+  uint8_t   startCountsIndex  =  1;                 // (0)  Number from 0 to 4 indentifying startCounts[] used, default 120
   uint8_t   walkUp            = 10;                 // (1)
   uint8_t   maxEnds           = 10;                 // (2)  Total number of Ends for competition
-  uint8_t   Details           = 2;                  // (3)  Single (1) or Double detail (2)
+  uint8_t   Details           =  2;                 // (3)  Single (1) or Double detail (2)
 
-  uint8_t   maxPrac           = 2;                  // (4)  Initially set as 2x practice ends
-  uint8_t   isFinals          = 0;                  // (5)  For alternating A & B session
+  uint8_t   maxPrac           =  2;                 // (4)  Initially set as 2x practice ends
+  uint8_t   isFinals          =  0;                 // (5)  For alternating A & B session
   uint8_t   breakPeriod       = 10;                 // (6)  Between sessions break times, max 240min, default 10
-  uint8_t   isAlternating     = 0;                  // (7)  1 == Archer A/Archer B; 0 == Simultaneous
+  uint8_t   isAlternating     =  0;                 // (7)  1 == Archer A/Archer B; 0 == Simultaneous
 
-  uint8_t   teamPlay          = 0;                  // (8)  Teamplay: 20: mixed Recurve, 21 mixed Comp; 30 = Recurve, 31 Comp
-  uint8_t   whichArcher       = 0;                  // (9)
-  uint8_t   notFlint          = 1;                  //(10)  if True this is not a flint round
-  uint8_t   currChannel       = 0;                  //(11)
+  uint8_t   teamPlay          =  0;                 // (8)  Teamplay: 20: mixed Recurve, 21 mixed Comp; 30 = Recurve, 31 Comp
+  uint8_t   whichArcher       =  0;                 // (9)
+  uint8_t   notFlint          =  1;                 //(10)  if True this is not a flint round
+  uint8_t   currChannel       =  0;                 //(11)
 
   uint8_t   Rec12 = 127;                            //(12)|
   uint8_t   Rec13 = 212;                            //(13)|___  Mask to test for valid card
@@ -190,6 +222,20 @@ enum ButtonValueMask {
   BUTTON2       = 2,                              // in binary: 00010
   BUTTON3       = 4,                              // in binary: 00100
   BUTTON4       = 8                               // in binary: 01000
+};
+
+const char* menu0[] =   {
+                        "Duration", 
+                        "Ends",
+                        "Practice", 
+                        "Detail",
+                        "Walkup",
+                        "Finals",
+                        "Breaktime"
+                        /* Indiv/Team play
+                         * Alternating      // y/n
+                         * Carry Time On    // y/n
+                         */
 };
 
 #if defined Teensy32

@@ -133,7 +133,7 @@ void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, cons
 /*
  * When the Detail(s) have finished, for arrow collection
  */
-void writeHalt(){
+void writeHalt(void){
   clearFromLine(5); 
   u8x8.draw2x2String(0, 6, "..HALT..");
   HC12.print(F("font 11\r"));                         //Change font for the text msg
