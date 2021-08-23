@@ -25,6 +25,35 @@
     
 */
 
+///*
+//   These are the Function Declarations; They appear to be redundant!
+//*/
+//void  wipeOLED            (void);
+//void  readChannel         (void);
+//void  clearFromLine       (uint8_t lineNo);
+//void  changeGlob_Chan     (bool alterGlobally);
+//void  displayParamsOnOLED (void);
+//void  sendSerialS         (uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0);
+//void  sendSerialS         (uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0, const char* i1);
+//void  sendSerialS         (uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0, const char* i1, const char* i2);
+//void  showWaiting         (bool enAble);
+//void  sendNumber          (int digits);
+//void  doButtonMenu        (void);
+//void  writeOLED_Data      (uint8_t archerIndex);
+//void  sendDetail          (bool cdHigh);
+//void  doBarCount          (uint8_t archerIndex);
+//void  goClock             (uint8_t offSet);
+//void  writeStopwatch      (uint16_t n );
+//void  handleCount         (unsigned long secCount);
+//int   doCountdownBar      (int n_Loc, int& rectWide, int& barWidth);
+//void  writeReady          (void);
+//void  writeHalt           (void);
+//void  writeArcher         (uint8_t which);
+//void  checkIntervalTimer  (void);
+//void  getRFID             (struct PARAMSTORE *ps);
+//void  doButtonMenu        (void);
+//void  displayMenuPage     (uint8_t idx, uint8_t selectionIdx);
+
  
  
 /*
