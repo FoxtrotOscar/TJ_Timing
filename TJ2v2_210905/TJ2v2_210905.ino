@@ -1,8 +1,8 @@
-/*
+ /*
     Teensy3.2, 3.6 or 4.0 setup
 */
-//#define Teensy32
-#define Teensy36
+#define Teensy32
+//#define Teensy36
 //#define Teensy40
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
@@ -20,7 +20,8 @@
     and permits programming of the screen HC12 units
     as well as the command unit from the RFID (TimeTap) menu
     
-
+ * TODO:  
+ * Show next end number on OLED while paused for collecting 
 
     OLED Pin      Arduino Pin
       GND            GND

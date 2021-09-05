@@ -410,3 +410,237 @@ void printDebugLine(uint16_t lineNo){
       Serial.println(lineNo);
   #endif      
 }
+
+/*
+ * handle the in-menu button information layout
+ */
+void doButtonMenu(void) {
+  u8x8.setFont(u8x8_font_amstrad_cpc_extended_f);
+  u8x8.setCursor(2, 7);
+  u8x8.write(157);                                  // (a square) for "stop" or "cancel"
+  u8x8.write(32); u8x8.write(32);
+  u8x8.write(171);                                  // << "back" or "decrement"
+  u8x8.write(32); u8x8.write(32); u8x8.write(32);
+  u8x8.write(187);                                  // >> "forward" or "increment"
+  u8x8.write(32); u8x8.write(32);
+  u8x8.inverse();
+  u8x8.print("ok");                                 //  > "accept change"
+  u8x8.noInverse();
+  u8x8.setFont(u8x8_font_chroma48medium8_r);
+}
+
+
+/*
+ * Writes the three top-menu command options on lower OLED lines
+ */
+void writeMenuCommands(void){
+  u8x8.setCursor(0, 5); 
+  intervalOn ? u8x8.print      ("COUNTDOWN is ON-") : u8x8.print("Continue: BTN[1]");
+  u8x8.setCursor(0, 6);
+  intervalOn ? u8x8.print      ("-to QUIT: BTN[4]") : u8x8.print("Change:   BTN[2]");
+  u8x8.setCursor(0, 7);
+  u8x8.inverse();
+  u8x8.print("or TIME-TAP now ");
+  u8x8.noInverse();
+}
+
+
+
+
+
+/*
+ * 2 x Functions for reading value of a single button 
+ * identified by the pin number given in the argument 
+ * returned value: 
+ * 0 - button is not pressed 
+ * 1 - button is pressed 
+ * 
+ * De-bouncing is by implementing small sleep when button press is detected 
+ * and doing a second read to verify if button is still pressed)
+ * A)   
+*/  
+uint8_t readButton(int pin) {
+  if (digitalRead(pin) == HIGH) return 0; 
+  delay(5);                                 // only reached if pin goes LOW, de-bounce delay, confirm read
+  return (digitalRead(pin) == LOW) ? 1 : 0;
+}
+/*
+ *  B)  
+*/                                    
+uint8_t readButtonNoDelay(int pin) {        // as above, without small sleep if button press detected
+  return (digitalRead(pin) == LOW) ? 1 : 0;
+}
+
+/*
+ * Function to read values of all four known buttons 
+ * Returns bitmask of pressed buttons or 
+ * just one of the BUTTON1..BUTTON4 values if only 
+ * one button is pressed; Also handles de-bounce 
+ */ 
+uint8_t readButtons() {
+  uint8_t ret = 0;
+
+  if (   digitalRead(button1Pin)  == HIGH 
+      && digitalRead(button2Pin)  == HIGH 
+      && digitalRead(button3Pin)  == HIGH 
+      && digitalRead(button4Pin)  == HIGH) {
+      return 0;                                       // all are high - no buttons pressed 
+  }
+  delay(2);                                           // delay for level de-bouncing; 2nd read to confirm low
+  if (!intervalOn && digitalRead(button1Pin) == LOW)
+    ret |= BUTTON1;                                   // set leftmost bit in the 'ret' to 1
+
+  if (!intervalOn && digitalRead(button2Pin) == LOW)
+    ret |= BUTTON2;                                   // send 2nd leftmost bit in the 'ret' to 1
+
+  if (!intervalOn && digitalRead(button3Pin) == LOW)
+    ret |= BUTTON3;                                   // etc...
+
+  if (digitalRead(button4Pin) == LOW){
+    if (intervalOn){
+      clearFromLine(1);
+      clearMatrix();
+    }
+    ret |= BUTTON4;
+  }
+  return ret;
+}
+
+/*
+ * Similar to readButtons, but would wait in the infinite loop until any of 
+ * the buttons is pressed, and will return value of the 
+ * button pressed (BUTTON1..BUTTON4), or bitmask for multiple buttons pressed at once 
+ * Use this function when it is required to wait for 
+ * user input, and there is nothing to do until user press some button
+*/ 
+uint8_t waitButton() {
+  long long timeOut = millis();
+  bool flag = false; 
+  for (;;) {
+    if (!intervalOn && !flag && (millis() - timeOut > (tick*60*15))) {
+      clearMatrix();
+      bright = 25;                                          // dim the logo after the period above
+      writeSplash(true); 
+      bright = 255;                                         // reset the brightness
+      flag = true;
+    }
+    checkIntervalTimer();
+    
+    getRFID(&paramStore);
+    
+    uint8_t ret = readButtons();                            // read all button states
+    if (ret != 0) {
+      while (readButtons() != 0) delay(1);                  // and now wait for him to release the button
+      HC12.print(F("brightness "));                         // return brightness to nominal 
+      HC12.print(bright);                                                      
+      HC12.print(F("\r"));
+      return ret;                                           // finally return value of the button he pressed moments ago
+      }
+    delay(1);
+  }
+}
+
+
+bool goEmergencyButton(uint8_t AIndex){
+  bool ret = false;
+  if (readButtons() == BUTTON4) {                           // Handle Red-button push
+    goWhistle(5);
+    stopSign();
+    clearFromLine(1);
+    u8x8.setCursor(4,3);
+    u8x8.print("EMERGENCY");
+    u8x8.setCursor(6,5);
+    u8x8.print("STOP");
+    delay(5*tick);
+    n_Count = handleEmergencyRestart();                     // go fetch the next step decision
+    if (AIndex < 3){    
+      displayParamsOnOLED();
+      if (n_Count == startCounts[paramStore.startCountsIndex]) {
+        doBarCount(AIndex);
+        writeOLED_Data(1);
+      } else if (n_Count != 0){
+        goWhistle(1);
+        writeOLED_Data(1);
+      }
+    } else if (AIndex == 3){                                // for in-barCount !STOP!
+      displayParamsOnOLED();
+      writeOLED_Data(1);
+      ret = true;
+    } else if (AIndex == 4){
+                                                            //saved for future use
+    }
+  }
+  return ret;
+}
+
+/*
+ * Write a menu to select 1 of two options:
+ * 1 go back 10 secs and resume
+ * 2 go back to zero secs and resume
+ * 3 do a re-start keeping current parameters
+ */
+int16_t handleEmergencyRestart(void){
+  clearFromLine(1);
+  u8x8.setCursor(0, 2);
+  u8x8.inverse(); 
+  u8x8.print("Resume:   BTN[1]");
+  u8x8.setCursor(0, 3);
+  u8x8.setFont(u8x8_font_5x7_f);
+  u8x8.noInverse();
+  u8x8.print("(steps back 10s)");
+  u8x8.setCursor(0, 4);
+  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  u8x8.inverse();
+  u8x8.print("Restart:  BTN[2]");
+  u8x8.setCursor(0, 5);
+  u8x8.setFont(u8x8_font_5x7_f);
+  u8x8.noInverse();
+  u8x8.print("(recommence end)");
+  u8x8.setCursor(0, 6);
+  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  u8x8.inverse();
+  u8x8.print("Reset ALL:BTN[3]");
+  u8x8.setCursor(0, 7);
+  u8x8.setFont(u8x8_font_5x7_f);
+  u8x8.noInverse();
+  u8x8.print("(reinitialize)");
+  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  
+  uint8_t maxPossSecs = startCounts[paramStore.startCountsIndex];
+  
+  switch (waitButton()) {
+
+    case BUTTON1: 
+      n_Count = (n_Count +11 > maxPossSecs) ? maxPossSecs : n_Count +11;  // rewind 10 sec and continue
+      clearMatrix();
+    break;
+    
+    case BUTTON2:
+      reStartEnd = true;                                    
+      n_Count = startCounts[paramStore.startCountsIndex];                 // restart this end, continue with competition
+      clearMatrix(); //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    break;
+
+    case BUTTON3:         
+      startOver = true;                                                   // reset and start it all again
+      n_Count = 0;
+    break;
+  }
+  
+  return n_Count ;
+}
+
+void displayMenuPage(uint8_t idx, uint8_t selectionIdx) {
+  
+  if (idx == 0) {
+    for (uint8_t i = 0; i < sizeof(menu0)/sizeof(menu0[0]); ++ i) {
+      u8x8.setCursor(0, i+1);
+      if (i == selectionIdx)
+        u8x8.print("> ");
+      else 
+        u8x8.print("  ");
+
+      u8x8.print(menu0[i]);
+    }
+  }  
+}
