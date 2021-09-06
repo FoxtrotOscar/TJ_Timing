@@ -1,8 +1,8 @@
  /*
     Teensy3.2, 3.6 or 4.0 setup
 */
-//#define Teensy32
-#define Teensy36
+#define Teensy32
+//#define Teensy36
 //#define Teensy40
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
@@ -262,7 +262,7 @@ void setup() {
   pinMode(button4Pin, INPUT_PULLUP);              // Button4 for EMERGENCY STOP / menu EXIT, no change
 
   wipeOLED();                                     // Clear the OLED, write header
-  u8x8.setContrast(127);
+  u8x8.setContrast(253);
   u8x8.draw2x2String(0, 2, " SYSTEM ");
   u8x8.draw2x2String(0, 6, "STARTING");
   delay(tick);                                    // allow for the reboot to complete
