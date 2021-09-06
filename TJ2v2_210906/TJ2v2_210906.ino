@@ -1,8 +1,8 @@
  /*
     Teensy3.2, 3.6 or 4.0 setup
 */
-#define Teensy32
-//#define Teensy36
+//#define Teensy32
+#define Teensy36
 //#define Teensy40
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
@@ -74,6 +74,8 @@
   #error Unsupported board selection. 
 #endif
 #define BAUD 9600             // sets baudrate for HC12 output
+
+#define __NAME__ (strrchr(__FILE__,'\\') ? strrchr(__FILE__,'\\')+1 : __FILE__)
 
 //#define DEBUG               // Kills splashscreen, whistles etc
 
@@ -302,7 +304,7 @@ void setup() {
 
   HC12.flush();
   clearFromLine(0);
-  dispSrcFileDetails();
+  dispSrcFileDetails(__NAME__);                   // Show this file-name on OLED
   u8x8.draw2x2String(0, 3, "..WAIT..");
 
   writeSplash(true);
@@ -331,8 +333,9 @@ void setup() {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  * Show version and file details on bootup
  */
-void dispSrcFileDetails  (void){
-  const char *the_path = PSTR(__FILE__);                                    // save RAM, use flash to hold __FILE__ instead
+void dispSrcFileDetails  (const char* fileName ){
+
+  const char *the_path = PSTR(__NAME__);                                    // save RAM, use flash to hold __FILE__ instead
 
   int slash_loc = pgm_lastIndexOf('/',the_path);                            // index of last '/' 
   if (slash_loc < 0) slash_loc = pgm_lastIndexOf('\\',the_path);            // or last '\' (windows, ugh)
@@ -355,8 +358,7 @@ void dispSrcFileDetails  (void){
 }
 
 
-/*
- * Find limits of program header details
+/* Find limits of program header details
  */
 int pgm_lastIndexOf      (uint8_t c, const char * p) {
   int last_index = -1; // -1 indicates no match

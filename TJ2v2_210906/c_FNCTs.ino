@@ -308,7 +308,7 @@ void sendScrollW( uint16_t      scrollSpeed,
 
 void goWhistle(uint8_t whistles){
   HC12.print("~"); HC12.flush(); 
-  HC12.print(whistles);  //uncomment for whistles
+//  HC12.print(whistles);  //uncomment for whistles
   HC12.flush();
   delay(30 );                                 //  You would not believe how needed this is!!!!
 }
@@ -381,35 +381,6 @@ void goReboot(void){
 
 
 
-
-//=========================================================================================
-/*  DEBUGGING TOOLS  */
-
-void checkEEPROM(byte lowAddress, byte eeAddress){
-  Serial.println();
-  Serial.println("EEPROM:  ");
-  for (byte n = lowAddress; n < eeAddress+5; n++){
-   Serial.print(n);
-   Serial.print(":  ");
-   Serial.println(EEPROM.read(n));               
-  }
-  unsigned long timer=millis();
-  do{} while ((millis() - timer) < 200UL);
-}
-
-
-
-
-
-/*
- * Handle printing line numbers for debugging 
- */
-void printDebugLine(uint16_t lineNo){
-  #ifdef DEBUG  
-      Serial.print(F("We are at LINE: "));
-      Serial.println(lineNo);
-  #endif      
-}
 
 /*
  * handle the in-menu button information layout
@@ -643,4 +614,35 @@ void displayMenuPage(uint8_t idx, uint8_t selectionIdx) {
       u8x8.print(menu0[i]);
     }
   }  
+}
+
+
+
+//=========================================================================================
+/*  DEBUGGING TOOLS  */
+
+void checkEEPROM(byte lowAddress, byte eeAddress){
+  Serial.println();
+  Serial.println("EEPROM:  ");
+  for (byte n = lowAddress; n < eeAddress+5; n++){
+   Serial.print(n);
+   Serial.print(":  ");
+   Serial.println(EEPROM.read(n));               
+  }
+  unsigned long timer=millis();
+  do{} while ((millis() - timer) < 200UL);
+}
+
+
+
+
+
+/*
+ * Handle printing line numbers for debugging 
+ */
+void printDebugLine(uint16_t lineNo){
+  #ifdef DEBUG  
+      Serial.print(F("We are at LINE: "));
+      Serial.println(lineNo);
+  #endif      
 }
