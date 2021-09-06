@@ -40,7 +40,7 @@
 #include <Wire.h>
 #endif
 
-#define DEBUG
+//#define DEBUG
 
 #define RESET_PIN 8
  
@@ -51,6 +51,8 @@
 #define RST_PIN 6     // Configurable, see typical pin layout above
 #define SS_PIN  7     // Configurable, see typical pin layout above
 
+// Strip path details from the FILE information, show only the file NAME
+#define __NAME__ (strrchr(__FILE__,'\\') ? strrchr(__FILE__,'\\')+1 : __FILE__)
 
 //U8X8_SH1106_128X64_NONAME_4W_HW_SPI u8x8(__CS, __DC, RESET_PIN);                              // 1.3" little
 //=====================================================================================
@@ -104,10 +106,10 @@ bool firstTime = true;
  //****************************************************************************
  
 void setup() {
-  Serial.begin(115200);     // Initialize serial communications with the PC
-  do {} while (!Serial);    // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
+  Serial.begin(115200);                             // Initialize serial communications
+  do {} while (!Serial);                            // Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
   delay(tick);
-  SPI.begin();              // Init SPI bus
+  SPI.begin();                                      // Init SPI bus
   delay(tick);
   u8x8.begin();
   delay(100);
@@ -125,17 +127,21 @@ void setup() {
   
   mfrc522.PCD_Init(); // Init MFRC522 card
   mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
-            // Prepare the key (used both as key A and as key B)
-            // using FFFFFFFFFFFFh which is the default at chip delivery from the factory
+                                                    // Prepare the key (used both as key A and as key B)
+                                                    // using FFFFFFFFFFFFh which is the default at chip delivery from the factory
   for (byte i = 0; i < 6; i++) {
       key.keyByte[i] = 0xFF;
   }
-
-  Serial.println(F("Scan a MIFARE Classic PICC to demonstrate read and write."));
-  Serial.print(F("Using key (for A and B):"));
+  #ifdef DEBUG
+    Serial.println(F("Scan a MIFARE Classic PICC to demonstrate read and write."));
+    Serial.print(F("Using key (for A and B):"));
+  #endif
   dump_byte_array(key.keyByte, MFRC522::MF_KEY_SIZE);
-  Serial.println();
-  Serial.println(F("BEWARE: Data will be written to the PICC, in sector #1"));
+  #ifdef DEBUG
+    Serial.println();
+    Serial.println(F("BEWARE: Data will be written to the PICC, in sector #1"));
+  #endif
+  
 }
 
 //********************************************************************************
@@ -154,7 +160,7 @@ void loop() {
       clearFromLine(1);
       byte ct;
       do {
-        printDebugLine(__LINE__);
+        printDebugLine(__LINE__, __NAME__);
         paramIndex = pickParam(paramIndex);
         if (paramIndex == 12) {                                     // catch BUTTON4 exit
           break;
@@ -164,7 +170,8 @@ void loop() {
           clearFromLine(1);
           showParams(paramIndex);
           delay(50);
-          printDebugLine(__LINE__);
+          printDebugLine(__LINE__, __NAME__);
+          
         }
       } while (!(waitButton() == BUTTON4) || (paramIndex == 12));
      clearFromLine(1); 

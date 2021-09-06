@@ -52,11 +52,13 @@ void writeReady (void){
 }
 
 /*
- * Handle printing line numbers for debugging 
+ * Handle Serial printing of line/tab info for debugging 
  */
-void printDebugLine(uint16_t lineNo){
-  #ifdef DEBUG  
+void printDebugLine(uint16_t lineNo, const char* FileName ){
+  #ifdef DEBUG
       Serial.print(F("We are at LINE: "));
-      Serial.println(lineNo);
+      Serial.print(lineNo);
+      Serial.print(F(" in TAB: "));
+      Serial.println(FileName);
   #endif      
 }

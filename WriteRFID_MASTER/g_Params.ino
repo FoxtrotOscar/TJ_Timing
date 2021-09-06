@@ -16,13 +16,13 @@ uint8_t pickParam(byte ct){
         showParams(ct);
         
     } else if (btn == BUTTON4) {
-      printDebugLine(__LINE__);
+      printDebugLine(__LINE__, __NAME__);
       ct = 12;
       showParams(ct);                                   // put out of parameter bounds.
       break;
     }
   }
-  printDebugLine(__LINE__);
+  printDebugLine(__LINE__, __NAME__);
   return ct;
 }
 
@@ -435,9 +435,9 @@ byte alterParam(uint8_t ct){
       }
 
     default :
-      printDebugLine(__LINE__);
+      printDebugLine(__LINE__, __NAME__);
       break;
   }
-  printDebugLine(__LINE__);
+  printDebugLine(__LINE__, __NAME__);
   return ct;
 }
