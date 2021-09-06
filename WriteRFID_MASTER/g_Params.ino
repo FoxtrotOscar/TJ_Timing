@@ -48,8 +48,10 @@ void showOneParam(byte ct, byte index){
   byte z;                                    
   u8x8.setCursor(x, y);                             
   u8x8.print(nameParam[ct]);                            // display the parameter name
-  ct == 0 ? z = startCounts[dataStore[ct]] :    
-               z = dataStore[ct]; 
+//  ct == 0 ? z = startCounts[dataStore[ct]] :    
+//               z = dataStore[ct]; 
+  z = (ct == 0 ? startCounts[dataStore[ct]] :           
+      (ct == 11 ? (dataStore[ct] == 177 ? 1 : dataStore[ct]): dataStore[ct]));  // mask Supervisor code
   u8x8.setCursor((z < 100 ?                             // parse the x position of the number
                   (z < 10 ?  x+6 : x+5)                 // ditto
                    : x+4), y);                          // and set its xy coordinates 
@@ -68,7 +70,9 @@ byte showParamVal(uint8_t ct){                           // cut one from the lis
     u8x8.draw2x2String(12, 2, ": ");
     u8x8.setFont (u8x8_font_profont29_2x3_n);
     u8x8.setCursor(6, 4);
-    ct == 0 ? u8x8.print(startCounts[dataStore[ct]])  :  u8x8.print(dataStore[ct]);
+    byte z = (ct ==  0 ? startCounts[dataStore[ct]] :   
+        (ct == 11 ? (dataStore[ct] == 177 ? 1 : dataStore[ct]): dataStore[ct])); // mask Supervisor code
+    u8x8.print(z);  
     u8x8.setFont(u8x8_font_chroma48medium8_r);
     u8x8.setCursor(0, 7);
     u8x8.print("[1]Yes < > No[4]");
@@ -81,7 +85,7 @@ void showTempVal(uint8_t ct, uint8_t temp){
     u8x8.setCursor(6, 4);
     u8x8.print("    ");
     u8x8.setCursor(6, 4);
-    u8x8.print(temp);
+    u8x8.print(ct == 11 ? (temp == 177 ? 1: temp) : temp); // mask Supervisor code
     u8x8.setFont(u8x8_font_chroma48medium8_r);
     u8x8.setCursor(0, 7);
     u8x8.print("[1]Yes < > No[4]");
@@ -145,12 +149,8 @@ byte alterParam(uint8_t ct){
             valid = true;
             break; 
       
-          case BUTTON2: 
-            tempVal == 10 ? tempVal = 20 :  tempVal = 10;
-            showTempVal(ct, tempVal);
-            break;
-      
-          case BUTTON3: 
+          case BUTTON2:
+          case BUTTON3:  
             tempVal == 10 ? tempVal = 20 :  tempVal = 10;
             showTempVal(ct, tempVal);
             break;
@@ -202,10 +202,6 @@ byte alterParam(uint8_t ct){
             break;  
       
           case BUTTON2: 
-            tempVal == 2 ? tempVal = 1 : tempVal = 2;
-            showTempVal(ct, tempVal);
-            break;
-      
           case BUTTON3: 
             tempVal == 2 ? tempVal = 1 : tempVal = 2;
             showTempVal(ct, tempVal);
@@ -255,12 +251,8 @@ byte alterParam(uint8_t ct){
             valid = true;
             break;  
       
-          case BUTTON2: 
-            tempVal == 0 ? tempVal = 1 : tempVal = 0;
-            showTempVal(ct, tempVal);
-            break;
-      
-          case BUTTON3: 
+          case BUTTON2:
+          case BUTTON3:  
             tempVal == 0 ? tempVal = 1 : tempVal = 0;
             showTempVal(ct, tempVal);
             break;
@@ -310,13 +302,9 @@ byte alterParam(uint8_t ct){
             valid = true;
             break;  
       
-          case BUTTON2: 
+          case BUTTON2:
+          case BUTTON3:  
             tempVal == 0 ? tempVal = 1: tempVal = 0;
-            showTempVal(ct, tempVal);
-            break;
-      
-          case BUTTON3: 
-            tempVal == 0 ? tempVal = 1 : tempVal = 0;
             showTempVal(ct, tempVal);
             break;
       
@@ -365,10 +353,6 @@ byte alterParam(uint8_t ct){
             break;  
       
           case BUTTON2: 
-            tempVal == 0 ? tempVal = 1 : tempVal = 0;
-            showTempVal(ct, tempVal);
-            break;
-      
           case BUTTON3: 
             tempVal == 0 ? tempVal = 1 : tempVal = 0;
             showTempVal(ct, tempVal);
@@ -391,12 +375,8 @@ byte alterParam(uint8_t ct){
             valid = true;
             break;  
       
-          case BUTTON2: 
-            tempVal == 0 ? tempVal = 1 : tempVal = 0;
-            showTempVal(ct, tempVal);
-            break;
-      
-          case BUTTON3: 
+          case BUTTON2:
+          case BUTTON3:  
             tempVal == 0 ? tempVal = 1 : tempVal = 0;
             showTempVal(ct, tempVal);
             break;
@@ -418,16 +398,14 @@ byte alterParam(uint8_t ct){
             valid = true;
             break;  
       
-          case BUTTON2: 
-            tempVal == 0 ? tempVal = 1 : tempVal = 0;
+          case BUTTON2:
+          case BUTTON3:  
+            tempVal == 0 ? tempVal = 177 : tempVal = 0;
             showTempVal(ct, tempVal);
             break;
       
-          case BUTTON3: 
-            tempVal == 0 ? tempVal = 1 : tempVal = 0;
-            showTempVal(ct, tempVal);
-            break;
-      
+          
+                  
           case BUTTON4:
             valid = true;
             break;
