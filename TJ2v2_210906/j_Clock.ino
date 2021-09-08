@@ -99,7 +99,7 @@ void handleCount(unsigned long secCount){
   
   while ((millis() - secCount) % tick > 0){  // apply a 'fuzzy' offset of 2 for Uno
     if (readButtonNoDelay(button1Pin) == 1 ) {
-      clearFromLine(6);
+      //clearFromLine(6);
       delay(175);
       n_Count = 0;
     }

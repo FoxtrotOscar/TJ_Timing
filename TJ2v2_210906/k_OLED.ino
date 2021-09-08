@@ -27,10 +27,9 @@ void displayParamsOnOLED() {
   u8x8.print(startCounts[paramStore.startCountsIndex]);
   u8x8.setCursor(6, 2);
   u8x8.print(paramStore.maxEnds);
-  u8x8.setCursor(7, 2);
-  u8x8.print("  : ");
+  u8x8.setCursor(9, 2);
+  u8x8.print(": ");
   u8x8.print(sEcount);
-  
   u8x8.setCursor(6, 3);
   u8x8.print(paramStore.maxPrac);
   u8x8.setCursor(6, 4);

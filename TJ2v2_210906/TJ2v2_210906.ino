@@ -1,8 +1,8 @@
  /*
     Teensy3.2, 3.6 or 4.0 setup
 */
-#define Teensy32
-//#define Teensy36
+//#define Teensy32
+#define Teensy36
 //#define Teensy40
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
@@ -304,7 +304,7 @@ void setup() {
 
   HC12.flush();
   clearFromLine(0);
-  dispSrcFileDetails(__NAME__);                   // Show this file-name on OLED
+  dispSrcFileDetails(__NAME__);                   // Show *this* file name on OLED
   u8x8.draw2x2String(0, 3, "..WAIT..");
 
   writeSplash(true);
@@ -325,49 +325,4 @@ void setup() {
   sE_iter = 0;
   countPractice = paramStore.maxPrac;  
   checkEEPROM(0, 25);
-}
-
-
-
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Show version and file details on bootup
- */
-void dispSrcFileDetails  (const char* fileName ){
-
-  const char *the_path = PSTR(__NAME__);                                    // save RAM, use flash to hold __FILE__ instead
-
-  int slash_loc = pgm_lastIndexOf('/',the_path);                            // index of last '/' 
-  if (slash_loc < 0) slash_loc = pgm_lastIndexOf('\\',the_path);            // or last '\' (windows, ugh)
-
-  int dot_loc = pgm_lastIndexOf('.',the_path);                              // index of last '.'
-  if (dot_loc < 0) dot_loc = pgm_lastIndexOf(0,the_path);                   // if no dot, return end of string
-  uint8_t c = 0;
-  uint8_t r = 7;
-  u8x8.setFont(u8x8_font_5x7_f);
-  for (int i = slash_loc+1; i < dot_loc; i++) {
-    uint8_t b = pgm_read_byte(&the_path[i]);
-    if (b != 0) {
-      u8x8.setCursor(c,r);      
-      u8x8.print((char) b);
-      c++;
-    }
-    else break;
-  }
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-}
-
-
-/* Find limits of program header details
- */
-int pgm_lastIndexOf      (uint8_t c, const char * p) {
-  int last_index = -1; // -1 indicates no match
-  uint8_t b;
-  for(int i = 0; true; i++) {
-    b = pgm_read_byte(p++);
-    if (b == c)
-      last_index = i;
-    else if (b == 0) break;
-  }
-  return last_index;
 }

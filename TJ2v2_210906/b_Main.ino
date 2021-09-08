@@ -59,7 +59,7 @@ void loop() {
                                /*column=*/ 1,
                                /*line=*/   22 ,
                                /*window=*/ 63,
-                                          "FINAL!" );                     // animation of finals
+                                          "FINAL!" );          // animation of finals
       delay(tick * 2);                                    
       if (paramStore.isAlternating) {
         clearFromLine(5);
@@ -68,10 +68,10 @@ void loop() {
     }
     clearFromLine(5);
     u8x8.draw2x2String(0, 6, "SCORING!");
-    sEcount = 1; //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++? cope with flint start error after timetap
+    sEcount = 1;                                                //cope with flint start error after timetap
     clearMatrix();
 
-    HC12.print(F("font 9\r"));  HC12.flush();               // Then write SCORING
+    HC12.print(F("font 9\r"));  HC12.flush();                   // Then write SCORING
     sendSerialS( /*colour=*/ 1, /*column=*/ 6, /*line=*/22, "SCORING ");
     delay(3 * tick);
     clearMatrix();

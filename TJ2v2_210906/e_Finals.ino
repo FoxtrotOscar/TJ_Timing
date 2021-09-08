@@ -44,9 +44,17 @@ void goFinals_Op(void){
     
     if (!countPractice ) writeArcher(archerIndex);
     HC12.print(F("font 13\r"));
+      u8x8.setCursor(0, 6);
+      u8x8.print("Flip Detail: [1]");
+      u8x8.setCursor(0, 7);
+      u8x8.print(" !!!STOP!!!: [4]");
+    
     while (n_Count >= 0){
       if (!goEmergencyButton(archerIndex)) {
       writeOLED_Data(archerIndex);
+      
+
+      
       writeStopwatch(n_Count );                                               // Write countdown large on OLED
       if (n_Count == startCounts[paramStore.startCountsIndex]) goWhistle(1);  // if we are at the beginning sound the GO!
         HC12.print(F("font 13\r"));

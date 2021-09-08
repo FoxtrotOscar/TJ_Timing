@@ -67,7 +67,7 @@ void getRFID(struct PARAMSTORE *ps){
     EEPROM.put(0, paramStore);                        // Here the paramStore data is copied into EEPROM 
     EEPROM.put(29, 111);                              // set flag for stored parameters
     delay(20);
-
+    sEcount = 1;                                      // reset the count to beginning as new params set
     displayParamsOnOLED();
     clearFromLine(5);
     u8x8.inverse(); 
