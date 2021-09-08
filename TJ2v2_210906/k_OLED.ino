@@ -22,14 +22,14 @@ void displayParamsOnOLED() {
   u8x8.setCursor(0, 3);
   u8x8.print("Prac: ");
   u8x8.setCursor(0, 4);
-  u8x8.print("Det.:  ");          // detailing parameters set
+  u8x8.print("Det.:  ");                    // detailing parameters set
   u8x8.setCursor(6, 1);                         
   u8x8.print(startCounts[paramStore.startCountsIndex]);
   u8x8.setCursor(6, 2);
   u8x8.print(paramStore.maxEnds);
   u8x8.setCursor(9, 2);
   u8x8.print(": ");
-  u8x8.print(sEcount);
+  u8x8.print(countPractice ? 0 : sEcount);  // if still in practice show ens zero
   u8x8.setCursor(6, 3);
   u8x8.print(paramStore.maxPrac);
   u8x8.setCursor(6, 4);

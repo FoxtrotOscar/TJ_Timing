@@ -15,7 +15,7 @@ void loop() {
 
   if ((sEcount > paramStore.maxEnds) || startOver) {          // test here for DONE or reset
     if (paramStore.maxEnds != 1) {                            // But not for single ends
-      clearFromLine(5);
+      clearFromLine(1);
       if (!paramStore.isFinals) {
         u8x8.draw2x2String(0, 6, "~~DONE~~");
       }
@@ -32,8 +32,9 @@ void loop() {
     }
     clearMatrix();
     displayParamsOnOLED();
+    u8x8.draw2x2String(0, 6, "..WAIT..");
     writeSplash(true);                                        // Show Logo
-    writeMenuCommands(); // *******************************************************
+    writeMenuCommands(); 
     continueOn = 0;
     startOver = false;
     while (continueOn == 0)  continueOn = waitButton();       // Alter params or re-start as is

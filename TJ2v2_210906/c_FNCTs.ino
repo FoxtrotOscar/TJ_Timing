@@ -307,10 +307,10 @@ void sendScrollW( uint16_t      scrollSpeed,
 
 
 void goWhistle(uint8_t whistles){
-  HC12.print("~"); HC12.flush(); 
-//  HC12.print(whistles);  //uncomment for whistles
+  HC12.print("~"); HC12.flush();              //uncomment for whistles
+  HC12.print(whistles);  
   HC12.flush();
-  delay(30 );                                 //  You would not believe how needed this is!!!!
+  delay(30 );                                 
 }
 
 
@@ -319,15 +319,15 @@ void stopSign(void){
    * (circle colour x_centre y_centre radius)
    */
   clearMatrix();
-  HC12.print(F("circle2 "));                // Draw a circle
+  HC12.print(F("circle "));                // Draw a circle
   HC12.print(red);
   HC12.print(F(" 32 15 15\r"));
   HC12.print(F("paint\r"));    HC12.flush();
-  HC12.print(F("circle2 "));
+  HC12.print(F("circle "));
   HC12.print(red);
   HC12.print(F(" 32 15 14\r"));
   HC12.print(F("paint\r"));    HC12.flush();
-  HC12.print(F("circle2 "));
+  HC12.print(F("circle "));
   HC12.print(red);
   HC12.print(F(" 32 15 13\r"));
   HC12.print(F("paint\r"));    HC12.flush();
@@ -405,10 +405,11 @@ void doButtonMenu(void) {
  * Writes the three top-menu command options on lower OLED lines
  */
 void writeMenuCommands(void){
+  clearFromLine(5);                                 // clear the way
   u8x8.setCursor(0, 5); 
-  intervalOn ? u8x8.print      ("COUNTDOWN is ON-") : u8x8.print("Continue: BTN[1]");
+  u8x8.print((intervalOn ? "COUNTDOWN is ON-" : "Continue: BTN[1]"));
   u8x8.setCursor(0, 6);
-  intervalOn ? u8x8.print      ("-to QUIT: BTN[4]") : u8x8.print("Change:   BTN[2]");
+  u8x8.print((intervalOn ? "-to QUIT: BTN[4]" : "Change:   BTN[2]"));
   u8x8.setCursor(0, 7);
   u8x8.inverse();
   u8x8.print("or TIME-TAP now ");
