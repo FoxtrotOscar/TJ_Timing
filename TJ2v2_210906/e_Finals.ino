@@ -38,8 +38,8 @@ void goFinals_Op(void){
       if (paramStore.isAlternating) offSet = (archerIndex == 1 ? 26 : 0);     // Set offset to lhs or rhs
     }
     unsigned long secCount = millis();
-
     do {} while ((millis() - secCount) % tick > 2);                           // initialise timer to a start-point
+    
     clearMatrix();
     
     if (!countPractice ) writeArcher(archerIndex);
@@ -58,7 +58,7 @@ void goFinals_Op(void){
       writeStopwatch(n_Count );                                               // Write countdown large on OLED
       if (n_Count == startCounts[paramStore.startCountsIndex]) goWhistle(1);  // if we are at the beginning sound the GO!
         HC12.print(F("font 13\r"));
-        delay(2); 
+      pauseMe(2); 
         goClock(offSet);                                                      // Handles formatting of the display
         
         sendNumber(n_Count );

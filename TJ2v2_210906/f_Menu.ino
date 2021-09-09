@@ -161,13 +161,13 @@ struct MenuContext
         
       case BUTTON2: 
         u8x8.fillDisplay();
-        delay(30);
+      pauseMe(30);
         clearFromLine(1);
         
         u8x8.draw2x2String(6, 2, "OK");
         u8x8.draw2x2String(4, 5, "MENU:");
         zeroSettings();
-        delay(700);
+      pauseMe(700);
         wipeOLED();
         
         return MenuState::menu_root;                // go to menu_root label to display the root level of the menu
@@ -178,7 +178,7 @@ struct MenuContext
                                                     //for cases where user did press BTN1 or BTN4 
         {
           wipeOLED();
-          delay(30);
+        pauseMe(30);
           clearFromLine(1);
           if (paramStore.breakPeriod > 240) paramStore.breakPeriod = 240;  // catch spurious high numbers
           u8x8.setCursor(3, 2);
@@ -192,7 +192,8 @@ struct MenuContext
                 
           switch (waitButton()) {
           case BUTTON1:
-            intervalOn = true;
+            intervalOn  = true;
+            started     = false;
             return MenuState::start;
           
           case BUTTON2:
@@ -215,9 +216,9 @@ struct MenuContext
       case BUTTON4:
         displayParamsOnOLED(); //+++++++++++++++++++++++++++++++++++++++++++++++++
         writeSplash(false);
-        delay(2 * tick);
-        intervalOn = false;
-        started = false;
+      pauseMe(2 * tick);
+        intervalOn  = false;
+        started     = false;
         writeInfoBigscreen();
         writeMenuCommands();
         // state - unchanged  -- any other button - go and read button state again
@@ -243,11 +244,11 @@ struct MenuContext
           for( uint8_t r = 1; r < 8; r++ )
           {
               u8x8.clearLine(r);
-              delay(20);
+            pauseMe(20);
           } 
           u8x8.draw2x2String(6, 2, "OK");
           u8x8.draw2x2String(4, 5, "MENU:");
-          delay(700);
+        pauseMe(700);
           return MenuState::menu_root;
       }
       
@@ -662,7 +663,7 @@ struct MenuContext
     u8x8.draw2x2String(0, 6, "..WAIT..");
     intervalOn = false;
     started = false;
-    delay(250);
+  pauseMe(250);
     
     return 1;
   }

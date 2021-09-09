@@ -1,8 +1,8 @@
  /*
     Teensy3.2, 3.6 or 4.0 setup
 */
-#define Teensy32
-//#define Teensy36
+//#define Teensy32
+#define Teensy36
 //#define Teensy40
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
@@ -10,18 +10,21 @@
     By Fiachra Judge 2021
     A program for sending data to a 64x32 LARGE LED Matrix display
     board, which requires altered colour comands,
-    using a PLT2001-based driver and Teensy 3.2 or 3.6 microcontroller with an
+    using a PLT2001-based driver and Teensy microcontroller with an
     OLED display on the controller.
     HC12 units are employed to send the serial data
     wirelessly to the PLT2001.
-    RFID is implemented as a method for choosing setup
-    parameters, which is backed up by the OLED on-board menu.
+    RFID is implemented as a method for choosing setup parameters, 
+    which is backed up in a limited fashion by the OLED on-board menu.
     Channel programing is via a special engineers card
-    and permits programming of the screen HC12 units
-    as well as the command unit from the RFID (TimeTap) menu
+    and permits programming of the screen HC12 units on the fly
+    as well as the command unit from the RFID (TimeTap) menu.
+    A "count-down to start" function allows for smooth tournament running.
     
- * TODO:  
- * Show next end number on OLED while paused for collecting 
+  * TODO:  
+  * make count-down timer independent of the RFID TimeTap functions - 
+    it currently allows for them but holds up the timer - requires work
+  
 
     OLED Pin      Arduino Pin
       GND            GND
@@ -181,7 +184,7 @@ int         continueOn    = 0;
 bool        next          = 0;
 bool        startOver     = false;
 bool        intervalOn    = false;
-bool        started       = false;
+bool        started       = false;                // referencing the countdown timer status
 bool        reStartEnd    = false;
 float       chFrq;
 uint16_t    lapsed        = 0;
@@ -244,7 +247,7 @@ void setup() {
     EEPROM.get(0, paramStore);                    // Copies most recent parameters back in
     zeroSettings();
   }
-  delay(tick);
+pauseMe(tick);
   HC12.begin(BAUD, SERIAL_8N1);                   //  set SoftwareSerial port
 #ifdef DEBUG
   Serial.begin(BAUD);
@@ -252,7 +255,7 @@ void setup() {
   Serial.end();
 #endif
   digitalWrite(HC12SetPin, LOW);                  // Enter Transparent mode
-  delay(80);
+pauseMe(80);
   u8x8.begin();
   u8x8.setPowerSave(0);
   u8x8.setFont(u8x8_font_chroma48medium8_r);      // u8x8.setFont(u8x8_font_amstrad_cpc_extended_f);
@@ -265,7 +268,7 @@ void setup() {
   u8x8.setContrast(253);
   u8x8.draw2x2String(0, 2, " SYSTEM ");
   u8x8.draw2x2String(0, 6, "STARTING");
-  delay(tick);                                    // allow for the reboot to complete
+  pauseMe(1.5 * tick);                                    // allow for the reboot to complete
   wipeOLED();
   u8x8.draw2x2String(0, 2, " SYSTEM ");
   u8x8.draw2x2String(0, 4, "CHAN:");
@@ -273,8 +276,7 @@ void setup() {
 
 
   SPI.begin();                                    // Init SPI bus
-  long long pause = millis();
-  do {} while (millis() - pause < 2 * tick);
+  pauseMe(2 * tick);
 
   mfrc522.PCD_Init();                             // Init MFRC522 card
   mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
@@ -305,10 +307,10 @@ void setup() {
   HC12.flush();
   clearFromLine(0);
   dispSrcFileDetails(__NAME__);                   // Show *this* file name on OLED
-  u8x8.draw2x2String(0, 3, "..WAIT..");
+  //u8x8.draw2x2String(0, 3, "..WAIT..");
 
   writeSplash(true);
-  delay(2 * tick);
+pauseMe(2 * tick);
 
   /*
      Now info regarding setup on bigscreen
@@ -317,10 +319,10 @@ void setup() {
   writeInfoBigscreen();
   clearFromLine(0);
   displayParamsOnOLED();                          // show current (default) setting
-  u8x8.draw2x2String(0, 6, "..WAIT..");
+  //u8x8.draw2x2String(0, 6, "..WAIT..");
 
   writeSplash(false);
-  delay(2 * tick);
+pauseMe(2 * tick);
   shootDetail = 0;  sEcount = 1;                 // bool for Detail odd/even, counters
   sE_iter = 0;
   countPractice = paramStore.maxPrac;  

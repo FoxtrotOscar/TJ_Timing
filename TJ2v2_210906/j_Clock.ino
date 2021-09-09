@@ -100,7 +100,7 @@ void handleCount(unsigned long secCount){
   while ((millis() - secCount) % tick > 0){  // apply a 'fuzzy' offset of 2 for Uno
     if (readButtonNoDelay(button1Pin) == 1 ) {
       //clearFromLine(6);
-      delay(175);
+    pauseMe(175);
       n_Count = 0;
     }
   }
@@ -145,7 +145,7 @@ void writeHalt(void){
   goWhistle(3);
   int delayNo = 5;
 
-  delay(delayNo*tick);
+pauseMe(delayNo*tick);
   clearMatrix();  
 
   HC12.print(F("font 9\r"));    HC12.flush();
@@ -305,7 +305,7 @@ int doCountdownBar(int n_Loc, int& rectWide, int& barWidth){    // use int& to w
         if (readButtonNoDelay(button1Pin) == 1 ) {              // test for proceed button - a debug function really
           rectWide = 0;
           clearFromLine(6);
-          delay(175);
+        pauseMe(175);
           n_Loc = 0;
         }           
       } while ((millis() - secCount) % (tick/stripReducer) > 0);

@@ -25,20 +25,19 @@ void loop() {
       if (paramStore.notFlint == 0) goWhistle(3);
       for (int p = 0; p < 5; p ++ ) {                         // flash the good news
         clearMatrix();
-        delay(tick / 4);
+      pauseMe(tick / 4);
         sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 2, /*line=*/ lnNumber, "D O N E");
-        delay(tick);
+      pauseMe(tick);
       }
     }
     clearMatrix();
     displayParamsOnOLED();
-    u8x8.draw2x2String(0, 6, "..WAIT..");
     writeSplash(true);                                        // Show Logo
     writeMenuCommands(); 
     continueOn = 0;
     startOver = false;
     while (continueOn == 0)  continueOn = waitButton();       // Alter params or re-start as is
-    delay(tick);
+  pauseMe(tick);
     showWaiting(false);
     clearMatrix();
     sEcount = 1;
@@ -61,7 +60,7 @@ void loop() {
                                /*line=*/   22 ,
                                /*window=*/ 63,
                                           "FINAL!" );          // animation of finals
-      delay(tick * 2);                                    
+    pauseMe(tick * 2);                                    
       if (paramStore.isAlternating) {
         clearFromLine(5);
         goChooseArcher();
@@ -74,7 +73,7 @@ void loop() {
 
     HC12.print(F("font 9\r"));  HC12.flush();                   // Then write SCORING
     sendSerialS( /*colour=*/ 1, /*column=*/ 6, /*line=*/22, "SCORING ");
-    delay(3 * tick);
+  pauseMe(3 * tick);
     clearMatrix();
   } else {
 
@@ -87,14 +86,14 @@ void loop() {
       HC12.print(F("font 10\r"));  HC12.flush();
       sendSerialS( /*colour=*/ 3, /*column=*/ 0, /*line=*/ 15, "Practice");
 
-      delay(tick);
+    pauseMe(tick);
       HC12.print(F("font 9\r"));   HC12.flush();
       sendSerialS( /*colour=*/ 2, /*column=*/ 2, /*line=*/ 29, "ENDS -- ");
       txtColour = orange;
       colNumber = 54;
       lnNumber = 30;
       sendNumber(paramStore.maxPrac);
-      delay(3 * tick);
+    pauseMe(3 * tick);
     }
   }
 

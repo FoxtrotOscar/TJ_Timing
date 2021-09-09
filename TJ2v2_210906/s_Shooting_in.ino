@@ -9,25 +9,26 @@ void checkIntervalTimer(void){
     if (!started ){
       lapsed = paramStore.breakPeriod *60;
       started = true;
+      showWaiting(false);                         // for event where restarting timer during waiting
       goCountdownTimer();
       intervalTimer = millis();
       secondsTimer  = millis(); 
       n_Count = 60;
-      delay(109);
+    pauseMe(109);
     }
     if (lapsed < 60) {                            // when count reaches 1 min blank and post end data
       intervalOn = false;                         // one min = 60000 milliseconds
       lapsed = paramStore.breakPeriod;
       writeInfoBigscreen();
-      delay (2*tick);
+      pauseMe(2*tick);
       clearMatrix();  
       HC12.print(F("font 9\r"));    HC12.flush();
       for (byte i = 0; i < 4; i++){               // flash the prepare message
-        delay(tick);
+        //pauseMe(tick);
         sendSerialS( /*colour=*/ 2, /*column=*/ 0, /*line=*/ 18, "PREPARE...");
-        delay (2*tick);
+        pauseMe(2*tick);
         clearMatrix();
-        delay (tick);
+        pauseMe(tick);
       }
       showWaiting(true);
       return;
@@ -102,23 +103,23 @@ void showWaiting(bool enAble){
 
   } else {
     HC12.print("scrollloop 0\r") ;
-    delay(2*tick);
+  pauseMe(2*tick);                              // allow the scroll to finish - it is not immediate
     clearMatrix();                           
   }
 }
 
 //void sendScroll(byte sSpeed, byte sLoop, byte sCol, byte sX, byte sY, byte sW, char tXt ){
 void sendScroll(void){
-    HC12.print("scrollspeed 30\r");
-    delay(tock);
+    HC12.print("scrollspeed 20\r");
+  pauseMe(tock);
     HC12.print("scrollloop 1\r");
-    delay(tock);
+  pauseMe(tock);
     HC12.print("scrollwiggle 0\r");
-    delay(tock);
+  pauseMe(tock);
     HC12.print("scroll 2 0 35 64 ");
     HC12.print('"');
     HC12.print(char(45));
     HC12.print('"');
     HC12.print("\r");
-    delay(tock);
+  pauseMe(tock);
 }

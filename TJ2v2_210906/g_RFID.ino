@@ -66,7 +66,7 @@ void getRFID(struct PARAMSTORE *ps){
     mfrc522.MIFARE_Read(blockAddr, (byte*)ps, &size); // Here the data is copied into paramStore
     EEPROM.put(0, paramStore);                        // Here the paramStore data is copied into EEPROM 
     EEPROM.put(29, 111);                              // set flag for stored parameters
-    delay(20);
+  pauseMe(20);
     sEcount = 1;                                      // reset the count to beginning as new params set
     displayParamsOnOLED();
     clearFromLine(5);
@@ -87,7 +87,7 @@ void getRFID(struct PARAMSTORE *ps){
       u8x8.draw2x2String(0, 6, "-DISCARD");
       u8x8.noInverse(); 
       zeroSettings();
-      delay(tick);
+    pauseMe(tick);
     }
     
   } else {                                
@@ -97,7 +97,7 @@ void getRFID(struct PARAMSTORE *ps){
     u8x8.draw2x2String(0, 6, "NO MATCH");
     u8x8.noInverse(); 
   }
-  delay(2*tick);
+pauseMe(2*tick);
   
       
     
