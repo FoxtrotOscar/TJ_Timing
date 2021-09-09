@@ -632,8 +632,8 @@ void dispSrcFileDetails  (const char* fileName ){
 
   int dot_loc = pgm_lastIndexOf('.',fileName);                              // index of last '.'
   if (dot_loc < 0) dot_loc = pgm_lastIndexOf(0,fileName);                   // if no dot, return end of string
-  uint8_t c = 0;
-  uint8_t r = 7;
+  uint8_t c = 16 - dot_loc;
+  uint8_t r = 1;
   u8x8.setFont(u8x8_font_5x7_f);
   for (int i = slash_loc+1; i < dot_loc; i++) {
     uint8_t b = pgm_read_byte(&fileName[i]);

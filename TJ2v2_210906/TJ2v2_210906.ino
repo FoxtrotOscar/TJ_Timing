@@ -305,12 +305,12 @@ pauseMe(80);
   HC12.print(F("font 13\r"));                     //  Bignum font
 
   HC12.flush();
-  clearFromLine(0);
+  wipeOLED();
   dispSrcFileDetails(__NAME__);                   // Show *this* file name on OLED
-  //u8x8.draw2x2String(0, 3, "..WAIT..");
+  pauseMe(tick);
 
   writeSplash(true);
-pauseMe(2 * tick);
+  pauseMe(2 * tick);
 
   /*
      Now info regarding setup on bigscreen
@@ -322,7 +322,7 @@ pauseMe(2 * tick);
   //u8x8.draw2x2String(0, 6, "..WAIT..");
 
   writeSplash(false);
-pauseMe(2 * tick);
+  pauseMe(2 * tick);
   shootDetail = 0;  sEcount = 1;                 // bool for Detail odd/even, counters
   sE_iter = 0;
   countPractice = paramStore.maxPrac;  
