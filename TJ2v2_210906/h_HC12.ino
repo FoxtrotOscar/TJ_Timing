@@ -51,7 +51,7 @@ pauseMe(20);
       u8x8.setCursor(0, 3);
       u8x8.print(alterGlobally ? "   GLOBALLY" : "   LOCALLY");
       writeChannel_OLED(curChan);
-    pauseMe(2*tick);
+      pauseMe(2*tick);
       break;
       
     case BUTTON2: 

@@ -79,6 +79,7 @@
 #define BAUD 9600             // sets baudrate for HC12 output
 
 #define __NAME__ (strrchr(__FILE__,'\\') ? strrchr(__FILE__,'\\')+1 : __FILE__)
+                              // setup part of DEBUG string, so TAB can be reported
 
 //#define DEBUG               // Kills splashscreen, whistles etc
 
@@ -167,7 +168,6 @@ constexpr uint16_t tick   = 1000;
 
 constexpr uint16_t tock   = 5;
 
-//struct ShootingContext {
 int16_t     n_Count;                              // This is the main count index!!!
 bool        shootDetail   = 0;                    // toggled for Details AB or CD: 0=AB, 1=CD
 int8_t      sE_iter       = 1;                    // Count of End iterations
@@ -191,8 +191,6 @@ uint16_t    lapsed        = 0;
 uint16_t    tempOffset    = 0;                    // used to hold the last format value in Clock
 long long   intervalTimer = 0;
 long long   secondsTimer  = 0;
-//};
-//struct      ShootingContext context; 
 
 enum ButtonValueMask {
   BUTTON1       = 1,                              // in binary: 00001

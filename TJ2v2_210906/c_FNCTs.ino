@@ -246,15 +246,6 @@ void sendScrollW( uint16_t      scrollSpeed,
   return;
   #endif
   uint8_t delVal = scrollSpeed;
-//  HC12.print(F("scrollspeed "));
-//  HC12.print(scrollSpeed);
-//  HC12.print(F("\r"));  HC12.flush();  pauseMe(tock); 
-//  HC12.print(F("scrollloop "));
-//  HC12.print(scrollLoop);
-//  HC12.print(F("\r"));  HC12.flush();  pauseMe(tock);
-//  HC12.print(F("scrollwiggle "));
-//  HC12.print(scrollWiggle);
-//  HC12.print(F("\r"));    HC12.flush();pauseMe(tock);
 
   HC12.printf(
     F("scrollspeed %u \r scrollloop %u \r scrollwiggle %u \r"),

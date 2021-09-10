@@ -24,7 +24,6 @@ void checkIntervalTimer(void){
       clearMatrix();  
       HC12.print(F("font 9\r"));    HC12.flush();
       for (byte i = 0; i < 4; i++){               // flash the prepare message
-        //pauseMe(tick);
         sendSerialS( /*colour=*/ 2, /*column=*/ 0, /*line=*/ 18, "PREPARE...");
         pauseMe(2*tick);
         clearMatrix();
@@ -103,7 +102,7 @@ void showWaiting(bool enAble){
 
   } else {
     HC12.print("scrollloop 0\r") ;
-  pauseMe(2*tick);                              // allow the scroll to finish - it is not immediate
+    pauseMe(2*tick);                              // allow the scroll to finish - it is not immediate
     clearMatrix();                           
   }
 }

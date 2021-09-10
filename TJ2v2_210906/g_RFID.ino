@@ -97,17 +97,7 @@ void getRFID(struct PARAMSTORE *ps){
     u8x8.draw2x2String(0, 6, "NO MATCH");
     u8x8.noInverse(); 
   }
-pauseMe(2*tick);
-  
-      
-    
-    
-/*
- * need a way to NOT copy data if newdata == 254, keeping the original data as is
- * if        olddata ==   1,  10,  20,   2, 2, ...  
- * and       newdata == 254, 254, 254, 254, 0, ... 
- * then changed_data  =   1,  10,  20,   2, 0, ...
- */
+  pauseMe(2*tick);
   mfrc522.PICC_HaltA();
   mfrc522.PCD_StopCrypto1();
   displayParamsOnOLED();
