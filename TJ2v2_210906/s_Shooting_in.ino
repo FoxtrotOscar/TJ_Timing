@@ -14,7 +14,7 @@ void checkIntervalTimer(void){
       intervalTimer = millis();
       secondsTimer  = millis(); 
       n_Count = 60;
-    pauseMe(109);
+      pauseMe(109);
     }
     if (lapsed < 60) {                            // when count reaches 1 min blank and post end data
       intervalOn = false;                         // one min = 60000 milliseconds
@@ -110,15 +110,15 @@ void showWaiting(bool enAble){
 //void sendScroll(byte sSpeed, byte sLoop, byte sCol, byte sX, byte sY, byte sW, char tXt ){
 void sendScroll(void){
     HC12.print("scrollspeed 20\r");
-  pauseMe(tock);
+    pauseMe(tock);
     HC12.print("scrollloop 1\r");
-  pauseMe(tock);
+    pauseMe(tock);
     HC12.print("scrollwiggle 0\r");
-  pauseMe(tock);
+    pauseMe(tock);
     HC12.print("scroll 2 0 35 64 ");
     HC12.print('"');
     HC12.print(char(45));
     HC12.print('"');
     HC12.print("\r");
-  pauseMe(tock);
+    pauseMe(tock);
 }

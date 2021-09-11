@@ -245,7 +245,7 @@ void setup() {
     EEPROM.get(0, paramStore);                    // Copies most recent parameters back in
     zeroSettings();
   }
-pauseMe(tick);
+  pauseMe(tick);
   HC12.begin(BAUD, SERIAL_8N1);                   //  set SoftwareSerial port
 #ifdef DEBUG
   Serial.begin(BAUD);
@@ -253,7 +253,7 @@ pauseMe(tick);
   Serial.end();
 #endif
   digitalWrite(HC12SetPin, LOW);                  // Enter Transparent mode
-pauseMe(80);
+  pauseMe(80);
   u8x8.begin();
   u8x8.setPowerSave(0);
   u8x8.setFont(u8x8_font_chroma48medium8_r);      // u8x8.setFont(u8x8_font_amstrad_cpc_extended_f);
@@ -306,7 +306,7 @@ pauseMe(80);
   wipeOLED();
   dispSrcFileDetails(__NAME__);                   // Show *this* file name on OLED
   pauseMe(tick);
-
+  u8x8.draw2x2String(0, 6, "..WAIT..");
   writeSplash(true);
   pauseMe(2 * tick);
 
@@ -317,8 +317,7 @@ pauseMe(80);
   writeInfoBigscreen();
   clearFromLine(0);
   displayParamsOnOLED();                          // show current (default) setting
-  //u8x8.draw2x2String(0, 6, "..WAIT..");
-
+  u8x8.draw2x2String(0, 6, "..WAIT..");
   writeSplash(false);
   pauseMe(2 * tick);
   shootDetail = 0;  sEcount = 1;                 // bool for Detail odd/even, counters

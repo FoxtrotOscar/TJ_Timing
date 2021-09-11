@@ -62,7 +62,7 @@
 void writeInfoBigscreen(void){
   clearMatrix();
 
-pauseMe(tick);   
+  pauseMe(tick);   
   HC12.print(F("font 1\r"));    HC12.flush();
   lnNumber = 5;
   
@@ -85,14 +85,14 @@ pauseMe(tick);
       (paramStore.Details == 1 ? "Single " : "Double "), "Detail");         // either 1 OR 2
     }
   }
-pauseMe(tick);
+  pauseMe(tick);
   
   lnNumber += 7;                                                            // Practice?
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "Practice");
   colNumber = 56; txtColour = orange;
   pauseMe(tick/4);
   sendNumber(paramStore.maxPrac);
-pauseMe(tick/4);  
+  pauseMe(tick/4);  
   
   txtColour = green;
   lnNumber += 7;  // End duration
@@ -105,14 +105,14 @@ pauseMe(tick/4);
   txtColour = orange;
   pauseMe(tick/4);
   sendNumber(startCounts[paramStore.startCountsIndex]);
-pauseMe(tick/4);  
+  pauseMe(tick/4);  
 
   txtColour = green;
   lnNumber += 7;  // Number of Ends
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "END ","Count: ");
   colNumber = 48 + (paramStore.maxEnds < 10 ? 8 : paramStore.maxEnds < 20 ? 5 : 3);
   txtColour = orange;
-pauseMe(tick/4);
+  pauseMe(tick/4);
   sendNumber(paramStore.maxEnds);
   pauseMe(5*tick);
   clearMatrix();
@@ -162,7 +162,7 @@ start_AB_menu:
  */
 void clearMatrix(void){
   HC12.print(F("scrollloop 0\r"));                        //  if scroll in progress, kill it
-pauseMe(4*tock);
+  pauseMe(4*tock);
   HC12.print(F("clear\r"));
   HC12.print(F("paint\r"));    
   HC12.flush();
@@ -177,24 +177,24 @@ void writeSplash(bool scrolling){
   #ifdef DEBUG
   return;
   #endif
-  u8x8.draw2x2String(0, 6, "..WAIT..");
+  
   for (uint16_t b = 0; b <= bright; b += 10){                              // fade increment
     unsigned long timer = millis();
     HC12.print(F("brightness "));                                          //  | 
     HC12.print(b);                                                         //  | Fade in "Time"
     HC12.print(F("\r"));                                                   //  |
-    HC12.print(F("paint\r"));      HC12.flush();pauseMe(tock);
-    HC12.print(F("font 16\r"));    HC12.flush();pauseMe(tock);
+    HC12.print(F("paint\r"));      HC12.flush();  pauseMe(tock);
+    HC12.print(F("font 16\r"));    HC12.flush();  pauseMe(tock);
     sendSerialS( /*colour=*/ 2, /*column=*/ 2, /*line=*/ 24, "Time");
-  pauseMe(2*tock);
+    pauseMe(2*tock);
     do{} while (millis() - timer < 15UL);                                  // allow serial traffic time
     }
-pauseMe(10);
+  pauseMe(10);
   
   HC12.print(F("font 9\r"));    
   HC12.flush();
   if (scrolling){
-  pauseMe(tock);
+    pauseMe(tock);
     sendScrollW(  /*speed=*/  4,                                            // 3 - 15
                   /*loop=*/   0,
                   /*wiggle=*/ 2,
@@ -206,7 +206,7 @@ pauseMe(10);
   } else {
     const char scrollChar[] = "JUDGE";                                      // no animation
     for (uint8_t iter = 0; iter < strlen(scrollChar); iter ++) {
-      HC12.print(F("font 9\r"));     HC12.flush();pauseMe(tock);             // Font for the static letter post-scroll    
+      HC12.print(F("font 9\r"));     HC12.flush();  pauseMe(tock);             // Font for the static letter post-scroll    
       HC12.print(F("text "));      
       HC12.print(orange);      
       HC12.print(F(" "));      
@@ -217,12 +217,12 @@ pauseMe(10);
       HC12.print('"');
       HC12.print(scrollChar[iter]);
       HC12.print('"');
-      HC12.print(F("\r"));    HC12.flush();pauseMe(tock);       
+      HC12.print(F("\r"));    HC12.flush();  pauseMe(tock);       
       HC12.print(F("paint\r"));   HC12.flush();   pauseMe(tock); 
-    pauseMe(5);
+      pauseMe(5);
     }
   }
-pauseMe(tock);
+  pauseMe(tock);
   
 }
 
@@ -250,11 +250,11 @@ void sendScrollW( uint16_t      scrollSpeed,
   HC12.printf(
     F("scrollspeed %u \r scrollloop %u \r scrollwiggle %u \r"),
       scrollSpeed, scrollLoop, scrollWiggle);
-  HC12.flush();pauseMe(tock);    
+  HC12.flush();  pauseMe(tock);    
   
   for (uint8_t iter = 0; iter < strlen(scrollChar); iter ++){
     unsigned long timer = millis();
-    HC12.print(F("font 17\r"));    HC12.flush();pauseMe(tock);
+    HC12.print(F("font 17\r"));    HC12.flush();  pauseMe(tock);
     HC12.print(F("scroll "));
     HC12.print(txtColour1);
     HC12.print(F(" "));
@@ -270,7 +270,7 @@ void sendScrollW( uint16_t      scrollSpeed,
     HC12.print(F("\r"));    HC12.flush(); pauseMe(tock);
     HC12.print(F("paint\r"));    HC12.flush();  pauseMe(tock);
     do{} while (millis() - timer < (delVal*100));    // 800UL
-    HC12.print(F("font 9\r"));     HC12.flush();pauseMe(tock);              // Font for the static letter post-scroll
+    HC12.print(F("font 9\r"));     HC12.flush();  pauseMe(tock);              // Font for the static letter post-scroll
     
     HC12.print(F("text "));
     
@@ -289,12 +289,12 @@ void sendScrollW( uint16_t      scrollSpeed,
     HC12.print('"');
     HC12.print(scrollChar[iter]);
     HC12.print('"');
-    HC12.print(F("\r"));    HC12.flush();pauseMe(tock);
+    HC12.print(F("\r"));    HC12.flush();  pauseMe(tock);
     
-    HC12.print(F("paint\r"));    HC12.flush();pauseMe(tock);
-  pauseMe(5);
+    HC12.print(F("paint\r"));    HC12.flush();  pauseMe(tock);
+    pauseMe(5);
   }
-pauseMe(tick);
+  pauseMe(tick);
 }
 
 
@@ -302,7 +302,7 @@ void goWhistle(uint8_t whistles){
   HC12.print("~"); HC12.flush();              //uncomment for whistles
   HC12.print(whistles);  
   HC12.flush();
-pauseMe(30 );                                 
+  pauseMe(30 );                                 
 }
 
 
@@ -368,7 +368,7 @@ void goReboot(void){
   HC12.print(9);  
   //HC12.print("\r");
   HC12.flush();  
-pauseMe(100);
+  pauseMe(100);
 }
 
 
@@ -427,7 +427,7 @@ void writeMenuCommands(void){
 */  
 uint8_t readButton(int pin) {
   if (digitalRead(pin) == HIGH) return 0; 
-pauseMe(5);                                 // only reached if pin goes LOW, de-bounce delay, confirm read
+  pauseMe(5);                                 // only reached if pin goes LOW, de-bounce delay, confirm read
   return (digitalRead(pin) == LOW) ? 1 : 0;
 }
 /*
@@ -452,7 +452,7 @@ uint8_t readButtons() {
       && digitalRead(button4Pin)  == HIGH) {
       return 0;                                       // all are high - no buttons pressed 
   }
-pauseMe(2);                                           // delay for level de-bouncing; 2nd read to confirm low
+  pauseMe(2);                                           // delay for level de-bouncing; 2nd read to confirm low
   if (!intervalOn && digitalRead(button1Pin) == LOW)
     ret |= BUTTON1;                                   // set leftmost bit in the 'ret' to 1
 
@@ -502,7 +502,7 @@ uint8_t waitButton() {
       HC12.print(F("\r"));
       return ret;                                           // finally return value of the button he pressed moments ago
       }
-  pauseMe(1);
+    pauseMe(1);
   }
 }
 
@@ -517,7 +517,7 @@ bool goEmergencyButton(uint8_t AIndex){
     u8x8.print("EMERGENCY");
     u8x8.setCursor(6,5);
     u8x8.print("STOP");
-  pauseMe(5*tick);
+    pauseMe(5*tick);
     n_Count = handleEmergencyRestart();                     // go fetch the next step decision
     if (AIndex < 3){    
       displayParamsOnOLED();

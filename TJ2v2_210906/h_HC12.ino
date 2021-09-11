@@ -20,7 +20,7 @@
  * 2 parts:  Local, and Remote with Local.
  */
 void changeGlob_Chan(bool alterGlobally) {
-pauseMe(tick);
+  pauseMe(tick);
   uint8_t curChan = paramStore.currChannel;
    
   wipeOLED();
@@ -34,7 +34,7 @@ pauseMe(tick);
   u8x8.print(alterGlobally ? "   GLOBALLY" : "   LOCALLY");
 
 start_CHANNELS_menu:  
-pauseMe(20);
+  pauseMe(20);
   writeChannel_OLED(curChan);
   doButtonMenu();
 
@@ -113,13 +113,13 @@ getButton:
     
     case BUTTON1:
       u8x8.print(" OK. INITIATE... ");
-    pauseMe(tick);
+      pauseMe(tick);
       return true;
     
     case BUTTON4:
       u8x8.setCursor(0, 6);
       u8x8.print("   CANCELLED   ");
-    pauseMe(tick);
+      pauseMe(tick);
       return false;
 
     default:
@@ -144,7 +144,7 @@ bool newChannel(int newChan, bool alterGlobally){
   char    tmp_str[8]      = "AT+C001";
   HC12ReadBuffer.reserve(64);                   // Reserve 64 bytes for Serial message input
   digitalWrite(HC12SetPin, HIGH);               // Ensure TRANSPARENT mode locally
-pauseMe(80);                                    // 80 ms delay before operation per datasheet
+  pauseMe(80);                                    // 80 ms delay before operation per datasheet
   tmp_str[4] = '0';                             // |
   byte x = newChan / 10;                        // |
   tmp_str[5] = (char)(x + '0');                 // | parse the new channel number into the string
@@ -154,18 +154,18 @@ pauseMe(80);                                    // 80 ms delay before operation 
   if (alterGlobally){                           //   Do this to both LOCAL & any REMOTE listening?
     HC12.print("*^");                           // call remote HC12(s) to announce change coming 
     HC12.flush();
-  pauseMe(100);                                 // let HC12 get ready
+    pauseMe(100);                                 // let HC12 get ready
     HC12.print(tmp_str);                        // Send command to REMOTE HC12
-  pauseMe(500);                                 // Wait 0.5s for a response
+    pauseMe(500);                                 // Wait 0.5s for a response
   }
   digitalWrite(HC12SetPin, LOW);                // Now enter COMMAND mode locally
-pauseMe(100);                                   // Allow chip time to enter command mode
+  pauseMe(100);                                   // Allow chip time to enter command mode
   HC12.print(tmp_str);                          // Send command to local HC12
   HC12.flush();
   do {} while (!HC12.available());              
   while (HC12.available() && !HC12End) {        // While Arduino's HC12 soft serial rx buffer has data
     HC12ByteIn = HC12.read();                   // Store each character from rx buffer in byteIn
-  pauseMe(2);
+    pauseMe(2);
     HC12ReadBuffer += char(HC12ByteIn);         // Write each character of byteIn to HC12ReadBuffer
     if (HC12ByteIn == '\n') {                   // At the end of the line
       HC12End = true;                           // Set HC12End flag to true
@@ -174,7 +174,7 @@ pauseMe(100);                                   // Allow chip time to enter comm
                                                 // Have we succeeded???
   localSuccess = HC12ReadBuffer.startsWith("OK") ? true : false; 
   digitalWrite(HC12SetPin, HIGH);               // Exit command & enter transparent mode
-pauseMe(100);                                   // Delay before proceeding to allow HC12 resetting
+  pauseMe(100);                                   // Delay before proceeding to allow HC12 resetting
   HC12ReadBuffer = "";
   return localSuccess;
 }
@@ -201,7 +201,7 @@ START:
   while (HC12.available()) {                    
     while (flag == false){
       rc = HC12.read();
-    pauseMe(2);
+      pauseMe(2);
       if (rc == '+') {                          // start of data expected
         flag = true;
       }
@@ -211,7 +211,7 @@ START:
     }
     
     rc = HC12.read();                           // grab next char
-  pauseMe(2);                                   // allow serial to catch up
+    pauseMe(2);                                   // allow serial to catch up
     if ((rc != endMarker) ) {                   // repeat until eol encountered
       
       if ((rc >= '0') && (rc <= '9') && (ptr < 3))   {

@@ -117,6 +117,6 @@ void wipeOLED(void){
 void clearFromLine(uint8_t lineNo){
   for( uint8_t r = lineNo; r < 8; r++ ) {
     u8x8.clearLine(r);
-  pauseMe(20);
+    pauseMe(20);
   }
 }
