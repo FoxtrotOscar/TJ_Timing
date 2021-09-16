@@ -6,7 +6,7 @@
  *  HC12      Serial1 //TX-PA9/RX-PA10
  *  MATRIXSER Serial2 //TX-PA2/RX-PA3
  *  Serial3           //TX-PB10/RX-PB11
- *  Serial            //USB (PA11/PA12)
+ *  Serial            //USB (PA11/PA12) 
 */
 #define       HC12      Serial1                 // TX-PA9/RX-PA10
 #define       MATRIXSER Serial2                 // TX-PA2/(RX-PA3 - NOT IN USE)
@@ -24,9 +24,9 @@ const char*   i1            =   0;
 const char*   i2            =   0;
 uint8_t       tock          =   25;
 uint8_t       n;                                // serve the whistle count-down
-String        HC12ReadBuffer = "";              // Read/Write Buffer 1 for HC12
+String        HC12ReadBuffer=   "";             // Read/Write Buffer 1 for HC12
 
-bool          HC12End = false;                  // Flag to indiacte End of HC12 String
+bool          HC12End       =   false;          // Flag to indiacte End of HC12 String
 char          HC12ByteIn;                       // Temporary holding variable
 bool          whistleFlag   =   false;
 unsigned long whistleClock  =   0;              // time the whistlePin activations
@@ -37,8 +37,8 @@ char          receivedChars[numChars];          // an array to store the receive
 
 
 void setup() {
-  HC12.begin  (BAUD,  SERIAL_8N1);              // TX-PA9/RX-PA10
-  MATRIXSER.begin (115200,SERIAL_8N1);          // TX-PA2/RX-PA3
+  HC12.begin      (BAUD,        SERIAL_8N1);    // TX-PA9/RX-PA10
+  MATRIXSER.begin (115200,      SERIAL_8N1);    // TX-PA2/RX-PA3
   pinMode         (whistlePin,  OUTPUT);
   pinMode         (rebootPin,   OUTPUT);
   pinMode         (setupPin,    OUTPUT);
