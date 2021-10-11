@@ -8,6 +8,8 @@
  *  Serial3           //TX-PB10/RX-PB11
  *  Serial            //USB (PA11/PA12) 
 */
+
+HardwareSerial Serial2(PA3, PA2);
 #define       HC12      Serial1                 // TX-PA9/RX-PA10
 #define       MATRIXSER Serial2                 // TX-PA2/(RX-PA3 - NOT IN USE)
 #define       BAUD      9600
@@ -15,7 +17,8 @@ const byte    numChars      =   64;
 
 boolean       newData       =   false;
 const int     rebootPin     =   PB0;            // the reboot pulse output
-const int     whistlePin    =   PB1;            // the number of the LED pin
+const int     whistlePin    =   PB1;            // the number of the LED pin, active HIGH whistle
+const int     whistlePin1    =  PB10;           // the number active LOW whistle
 const int     setupPin      =   PA11;
 uint8_t       numWhistles   =   0;              // how many whistles
 uint8_t       channNum      =   0;              // 
@@ -40,11 +43,14 @@ void setup() {
   HC12.begin      (BAUD,        SERIAL_8N1);    // TX-PA9/RX-PA10
   MATRIXSER.begin (115200,      SERIAL_8N1);    // TX-PA2/RX-PA3
   pinMode         (whistlePin,  OUTPUT);
+  pinMode         (whistlePin1, OUTPUT);
   pinMode         (rebootPin,   OUTPUT);
   pinMode         (setupPin,    OUTPUT);
   digitalWrite    (rebootPin,   HIGH);          // PB0
   digitalWrite    (setupPin,    LOW);           // PC11: active to read channel
   digitalWrite    (whistlePin,  LOW);           // PB1
+  digitalWrite    (whistlePin1, HIGH);          // PB10
+  
   delay(5*tock);
 
   
@@ -95,7 +101,7 @@ bool recvWithEndMarker() {
       break;
       
       case '~':                                 // marker for whistle - count follows
-        while (!HC12.available()) {}                          // hang around until a char is received
+        while (!HC12.available()) {}            // hang around until a char is received
         delay(1);
         rc = HC12.read();  
 
@@ -106,7 +112,8 @@ bool recvWithEndMarker() {
         rc = 0;
         n = numWhistles ;
         whistleClock = millis();
-        digitalWrite(whistlePin, HIGH);         // fire the (first) whistle immediately
+        digitalWrite(whistlePin,  HIGH);         // fire the (first) whistle immediately
+        digitalWrite(whistlePin1, LOW);
         whistleFlag = true;
         newData = false;
       break;
@@ -153,14 +160,16 @@ bool checkWhistleStatus(){                      // are we still counting down wh
   if ((digitalRead(whistlePin) == HIGH) &&      // Whistle blowing and not last one
       ((millis() - whistleClock)                 
       > (1000 / numWhistles)))  {               // and is the clock exhausted for this one
-    digitalWrite(whistlePin, LOW);              // Turn it off
+    digitalWrite(whistlePin,  LOW);              // Turn it off
+    digitalWrite(whistlePin1, HIGH);
     whistleClock = millis();                    // reset the clock
     n -= 1;                                     // Still running? False if n == 0
     
   } else if ((digitalRead(whistlePin) == LOW)   // Whistle off and not last one                   
             && ((millis() - whistleClock)            
             > (1200 / (numWhistles + 1)))) {    // and is the clock exhausted for this one
-    digitalWrite(whistlePin, HIGH);             // start the whistle  
+    digitalWrite(whistlePin,  HIGH);             // start the whistle
+    digitalWrite(whistlePin1, LOW);  
     whistleClock = millis();                    // reset the clock
   }
   return n;                                     // give diminishing value of 
