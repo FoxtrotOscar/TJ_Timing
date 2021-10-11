@@ -38,47 +38,6 @@
 // **************************************************************************************
 
 // defines the type of the menu state
-// note: difference between "enum" and "enum class" is that the latter one is a more strict in conversion to ingeters. 
-// In particular if you do the following: 
-//
-//  enum Something { A = 1, B = 2, C = 3};
-//
-// then you can do:
-//
-//  int value = A; 
-//
-// or equally: 
-//
-//  int value = Something::A; 
-//
-// This will compile and work as expected, as well as: 
-// 
-//  Something value = A; 
-//
-// but if you define "Something" as: 
-// 
-//  enum class Something { A = 1, B = 2, C = 3};
-// 
-// then the following is the compiler error: 
-// 
-//  int value = Something::A;  // an error  
-//
-// And only the following is a valid syntax: 
-// 
-//  Something value = Something::A; 
-// 
-// or to get an int value, you have to do an explicit cast:
-//
-//  int value = (int)Something::A;  
-//
-// or better in C++ way:
-//  
-//  int value = static_cast<int>(Something::A);
-// 
-// So in short - if you need your enum to hold some integer values - use "enum", 
-// if you need enum to just hold some named distinguished values (like states of the state machine)
-//  - better way is to use "enum class" 
-//
 
 struct MenuContext
 {

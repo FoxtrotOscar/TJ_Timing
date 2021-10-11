@@ -201,7 +201,7 @@ START:
   while (HC12.available()) {                    
     while (flag == false){
       rc = HC12.read();
-      pauseMe(2);
+      pauseMe(20);
       if (rc == '+') {                          // start of data expected
         flag = true;
       }
@@ -211,7 +211,7 @@ START:
     }
     
     rc = HC12.read();                           // grab next char
-    pauseMe(2);                                   // allow serial to catch up
+    pauseMe(20);                                   // allow serial to catch up
     if ((rc != endMarker) ) {                   // repeat until eol encountered
       
       if ((rc >= '0') && (rc <= '9') && (ptr < 3))   {

@@ -1,8 +1,8 @@
  /*
     Teensy3.2, 3.6 or 4.0 setup
 */
-//#define Teensy32
-#define Teensy36
+#define Teensy32
+//#define Teensy36
 //#define Teensy40
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
@@ -76,6 +76,7 @@
 #else
   #error Unsupported board selection. 
 #endif
+
 #define BAUD 9600             // sets baudrate for HC12 output
 
 #define __NAME__ (strrchr(__FILE__,'\\') ? strrchr(__FILE__,'\\')+1 : __FILE__)
