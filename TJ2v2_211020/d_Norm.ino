@@ -32,21 +32,25 @@ void goNormal_Op(void){
 */
   next = false;
   while (continueOn == 1 && !startOver) {
+    if (countPractice) {                                        // Check, if Practice, then 
+      n_Count = 120;                                            // set Practice time - default 120s 
+    } else {                      
 
     n_Count = ((paramStore.notFlint == 0) && (sEcount > 6)) ?   // make n_Count (the count duration index), if Flint and 6 ends passed, 
         startCounts[paramStore.startCountsIndex +1]:            // advance to 30s for the closing Walkup section  
         startCounts[paramStore.startCountsIndex];               // otherwise remains as set.
+    }                            
 
     sE_iter += 1 ;                                              // iterate each time the clock cycles  
     
-    if (n_Count== startCounts[paramStore.startCountsIndex] ||   // Are we at beginning?
-        (n_Count== startCounts[paramStore.startCountsIndex+1] && 
-         sEcount > 6 )){                                        // Are we at beginning of Flint walkup?
+    if (n_Count == startCounts[paramStore.startCountsIndex] ||  // Are we at beginning of a Play round?
+       (countPractice && n_Count == 120) ||                     // Or a Practice round
+       (n_Count == startCounts[paramStore.startCountsIndex+1]   
+        &&  sEcount > 6 )){                                     // Or are we at beginning of Flint walkup section?
       writeOLED_Data(1);
       if (!next) {
         sendDetail(true);
         doBarCount(archerIndex);                                // Countdown
-        
       }
       sendDetail(false);
     } 
@@ -58,14 +62,13 @@ void goNormal_Op(void){
       goEmergencyButton(archerIndex);
       HC12.print(F("font 13\r"));                               // large numbers font
       HC12.flush(); delay(tock);
-      if (n_Count == startCounts[paramStore.startCountsIndex]   // ? beginning ?
-          || ((paramStore.notFlint == 0)                        // or it is a Flint
-          && (n_Count == startCounts[paramStore.startCountsIndex+1]  // and n_Count has been advanced to Flint walkup
-              && sEcount >  6))) {                              // and the count has exeeded 6th end (?redundant?)
-            
-        goWhistle(1);
 
+      if ((paramStore.notFlint == 0) &&                         // or it is a Flint
+         (n_Count == startCounts[paramStore.startCountsIndex+1] 
+                  && sEcount >  6)) {                           // and n_Count has been advanced to Flint walkup
+        goWhistle(1);       
       }
+      
       goClock(offSet);                                          // Handles formatting of the display
       writeStopwatch(n_Count  );                                // Write count large on OLED
       sendNumber(n_Count );
@@ -92,7 +95,7 @@ void goNormal_Op(void){
   
         while (n_Count >= 0){                                     // do bar countdown  ((>-1)?)
           ++ sE_iter;                                             // |
-          writeOLED_Data(1);                                      // | Correct for data on LCD <<<<<<<<<<<<<<<<<<<<<
+          writeOLED_Data(1);                                      // | Correct for data on LCD
           -- sE_iter;                                             // |
           lnNumber = 15;         
           HC12.print(F("font 9\r"));    HC12.flush();

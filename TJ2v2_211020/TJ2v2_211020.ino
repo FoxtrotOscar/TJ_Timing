@@ -1,9 +1,9 @@
  /*
     Teensy3.2, 3.6 or 4.0 setup
 */
-#define Teensy32
-//#define Teensy36
-//#define Teensy40
+//#define Teensy32
+#define Teensy36
+//0#define Teensy40
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
     FOR ARCHERY, BUT EASILY CONFIGURABLE FOR MANY OTHER SPORTS
@@ -125,7 +125,7 @@ const char* flint[6]      = {"25 YD", "20 FT", "30 YD", "15 YD", "20 YD", "10 YD
 
 struct PARAMSTORE {
 
-  uint8_t   startCountsIndex  =  1;                 // (0)  Number from 0 to 4 indentifying startCounts[] used, default 120
+  uint8_t   startCountsIndex  =  1;                 // (0)  Number from 0 to 8 indentifying startCounts[] used, default 1 (120)
   uint8_t   walkUp            = 10;                 // (1)
   uint8_t   maxEnds           = 10;                 // (2)  Total number of Ends for competition
   uint8_t   Details           =  2;                 // (3)  Single (1) or Double detail (2)
@@ -187,6 +187,7 @@ bool        startOver     = false;
 bool        intervalOn    = false;
 bool        started       = false;                // referencing the countdown timer status
 bool        reStartEnd    = false;
+bool        scrWait_Enable= false;                // status of waiting graphic scroll
 float       chFrq;
 uint16_t    lapsed        = 0;
 uint16_t    tempOffset    = 0;                    // used to hold the last format value in Clock

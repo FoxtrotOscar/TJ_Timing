@@ -22,14 +22,16 @@ void displayParamsOnOLED() {
   u8x8.setCursor(0, 3);
   u8x8.print("Prac: ");
   u8x8.setCursor(0, 4);
-  u8x8.print("Det.:  ");                    // detailing parameters set
+  u8x8.print("Det.:  ");                                                  // detailing parameters set
   u8x8.setCursor(6, 1);                         
   u8x8.print(startCounts[paramStore.startCountsIndex]);
   u8x8.setCursor(6, 2);
   u8x8.print(paramStore.maxEnds);
   u8x8.setCursor(9, 2);
   u8x8.print(": ");
-  u8x8.print(countPractice ? 0 : sEcount);  // if still in practice show ens zero
+  u8x8.print(countPractice ? 0 : (sEcount > paramStore.maxEnds ? 0 : sEcount ));  // if still in practice show end zero
+//  u8x8.print("/");
+//  u8x8.print(paramStore.maxEnds - sEcount +1);
   u8x8.setCursor(6, 3);
   u8x8.print(paramStore.maxPrac);
   u8x8.setCursor(6, 4);
@@ -43,12 +45,12 @@ void displayParamsOnOLED() {
  */
 
 void writeStopwatch(uint16_t n ){
-  u8x8.drawString(10, 1, "      ");                       // Blanking
+  u8x8.drawString(10, 1, "      ");                               // Blanking the stopwatch field
   u8x8.setCursor(11,1);
   u8x8.inverse();
   u8x8.setFont(u8x8_font_pressstart2p_n);
   u8x8.print(" ");
-  u8x8.print(n );                                          // Running Time
+  u8x8.print(n );                                                 // Running Time
   u8x8.print(" ");
   u8x8.noInverse();
   u8x8.setFont(u8x8_font_chroma48medium8_r);
@@ -63,17 +65,21 @@ void writeOLED_Data(uint8_t archerIndex){
   u8x8.setCursor(11,1);
   u8x8.print("     ");
   u8x8.setCursor(11,1);
-  u8x8.print(n_Count );                                 // Running Time
-  u8x8.setCursor(11,2);   
-  u8x8.print(sEcount);                                  // Running End Count
+  u8x8.print(n_Count );                                           // Running Time
+  u8x8.setCursor(11,2);
+  if (!countPractice){   
+    u8x8.print(sEcount) ;                                         // Running End Count
+    u8x8.print("/");
+    u8x8.print(paramStore.maxEnds - sEcount ) ;  
+  }
   u8x8.setCursor(11,3);
-  u8x8.print(countPractice);                            // Running Practice round number 
-  if (paramStore.Details == 2){                         // Double detail?
+  countPractice ? u8x8.print(countPractice -1) : u8x8.print("  ");   // Running Practice-round number 
+  if (paramStore.Details == 2){                                   // Double detail?
     u8x8.setCursor(11,4);
     if (!paramStore.isFinals  ){
       switch (sE_iter%4){
         case 0:
-          u8x8.print("AB");                             // Running AB/CD condition
+          u8x8.print("AB");                                       // Running AB/CD condition
           break;
         case 1:
           u8x8.print("AB");
@@ -93,7 +99,7 @@ void writeOLED_Data(uint8_t archerIndex){
   if (paramStore.isFinals && !countPractice && paramStore.isAlternating){
     u8x8.setCursor(0,4);
     u8x8.print("Archer:    ");
-    u8x8.print(archerIndex == 1 ? "A": "B");              // Print the archer letter
+    u8x8.print(archerIndex == 1 ? "A": "B");                      // Print the archer letter
   }
   u8x8.print(" ");         
 }

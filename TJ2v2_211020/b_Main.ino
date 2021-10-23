@@ -9,6 +9,10 @@
   uint8_t isAlternating = 0;            // (8)1 == Archer A, Archer B; 0 == Simultaneous
   uint8_t teamPlay = 0;                 // (9)
   uint8_t whichArcher = 1;              //(10)
+
+  Functions:
+  Loop
+  
 */
 
 void loop() {
@@ -23,12 +27,14 @@ void loop() {
       HC12.print(F("font 11\r"));
       HC12.flush();
       if (paramStore.notFlint == 0) goWhistle(3);
+      
       for (int p = 0; p < 5; p ++ ) {                         // flash the good news
         clearMatrix();
         pauseMe(tick / 4);
         sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 2, /*line=*/ lnNumber, "D O N E");
         pauseMe(tick);
       }
+      
     }
     clearMatrix();
     displayParamsOnOLED();
@@ -38,8 +44,8 @@ void loop() {
     continueOn = 0;
     startOver = false;
     while (continueOn == 0)  continueOn = waitButton();       // Alter params or re-start as is
-    pauseMe(tick);
-    showWaiting(false);
+    //pauseMe(tick);
+    showWaiting(false);                                       // Turn off scrolling wait indic - if running
     clearMatrix();
     sEcount = 1;
     sE_iter = 0;
@@ -61,7 +67,7 @@ void loop() {
                                /*line=*/   22 ,
                                /*window=*/ 63,
                                           "FINAL!" );          // animation of finals
-      pauseMe(tick * 2);                                    
+      //pauseMe(tick * 2);                                    
       if (paramStore.isAlternating) {
         clearFromLine(5);
         goChooseArcher();

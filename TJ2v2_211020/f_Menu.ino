@@ -328,11 +328,11 @@ struct MenuContext
         return MenuState::menu_root;
     
       case BUTTON2: 
-        menuStartCountsIndex = (menuStartCountsIndex -1 + 7) % 7;   // cycle through 6 options
+        menuStartCountsIndex = (menuStartCountsIndex -1 + 9) % 9;   // cycle through 8 options <<------------------------
         break; // state unchanged 
     
       case BUTTON3: 
-        menuStartCountsIndex = (menuStartCountsIndex +1) % 7;       // ditto
+        menuStartCountsIndex = (menuStartCountsIndex +1) % 9;       // ditto <<------------------------
         break;
     
       case BUTTON4:

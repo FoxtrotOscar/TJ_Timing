@@ -17,26 +17,27 @@
 void goFinals_Op(void){
 
   
-  uint8_t   offSet = 13;
-  uint8_t   archerIndex = paramStore.whichArcher;
-  uint8_t   tempEndCount = 0;
+  uint8_t   offSet        = 13;
+  uint8_t   archerIndex   = paramStore.whichArcher;
+  uint8_t   tempEndCount  = 0;
+  bool      wFlag         = false;                                            // Used to avoid a double whistle trigger
   /*
   * check for button1 press to start
   */
   while (continueOn == 1 && !startOver) {
+    clearMatrix();
     if ((countPractice && sEcount == 1) || !paramStore.isAlternating ){
       displayParamsOnOLED();
-      writeOLED_Data(archerIndex); 
+      writeOLED_Data(archerIndex);
       doBarCount(archerIndex);
-      goWhistle(1);
       n_Count = 120;
     }else{
-
       writeOLED_Data(paramStore.isAlternating ? archerIndex : 0); 
       if (sEcount == 1 && tempEndCount == 0 && !startOver) doBarCount(archerIndex);
       n_Count = startCounts[paramStore.startCountsIndex];
       if (paramStore.isAlternating) offSet = (archerIndex == 1 ? 26 : 0);     // Set offset to lhs or rhs
     }
+    
     unsigned long secCount = millis();
     do {} while ((millis() - secCount) % tick > 2);                           // initialise timer to a start-point
     
@@ -44,24 +45,23 @@ void goFinals_Op(void){
     
     if (!countPractice ) writeArcher(archerIndex);
     HC12.print(F("font 13\r"));
-      u8x8.setCursor(0, 6);
-      u8x8.print("Flip Detail: [1]");
-      u8x8.setCursor(0, 7);
-      u8x8.print(" !!!STOP!!!: [4]");
-    
+    u8x8.setCursor(0, 6);
+    u8x8.print(paramStore.isAlternating ? "Flip Detail: [1]" : "Halt End   : [1]");
+    u8x8.setCursor(0, 7);
+    u8x8.print(" !!!STOP!!!: [4]");
+                                                           
     while (n_Count >= 0){
       if (!goEmergencyButton(archerIndex)) {
-      writeOLED_Data(archerIndex);
-      
-
-      
-      writeStopwatch(n_Count );                                               // Write countdown large on OLED
-      if(!countPractice && 
-        (n_Count == startCounts[paramStore.startCountsIndex])) goWhistle(1);  // if we are at the beginning sound the GO!
+        writeOLED_Data(archerIndex);
+        writeStopwatch(n_Count );                                             // Write countdown large on OLED
+        if( !countPractice  && 
+          ( n_Count == startCounts[paramStore.startCountsIndex])) {
+          if (wFlag) goWhistle(1);                                            // if we are at the flip point sound the GO!
+        }
+        wFlag = true;
         HC12.print(F("font 13\r"));
         pauseMe(2); 
         goClock(offSet);                                                      // Handles formatting of the display
-        
         sendNumber(n_Count );
         handleCount(secCount);
         n_Count -- ;
@@ -81,7 +81,11 @@ void goFinals_Op(void){
         continueOn = 0;
         writeHalt();
       }
-    } else { countPractice --; continueOn = 0; writeHalt(); }
+    } else { 
+      countPractice --; 
+      continueOn = 0; 
+      writeHalt(); 
+    }
     if (sEcount > paramStore.maxEnds){
       continueOn = 0;
       writeHalt();

@@ -236,9 +236,9 @@ void doBarCount(uint8_t archerIndex){                                           
       i1 = (archerIndex == 1 ? "A" : "B");                                      // Write Archer:
       sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, i0, i1); 
     }
-    n_Count = doCountdownBar(n_Count , rectWide, barWidth);                     // returns with decremented n_Count 
+    n_Count = doCountdownBar(n_Count , rectWide, barWidth);                     // returns with decremented n_Count
+    //if (n_Count == 1) goWhistle(1); // <<--------------------------------------------------------------------------------
   }
-  
   clearMatrix();
   n_Count = temp;
 }
@@ -273,13 +273,18 @@ int doCountdownBar(int n_Loc, int& rectWide, int& barWidth){    // use int& to w
     HC12.print(F(" 15 13\r"));                                  // blank the number field
     HC12.print(F("paint\r"));    HC12.flush();
     sendNumber(n_Loc  --);                                      // write the number and decrement n
+    bool wFlag = true;
     do{
       if (n_Loc  < 0) {
-      HC12.print(F("rect 2 0 "));
-      HC12.print(lnNumber);
-      HC12.print(F(" 50 13\r"));                                // draw the bar, in green  (2)
-      HC12.print(F("paint\r"));    HC12.flush();
-      clearFromLine(6);
+        if (wFlag) {
+          goWhistle(1);                                           // <<-----------------------
+          wFlag = !wFlag;
+        }
+        HC12.print(F("rect 2 0 "));
+        HC12.print(lnNumber);
+        HC12.print(F(" 50 13\r"));                                // draw the bar, in green  (2)
+        HC12.print(F("paint\r"));    HC12.flush();
+        clearFromLine(6);
       } else {
         if (n_Loc  <= 9) {
           HC12.print(F("line 3 "));                             //  line colour x1() y1() x2() y2()

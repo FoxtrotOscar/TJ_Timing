@@ -48,8 +48,6 @@ void showOneParam(byte ct, byte index){
   byte z;                                    
   u8x8.setCursor(x, y);                             
   u8x8.print(nameParam[ct]);                            // display the parameter name
-//  ct == 0 ? z = startCounts[dataStore[ct]] :    
-//               z = dataStore[ct]; 
   z = (ct == 0 ? startCounts[dataStore[ct]] :           
       (ct == 11 ? (dataStore[ct] == 177 ? 1 : dataStore[ct]): dataStore[ct]));  // mask Supervisor code
   u8x8.setCursor((z < 100 ?                             // parse the x position of the number

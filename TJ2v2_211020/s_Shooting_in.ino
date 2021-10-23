@@ -1,5 +1,13 @@
 /*
  * Countdown to start of play
+ * 
+ * Functs:
+ * checkIntervalTimer
+ * goCountdownTimer
+ * TimeToString
+ * SecToString
+ * showWaiting
+ * sendScrollChar
  */
 
 
@@ -87,10 +95,11 @@ char* SecToString(unsigned long t) {
 
 
 
-void showWaiting(bool enAble){
-  if (enAble){
+bool showWaiting(bool enAble){
+  if (enAble){                                    // if True
     clearMatrix();
-    sendScroll();
+    scrWait_Enable = true;
+    sendScrollChar(20, 1, 0, 2, 0, 35, 64, 45) ;
     u8x8.setCursor(0, 5); 
     u8x8.print      ("STANDING BY:-   ");
     u8x8.setCursor(0, 6);
@@ -100,25 +109,23 @@ void showWaiting(bool enAble){
     u8x8.print("or TIME-TAP now ");
     u8x8.noInverse();
 
-  } else {
-    HC12.print("scrollloop 0\r") ;
-    pauseMe(2*tick);                              // allow the scroll to finish - it is not immediate
-    clearMatrix();                           
+  } else {                                        // Otherwise
+    if (scrWait_Enable){
+      HC12.print("scrollloop 0\r") ;
+      pauseMe(2*tick);                              // allow the scroll to finish - it is not immediate
+      scrWait_Enable = false;
+      clearMatrix();
+    }                           
   }
+  return scrWait_Enable;
 }
 
-//void sendScroll(byte sSpeed, byte sLoop, byte sCol, byte sX, byte sY, byte sW, char tXt ){
-void sendScroll(void){
-    HC12.print("scrollspeed 20\r");
-    pauseMe(tock);
-    HC12.print("scrollloop 1\r");
-    pauseMe(tock);
-    HC12.print("scrollwiggle 0\r");
-    pauseMe(tock);
-    HC12.print("scroll 2 0 35 64 ");
-    HC12.print('"');
-    HC12.print(char(45));
-    HC12.print('"');
-    HC12.print("\r");
-    pauseMe(tock);
+
+
+
+void sendScrollChar(byte sSpeed, byte sLoop, byte sWiggle, byte sCol, byte sX, byte sY, byte sW, byte tXt) {
+    HC12.printf(
+        F("scrollspeed %u\r scrollloop %u\r scrollwiggle %u\r scroll %u %u %u %u\"%c\"\rpaint\r"),
+          sSpeed, sLoop, sWiggle, sCol, sX, sY, sW, char(tXt)); 
+    
 }
