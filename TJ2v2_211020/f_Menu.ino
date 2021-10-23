@@ -157,12 +157,14 @@ struct MenuContext
           
           case BUTTON2:
             paramStore.breakPeriod > 231 ?  paramStore.breakPeriod = 5 : paramStore.breakPeriod++;
-            do { paramStore.breakPeriod ++; } while (paramStore.breakPeriod % 10);    
-            break;
+            if (paramStore.breakPeriod != 5) {
+              do { paramStore.breakPeriod ++; } while (paramStore.breakPeriod % 10) ;
+            }
+            break; 
             
             
           case BUTTON3:
-            paramStore.breakPeriod <= 3 ?  paramStore.breakPeriod = 240 : paramStore.breakPeriod --;
+            paramStore.breakPeriod <= 2 ?  paramStore.breakPeriod = 240 : paramStore.breakPeriod --;
             break;
             
           case BUTTON4:

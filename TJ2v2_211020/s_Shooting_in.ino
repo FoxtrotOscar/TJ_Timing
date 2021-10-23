@@ -31,6 +31,7 @@ void checkIntervalTimer(void){
       pauseMe(2*tick);
       clearMatrix();  
       HC12.print(F("font 9\r"));    HC12.flush();
+      goWhistle(4);
       for (byte i = 0; i < 4; i++){               // flash the prepare message
         sendSerialS( /*colour=*/ 2, /*column=*/ 0, /*line=*/ 18, "PREPARE...");
         pauseMe(2*tick);

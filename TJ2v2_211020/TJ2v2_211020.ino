@@ -49,15 +49,13 @@
 
 */
 
-
+//#define DEBUG               // Kills splashscreen, whistles etc
 
 
 #include <EEPROM.h>
 #include <U8x8lib.h>
 #include <SPI.h>
 #include <MFRC522.h>
-
-//#include <f_Menu1.h>
 
 #define HC12 Serial1          // HC12 transmitter serial port
 #define __CS0 10              // SSD1325 CS   OLED
@@ -82,7 +80,7 @@
 #define __NAME__ (strrchr(__FILE__,'\\') ? strrchr(__FILE__,'\\')+1 : __FILE__)
                               // setup part of DEBUG string, so TAB can be reported
 
-//#define DEBUG               // Kills splashscreen, whistles etc
+
 
 //#ifdef U8X8_HAVE_HW_SPI
 //#endif

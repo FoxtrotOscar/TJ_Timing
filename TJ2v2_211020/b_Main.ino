@@ -42,8 +42,9 @@ void loop() {
     writeSplash(true);                                        // Show Logo
     writeMenuCommands(); 
     continueOn = 0;
+    //continueOn = 1;
     startOver = false;
-    while (continueOn == 0)  continueOn = waitButton();       // Alter params or re-start as is
+    //while (continueOn == 0)  continueOn = waitButton();       // Alter params or re-start as is
     //pauseMe(tick);
     showWaiting(false);                                       // Turn off scrolling wait indic - if running
     clearMatrix();
