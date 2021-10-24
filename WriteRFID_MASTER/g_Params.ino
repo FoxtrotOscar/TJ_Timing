@@ -48,8 +48,9 @@ void showOneParam(byte ct, byte index){
   byte z;                                    
   u8x8.setCursor(x, y);                             
   u8x8.print(nameParam[ct]);                            // display the parameter name
-  z = (ct == 0 ? startCounts[dataStore[ct]] :           
-      (ct == 11 ? (dataStore[ct] == 177 ? 1 : dataStore[ct]): dataStore[ct]));  // mask Supervisor code
+  z = ( ct == 0 ? startCounts[dataStore[ct]] :           
+      ( ct == 11 ? (dataStore[ct] == 177 ? 1 : 
+        dataStore[ct]): dataStore[ct]));                // mask Supervisor code
   u8x8.setCursor((z < 100 ?                             // parse the x position of the number
                   (z < 10 ?  x+6 : x+5)                 // ditto
                    : x+4), y);                          // and set its xy coordinates 
@@ -68,8 +69,9 @@ byte showParamVal(uint8_t ct){                           // cut one from the lis
     u8x8.draw2x2String(12, 2, ": ");
     u8x8.setFont (u8x8_font_profont29_2x3_n);
     u8x8.setCursor(6, 4);
-    byte z = (ct ==  0 ? startCounts[dataStore[ct]] :   
-        (ct == 11 ? (dataStore[ct] == 177 ? 1 : dataStore[ct]): dataStore[ct])); // mask Supervisor code
+    byte z =  ( ct ==  0 ? startCounts[dataStore[ct]] :   
+              ( ct == 11 ? (dataStore[ct] == 177 ? 1 : 
+                dataStore[ct]): dataStore[ct]));        // mask Supervisor code
     u8x8.print(z);  
     u8x8.setFont(u8x8_font_chroma48medium8_r);
     u8x8.setCursor(0, 7);

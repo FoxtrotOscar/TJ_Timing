@@ -3,7 +3,7 @@
 */
 //#define Teensy32
 #define Teensy36
-//0#define Teensy40
+//#define Teensy40
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
     FOR ARCHERY, BUT EASILY CONFIGURABLE FOR MANY OTHER SPORTS
@@ -135,7 +135,7 @@ struct PARAMSTORE {
 
   uint8_t   teamPlay          =  0;                 // (8)  Teamplay: 20: mixed Recurve, 21 mixed Comp; 30 = Recurve, 31 Comp
   uint8_t   whichArcher       =  0;                 // (9)
-  uint8_t   notFlint          =  1;                 //(10)  if True this is not a flint round
+  uint8_t   isFlint           =  0;                 //(10)  if True this is a flint round
   uint8_t   currChannel       =  0;                 //(11)
 
   uint8_t   Rec12 = 127;                            //(12)|

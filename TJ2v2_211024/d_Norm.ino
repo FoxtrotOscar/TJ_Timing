@@ -36,7 +36,7 @@ void goNormal_Op(void){
       n_Count = 120;                                            // set Practice time - default 120s 
     } else {                      
 
-    n_Count = ((paramStore.notFlint == 0) && (sEcount > 6)) ?   // make n_Count (the count duration index), if Flint and 6 ends passed, 
+    n_Count = ((paramStore.isFlint) && (sEcount > 6)) ?         // make n_Count (the count duration index), if Flint and 6 ends passed, 
         startCounts[paramStore.startCountsIndex +1]:            // advance to 30s for the closing Walkup section  
         startCounts[paramStore.startCountsIndex];               // otherwise remains as set.
     }                            
@@ -63,7 +63,7 @@ void goNormal_Op(void){
       HC12.print(F("font 13\r"));                               // large numbers font
       HC12.flush(); delay(tock);
 
-      if ((paramStore.notFlint == 0) &&                         // or it is a Flint
+      if ((paramStore.isFlint) &&                               // or it is a Flint
          (n_Count == startCounts[paramStore.startCountsIndex+1] 
                   && sEcount >  6)) {                           // and n_Count has been advanced to Flint walkup
         goWhistle(1);       
@@ -71,7 +71,7 @@ void goNormal_Op(void){
       
       goClock(offSet);                                          // Handles formatting of the display
       writeStopwatch(n_Count  );                                // Write count large on OLED
-      sendNumber(n_Count );
+      sendNumber(txtColour, colNumber, lnNumber, n_Count );
       handleCount(secCount);                                    // parks there until a second has elapsed
       n_Count -- ;
       u8x8.setCursor(0, 6);                           
@@ -107,7 +107,7 @@ void goNormal_Op(void){
           }
           n_Count = doCountdownBar(n_Count , rectWide, barWidth );
         }
-      } else if(paramStore.notFlint == 0 && sEcount > 6){
+      } else if(paramStore.isFlint && sEcount > 6){
         if (sEcount > 9) continueOn = 0;
         else writeReady();
       } else {

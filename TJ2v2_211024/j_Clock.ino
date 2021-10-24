@@ -67,24 +67,30 @@ switch(n_Count ){
 /*
  * Function to output the actual clock output to the screen
  */
-void sendNumber(int digits) {
-  HC12.print(F("text "));
-  HC12.print(txtColour);
-  HC12.print(F(" "));
-  HC12.print(colNumber);          // x pos for text
-  HC12.print(F(" "));
-  HC12.print(lnNumber);           // y pos
-  HC12.print(F(" "));
-  HC12.print('"');
-  HC12.print(digits);
-  HC12.print('"');
-  HC12.print(F("\r"));
-  HC12.print(F("paint\r"));    HC12.flush();
+//void sendNumber(int digits) {
+//  HC12.print(F("text "));
+//  HC12.print(txtColour);
+//  HC12.print(F(" "));
+//  HC12.print(colNumber);          // x pos for text
+//  HC12.print(F(" "));
+//  HC12.print(lnNumber);           // y pos
+//  HC12.print(F(" "));
+//  HC12.print('"');
+//  HC12.print(digits);
+//  HC12.print('"');
+//  HC12.print(F("\r"));
+//  HC12.print(F("paint\r"));    HC12.flush();
+//}
+
+void sendNumber(int tColr, int cNum, int lnNum, int digits) {
+  HC12.printf(
+    F("text %u %u %u \"%u\"\rpaint\r"),
+      tColr, cNum, lnNum, digits);
 }
 
 void goBlanking(uint8_t tOffset){                                 // writes a blanking frame on switch from 
   txtColour = 0; colNumber = tOffset; lnNumber = 30;              // 3 digits to 2 digits etc; No colour (0)         
-  sendNumber(n_Count + 1);                                        // overwrite with last larger digit
+  sendNumber(txtColour, colNumber, lnNumber, n_Count + 1);                                        // overwrite with last larger digit
 }
 
 /*
@@ -137,10 +143,12 @@ void writeHalt(void){
   clearFromLine(5); 
   u8x8.draw2x2String(0, 6, "..HALT..");
   HC12.print(F("font 11\r"));                         //Change font for the text msg
-  lnNumber = 24;  // Print text Centre and in RED  
-  HC12.print(F("rect 1 0 32 64 32\r"));    HC12.flush();
-  HC12.print(F("rect 0 0 25 64 18\r"));    HC12.flush();
-  HC12.print(F("paint\r"));    HC12.flush();
+  
+  HC12.print(F("rect 1 0 32 64 32\r"));    //HC12.flush();
+  //HC12.print(F("paint\r"));    HC12.flush();
+  HC12.print(F("rect 0 0 25 64 18\r"));    //HC12.flush();
+  //HC12.print(F("paint\r"));    HC12.flush();
+  lnNumber = 24;                                      // Print text Centre and in RED  
   sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 2, /*line=*/ lnNumber, "H A L T");
   goWhistle(3);
   int delayNo = 5;
@@ -175,18 +183,18 @@ void writeReady(void){
   clearMatrix();
   HC12.print(F("font 9\r"));    HC12.flush();
   sendSerialS( /*colour=*/ 2, /*column=*/ 0, /*line=*/ 15, 
-              (paramStore.notFlint || sEcount < 1) ? "   READY" :
+              (!paramStore.isFlint || sEcount < 1) ? "   READY" :
                 sEcount < 7  ? " COLLECT " : " ");
   const char* i0; const char* i1;
-  i0 = (paramStore.notFlint)? " " : 
+  i0 = (!paramStore.isFlint)? " " : 
        sEcount < 7 && countPractice == 0 ? "--> " :  "";
 
 
 
-  if((!paramStore.notFlint) && sEcount <= 5  && countPractice == 0 ){
+  if((paramStore.isFlint) && sEcount <= 5  && countPractice == 0 ){
     i1 = flint[sEcount];
     
-  }else if((!paramStore.notFlint) && sEcount > 5  && countPractice == 0 ){
+  }else if((paramStore.isFlint) && sEcount > 5  && countPractice == 0 ){
     i1 = sEcount > 6 ? "" : flintWalk[sEcount-6];
   }
   else i1 = "";
@@ -203,7 +211,7 @@ void doBarCount(uint8_t archerIndex){                                           
   clearFromLine(5); 
   u8x8.draw2x2String(0, 6, ".WALKUP.");
   uint8_t temp = n_Count ;
-  n_Count = (paramStore.notFlint == 0) && (sEcount > 7) ?                       // If a Flint and also a Flint walkup round, 
+  n_Count = (paramStore.isFlint) && (sEcount > 7) ?                             // If a Flint and also a Flint walkup round, 
       20 :  paramStore.walkUp;                                                  // then 20s walkup, else 10 sec
   barWidth = 5;
   rectWide = 49;
@@ -215,20 +223,20 @@ void doBarCount(uint8_t archerIndex){                                           
     if (!paramStore.isFinals && countPractice == 0 && sEcount > 1){             // if not a final and the count is >1
       lnNumber = 15;
       HC12.print(F("font "));
-      HC12.print((paramStore.notFlint && !paramStore.isAlternating) ? 7 : 9 );  // if not a flint && not alternating
+      HC12.print((!paramStore.isFlint && !paramStore.isAlternating) ? 7 : 9 );  // if not a flint && not alternating
       HC12.print(F("\r"));    HC12.flush();
-      i0 = ((!paramStore.notFlint) && sEcount > 7) ?                            // if Flint && >7
+      i0 = ((paramStore.isFlint) && sEcount > 7) ?                              // if Flint && >7
             n_Count > 17 ? "ADVANCE ": "==>> "                                  // "advance" for 3 sec, then arrows from 17sec
             : "END";                                                            // else END
-      i1 = ((!paramStore.notFlint) && sEcount > 7 && n_Count <= 17 ) ? 
+      i1 = ((paramStore.isFlint) && sEcount > 7 && n_Count <= 17 ) ? 
               flintWalk[sEcount-7] : "";                                        // if flint && 3 secs of walkup passed
       sendSerialS(2 /*colour(R1G2O3)=*/,
-                  ((paramStore.notFlint && !paramStore.isAlternating) ? 17 : 2)/*column=*/, 
+                  ((!paramStore.isFlint && !paramStore.isAlternating) ? 17 : 2)/*column=*/, 
                    lnNumber, i0, i1);                                           // Write END:
-      colNumber = (paramStore.notFlint && paramStore.isAlternating) ?  38 : 43 ;
+      colNumber = (!paramStore.isFlint && paramStore.isAlternating) ?  38 : 43 ;
       txtColour = orange;
 
-      if (!(paramStore.notFlint == 0 && sEcount > 7))  sendNumber(sEcount);     //If not (normal && count >7)
+      if (!(paramStore.isFlint  && sEcount > 7))  sendNumber(txtColour, colNumber, lnNumber, sEcount);     //If not (normal && count >7)
     } else if (countPractice == 0 && paramStore.isAlternating ){
       lnNumber = 15;
       HC12.print(F("font 9\r"));    HC12.flush();
@@ -256,7 +264,7 @@ int doCountdownBar(int n_Loc, int& rectWide, int& barWidth){    // use int& to w
   goEmergencyButton(3);
   if (!startOver){
     if (reStartEnd) {
-      n_Loc  = (paramStore.notFlint == 0) && (sEcount > 7) ?    // If a Flint and also a Flint walkup round, 
+      n_Loc  = (paramStore.isFlint) && (sEcount > 7) ?    // If a Flint and also a Flint walkup round, 
       20 :  paramStore.walkUp;                                  // then 20s walkup, else 10 sec
       rectWide = 49;
       reStartEnd = false;
@@ -272,7 +280,7 @@ int doCountdownBar(int n_Loc, int& rectWide, int& barWidth){    // use int& to w
     HC12.print(lnNumber);
     HC12.print(F(" 15 13\r"));                                  // blank the number field
     HC12.print(F("paint\r"));    HC12.flush();
-    sendNumber(n_Loc  --);                                      // write the number and decrement n
+    sendNumber(txtColour, colNumber, lnNumber, n_Loc  --);                                      // write the number and decrement n
     bool wFlag = true;
     do{
       if (n_Loc  < 0) {

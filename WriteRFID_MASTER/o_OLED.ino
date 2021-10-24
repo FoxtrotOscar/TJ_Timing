@@ -18,16 +18,3 @@ void clearFromLine(uint8_t lineNo){
     delay(20);
   }
 }
-
-
-
-void wipeOLED(void){
-  for( uint8_t r = 0; r < 8; r++ ){
-    u8x8.clearLine(r);
-  }
-  u8x8.setCursor(0,0);
-  u8x8.inverse();
-  u8x8.print(" Time PROGRAMMER ");
-  
-  u8x8.noInverse();  
-} 

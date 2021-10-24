@@ -62,7 +62,7 @@ void goFinals_Op(void){
         HC12.print(F("font 13\r"));
         pauseMe(2); 
         goClock(offSet);                                                      // Handles formatting of the display
-        sendNumber(n_Count );
+        sendNumber(txtColour, colNumber, lnNumber, n_Count );
         handleCount(secCount);
         n_Count -- ;
       }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 

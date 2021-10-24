@@ -60,7 +60,7 @@ void writeInfoBigscreen(void){
     sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "Team", "");
   }
   else {  
-    if (paramStore.notFlint == 0){
+    if (paramStore.isFlint ){
       sendSerialS( /*colour(R1G2O3)=*/ 1, /*column=*/ 0, /*line=*/ lnNumber, "FLINT Round", ""); 
     }else{
       sendSerialS( /*colour(R1G2O3)=*/ 1, /*column=*/ 0, /*line=*/ lnNumber, 
@@ -73,7 +73,7 @@ void writeInfoBigscreen(void){
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "Practice");
   colNumber = 56; txtColour = orange;
   pauseMe(tick/4);
-  sendNumber(paramStore.maxPrac);
+  sendNumber(txtColour, colNumber, lnNumber, paramStore.maxPrac);
   pauseMe(tick/4);  
   
   txtColour = green;
@@ -86,7 +86,7 @@ void writeInfoBigscreen(void){
                       
   txtColour = orange;
   pauseMe(tick/4);
-  sendNumber(startCounts[paramStore.startCountsIndex]);
+  sendNumber(txtColour, colNumber, lnNumber, startCounts[paramStore.startCountsIndex]);
   pauseMe(tick/4);  
 
   txtColour = green;
@@ -95,7 +95,7 @@ void writeInfoBigscreen(void){
   colNumber = 48 + (paramStore.maxEnds < 10 ? 8 : paramStore.maxEnds < 20 ? 5 : 3);
   txtColour = orange;
   pauseMe(tick/4);
-  sendNumber(paramStore.maxEnds);
+  sendNumber(txtColour, colNumber, lnNumber, paramStore.maxEnds);
   pauseMe(5*tick);
   clearMatrix();
 

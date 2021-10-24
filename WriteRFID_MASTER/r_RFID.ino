@@ -66,8 +66,8 @@ void writeRFID(void){
        
       dataStore[8], dataStore[9], dataStore[10], dataStore[11],
        
-                                                            //    127, 212, 42, 198  : SECURITY KEY
-                                                            //    0x7f, 0xd4, 0x2a, 0xc6 : KEY in HEX
+                                                            //    127, 212, 42, 198  :      SECURITY KEY
+                                                            //    0x7f, 0xd4, 0x2a, 0xc6 :  KEY in HEX
       mfrc522.uid.uidByte[0] ^ dataStore[12],               //|
       mfrc522.uid.uidByte[1] ^ dataStore[13],               //|_  XOR  UID with KEY to generate GUARD bytes
       mfrc522.uid.uidByte[2] ^ dataStore[14],               //|   which will be decoded in target sys

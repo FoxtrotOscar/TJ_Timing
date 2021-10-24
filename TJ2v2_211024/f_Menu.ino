@@ -326,7 +326,7 @@ struct MenuContext
       {
       case BUTTON1: 
         paramStore.startCountsIndex = menuStartCountsIndex;
-        paramStore.notFlint = true;
+        paramStore.isFlint = false;
         return MenuState::menu_root;
     
       case BUTTON2: 
@@ -359,7 +359,7 @@ struct MenuContext
       {
       case BUTTON1: 
         paramStore.maxEnds = menuMaxEnds;
-        paramStore.notFlint = true;
+        paramStore.isFlint = false;
         sEcount = 1;
         return MenuState::menu_root;
     
@@ -432,7 +432,7 @@ struct MenuContext
       {
       case BUTTON1: 
         paramStore.Details = menuDetails;
-        paramStore.notFlint = true;
+        paramStore.isFlint = false;
         return MenuState::menu_root;
     
       case BUTTON2: 
@@ -504,7 +504,7 @@ struct MenuContext
         {
         case BUTTON1: 
           paramStore.isFinals = menuFinals;
-          paramStore.notFlint = true;
+          paramStore.isFlint = false;
           selected = true;
           break;        
         
@@ -530,7 +530,7 @@ struct MenuContext
       
       if (menuFinals)
       {
-        paramStore.notFlint = true;
+        paramStore.isFlint = false;
         paramStore.Details = 1;                           //  Single detail by default
         paramStore.startCountsIndex = 4;                  //  set to 20sec
         paramStore.maxPrac = 0;                           //  no practice
@@ -575,7 +575,7 @@ struct MenuContext
       {
       case BUTTON1: 
         paramStore.isFinals = menuFinals;
-        paramStore.notFlint = true;
+        paramStore.isFlint = false;
         return MenuState::start;
   
       case BUTTON2: 

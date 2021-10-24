@@ -81,7 +81,7 @@ const char*     nameParam[12] = {"Time", "Walk", "Ends", "Dets",
 
 uint8_t         dataStore[]   = { 1, 10, 10, 2,           // |
                                   2, 0, 10, 0,            // |- default parameters; overwritten by card write
-                                  0, 0, 1, 0,             // |
+                                  0, 0, 0, 0,             // |
                                   127, 212, 42, 198,      // security key - prevents cards being copied
                                   199, 200};              // spares
 

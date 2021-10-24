@@ -26,7 +26,7 @@ void loop() {
       lnNumber = 25;
       HC12.print(F("font 11\r"));
       HC12.flush();
-      if (paramStore.notFlint == 0) goWhistle(3);
+      if (paramStore.isFlint ) goWhistle(3);
       
       for (int p = 0; p < 5; p ++ ) {                         // flash the good news
         clearMatrix();
@@ -100,7 +100,7 @@ void loop() {
       txtColour = orange;
       colNumber = 54;
       lnNumber = 30;
-      sendNumber(paramStore.maxPrac);
+      sendNumber(txtColour, colNumber, lnNumber, paramStore.maxPrac);
       pauseMe(3 * tick);
     }
   }
