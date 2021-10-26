@@ -18,6 +18,8 @@
     sendScrollW
     goWhistle
     stopSign
+    writeRectangle
+    writeLine
     zeroSettings
     goReboot
     doButtonMenu
@@ -293,7 +295,7 @@ void stopSign(void){
    * (circle colour x_centre y_centre radius)
    */
   clearMatrix();
-  HC12.print(F("circle "));                // Draw a circle
+  HC12.print(F("circle "));                                   // Draw a circle
   HC12.print(red);
   HC12.print(F(" 32 15 15\r"));
   HC12.print(F("paint\r"));    HC12.flush();
@@ -311,22 +313,30 @@ void stopSign(void){
    * line colour x1 y1 x2 y2
    * Draws a line between x1, y1 and x2, y2 in the specified colour
    */ 
-  
-  HC12.print(F("line "));                 //  Now bisect the circle
-  HC12.print(red);
-  HC12.print(F(" 41 6 23 24\r"));
-  HC12.print(F("paint\r"));    HC12.flush();
-  HC12.print(F("line "));
-  HC12.print(red);
-  HC12.print(F(" 42 7 24 25\r"));
-  HC12.print(F("paint\r"));    HC12.flush();
-  HC12.print(F("line "));
-  HC12.print(red);
-  HC12.print(F(" 43 8 25 26\r"));
-  HC12.print(F("paint\r"));    HC12.flush();
+  writeLine(red, 41, 6, 23, 24);                              //  Now bisect the circle
+
+  writeLine(red, 42, 7, 24, 25);
+
+  writeLine(red, 43, 8, 25, 26);
+
 }
 
 
+void writeRectangle(byte rCol, byte rX0, byte rY0, byte rWid, byte rHi ){
+  HC12.printf(
+    F("rect %u %u %u %u %u \rpaint\r"),
+      rCol, rX0, rY0, rWid, rHi
+  );
+  HC12.flush();
+}
+
+void writeLine(byte lCol, byte lX1, byte lY1, byte lX2, byte lY2) {
+  HC12.printf(
+    F("line %u %u %u %u %u \rpaint\r"),                         //  line colour, x1(), y1(), x2(), y2()
+      lCol, lX1, lY1, lX2, lY2
+  );
+  HC12.flush();
+}
 /*
  * Reset the game to initial settings depending on
  * parameters set.

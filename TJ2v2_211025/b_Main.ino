@@ -42,10 +42,7 @@ void loop() {
     writeSplash(true);                                        // Show Logo
     writeMenuCommands(); 
     continueOn = 0;
-    //continueOn = 1;
     startOver = false;
-    //while (continueOn == 0)  continueOn = waitButton();       // Alter params or re-start as is
-    //pauseMe(tick);
     showWaiting(false);                                       // Turn off scrolling wait indic - if running
     clearMatrix();
     sEcount = 1;
@@ -68,7 +65,6 @@ void loop() {
                                /*line=*/   22 ,
                                /*window=*/ 63,
                                           "FINAL!" );          // animation of finals
-      //pauseMe(tick * 2);                                    
       if (paramStore.isAlternating) {
         clearFromLine(5);
         goChooseArcher();

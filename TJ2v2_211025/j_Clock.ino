@@ -24,7 +24,7 @@
  * doBarCount
  * doCountdownBar
  */
-void goClock(uint8_t offSet){
+void goClock(uint8_t offSet){                                       // Setup for formatting the main count numbers
 
 switch(n_Count ){
   case 0 ... 9:
@@ -67,21 +67,6 @@ switch(n_Count ){
 /*
  * Function to output the actual clock output to the screen
  */
-//void sendNumber(int digits) {
-//  HC12.print(F("text "));
-//  HC12.print(txtColour);
-//  HC12.print(F(" "));
-//  HC12.print(colNumber);          // x pos for text
-//  HC12.print(F(" "));
-//  HC12.print(lnNumber);           // y pos
-//  HC12.print(F(" "));
-//  HC12.print('"');
-//  HC12.print(digits);
-//  HC12.print('"');
-//  HC12.print(F("\r"));
-//  HC12.print(F("paint\r"));    HC12.flush();
-//}
-
 void sendNumber(int tColr, int cNum, int lnNum, int digits) {
   HC12.printf(
     F("text %u %u %u \"%u\"\rpaint\r"),
@@ -128,12 +113,14 @@ void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, cons
   HC12.flush();
 }
 
+// this one calls the big one above 
 void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0, const char* i1) {
-  return sendSerialS(txtColour1, colNumber1, lnNumber1, i0, i1, nullptr); // this one calls the big one above 
+  return sendSerialS(txtColour1, colNumber1, lnNumber1, i0, i1, nullptr); 
 }
 
+// same 
 void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0) {
-  return sendSerialS(txtColour1, colNumber1, lnNumber1, i0, nullptr, nullptr); // same 
+  return sendSerialS(txtColour1, colNumber1, lnNumber1, i0, nullptr, nullptr); 
 }
 
 /*
@@ -144,10 +131,8 @@ void writeHalt(void){
   u8x8.draw2x2String(0, 6, "..HALT..");
   HC12.print(F("font 11\r"));                         //Change font for the text msg
   
-  HC12.print(F("rect 1 0 32 64 32\r"));    //HC12.flush();
-  //HC12.print(F("paint\r"));    HC12.flush();
-  HC12.print(F("rect 0 0 25 64 18\r"));    //HC12.flush();
-  //HC12.print(F("paint\r"));    HC12.flush();
+  HC12.print(F("rect 1 0 32 64 32\r")); 
+  HC12.print(F("rect 0 0 25 64 18\r"));   
   lnNumber = 24;                                      // Print text Centre and in RED  
   sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 2, /*line=*/ lnNumber, "H A L T");
   goWhistle(3);
@@ -245,42 +230,35 @@ void doBarCount(uint8_t archerIndex){                                           
       sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, i0, i1); 
     }
     n_Count = doCountdownBar(n_Count , rectWide, barWidth);                     // returns with decremented n_Count
-    //if (n_Count == 1) goWhistle(1); // <<--------------------------------------------------------------------------------
   }
   clearMatrix();
   n_Count = temp;
 }
 
 
-int doCountdownBar(int n_Loc, int& rectWide, int& barWidth){    // use int& to write to the variable location
-  txtColour = n_Loc  ? red : green;                             // Numbers are red until zero reached
-  lnNumber = 30;                                                // position count from 10
-  colNumber = (n_Loc  >= 10)? 50 : 54;                          // allocate space for double (else) single 'End' digit
-  int barStep = 0;                                              // Set 1/2 sec toggle for smoothing bar animation
+int doCountdownBar(int n_Loc, int& rectWide, int& barWidth){      // use int& to write to the variable location
+  txtColour = n_Loc  ? red : green;                               // Numbers are red until zero reached
+  lnNumber = 30;                                                  // position count from 10
+  colNumber = (n_Loc  >= 10)? 50 : 54;                            // allocate space for double (else) single 'End' digit
+  int barStep = 0;                                                // Set 1/2 sec toggle for smoothing bar animation
   int stripReducer = 5;
   unsigned long secCount = millis(); 
-  do {} while ((millis() - secCount) % (tick) > 2);             // initialise timer to a start-point++++++++++++++++++++++++++++++++++
-  HC12.print(F("font 9\r"));    HC12.flush();                   // set the font
+  do {} while ((millis() - secCount) % (tick) > 2);               // initialise timer to a start-point
+  HC12.print(F("font 9\r"));    HC12.flush();                     // set the font
   goEmergencyButton(3);
   if (!startOver){
     if (reStartEnd) {
-      n_Loc  = (paramStore.isFlint) && (sEcount > 7) ?    // If a Flint and also a Flint walkup round, 
-      20 :  paramStore.walkUp;                                  // then 20s walkup, else 10 sec
+      n_Loc  = (paramStore.isFlint) && (sEcount > 7) ?            // If a Flint and also a Flint walkup round, 
+      20 :  paramStore.walkUp;                                    // then 20s walkup, else 10 sec
       rectWide = 49;
       reStartEnd = false;
       return n_Loc  ;
     }
-    HC12.print(F("rect 1 0 "));                                 // colour = red
-    HC12.print(lnNumber);
-    HC12.print(F(" "));
-    HC12.print((n_Loc  < 11) ? (n_Loc  *5-1) : rectWide);       // only decrement barwidth if count reaches below 11  ** 49
-    HC12.print(F(" 13 \r"));                                    // draw the red bar 50 wide ++++++++++++++++++++++++
-    HC12.print(F("paint\r"));    HC12.flush();                  // rect colour x(0) y(30) width(50) height(13)
-    HC12.print(F("rect 0 50 "));                                // colour = 0
-    HC12.print(lnNumber);
-    HC12.print(F(" 15 13\r"));                                  // blank the number field
-    HC12.print(F("paint\r"));    HC12.flush();
-    sendNumber(txtColour, colNumber, lnNumber, n_Loc  --);                                      // write the number and decrement n
+    byte rWidth = ((n_Loc  < 11) ? (n_Loc  *5-1) : rectWide);     // only decrement barwidth if count reaches below 11  ** 49
+    writeRectangle(1, 0, lnNumber, rWidth, 13 );                  // rCol, rX0, rY0, rWid, rHi
+    writeRectangle(0, 50, lnNumber, 15, 13 );                     // rCol, rX0, rY0, rWid, rHi
+                                                                  // blank the number field, red bar 50 wide
+    sendNumber(txtColour, colNumber, lnNumber, n_Loc  --);        // write the number and decrement n
     bool wFlag = true;
     do{
       if (n_Loc  < 0) {
@@ -288,34 +266,19 @@ int doCountdownBar(int n_Loc, int& rectWide, int& barWidth){    // use int& to w
           goWhistle(1);                                           // <<-----------------------
           wFlag = !wFlag;
         }
-        HC12.print(F("rect 2 0 "));
-        HC12.print(lnNumber);
-        HC12.print(F(" 50 13\r"));                                // draw the bar, in green  (2)
-        HC12.print(F("paint\r"));    HC12.flush();
+        writeRectangle(2, 0, lnNumber, 50, 13 );                  // rCol, rX0, rY0, rWid, rHi; draw the bar, in green
+
         clearFromLine(6);
       } else {
         if (n_Loc  <= 9) {
-          HC12.print(F("line 3 "));                             //  line colour x1() y1() x2() y2()
-          HC12.print(rectWide);                                 //  . . . colour(R1G2O3)
-          HC12.print(F(" 18 "));                                //  draw the yellow strip over the red one column wide
-          HC12.print(rectWide--);                               //  starting at rectwide and decrement that position
-          HC12.print(F(" "));
-          HC12.print(lnNumber);
-          HC12.print(F("\r"));
-          HC12.print(F("paint\r"));    HC12.flush();
+          writeLine(3, rectWide, 18, rectWide, lnNumber);         //  draw yel over red 1 column wide starting at rectwide, decrement
+          rectWide--;
         } else {
-          HC12.print(F("line 1 "));                            //  for n_Loc values above 10
-          HC12.print(rectWide);                                
-          HC12.print(F(" 18 "));                               //  draw the yellow strip over the red one column wide
-          HC12.print(rectWide);                                //  starting at rectwide and decrement that position
-          HC12.print(F(" "));
-          HC12.print(lnNumber);
-          HC12.print(F("\r"));
-          HC12.print(F("paint\r"));    HC12.flush();
+          writeLine(1, rectWide, 18, rectWide, lnNumber);         //  for n_Loc values above 10
         }
       }
       do {
-        if (readButtonNoDelay(button1Pin) == 1 ) {              // test for proceed button - a debug function really
+        if (readButtonNoDelay(button1Pin) == 1 ) {                // test for proceed button - a debug function really
           rectWide = 0;
           clearFromLine(6);
           pauseMe(175);
@@ -323,7 +286,7 @@ int doCountdownBar(int n_Loc, int& rectWide, int& barWidth){    // use int& to w
         }           
       } while ((millis() - secCount) % (tick/stripReducer) > 0);
     } while (++barStep < stripReducer);
-  } else {                                                       // else kill the countdown
+  } else {                                                        // else kill the countdown
     clearMatrix();
     zeroSettings();
     sEcount = (paramStore.maxEnds);

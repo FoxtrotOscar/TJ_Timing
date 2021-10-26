@@ -101,7 +101,7 @@ void goNormal_Op(void){
           HC12.print(F("font 9\r"));    HC12.flush();
           sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 2, /*line=*/ lnNumber, "NEXT:");      // Write NEXT:
             lnNumber = 15; 
-          if (paramStore.Details == 2){                            // Double detail?
+          if (paramStore.Details == 2){                           // Double detail?
             sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 44, /*line=*/ lnNumber, 
                         (sE_iter%4 == 1 ? "C D" : "A B"));
           }
