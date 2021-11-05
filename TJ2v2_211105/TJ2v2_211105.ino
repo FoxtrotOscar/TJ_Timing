@@ -20,6 +20,8 @@
     and permits programming of the screen HC12 units on the fly
     as well as the command unit from the RFID (TimeTap) menu.
     A "count-down to start" function allows for smooth tournament running.
+    Incorporates a SOFT-SWITCH On/Off based on the POLOLU 2808 with 
+    power ON via discrete Power Button and OFF via long press RED button
     
   * TODO:  
   * make count-down timer independent of the RFID TimeTap functions - 
@@ -62,12 +64,15 @@
 #define __DC  9               // SSD1325 DC   OLED
 #define SS_PIN  19            // RFID  SDA/SS/SPI
 #define RST_PIN 6             // RFID  Reset
+#define offControlPin 22      // used to kill power with long-press RED button via Digital Power Switch
 #ifdef Teensy32
   #define RESET_DIO 23        // (23: T3.2/T4.0, 28: T3.6) OLED
   #define HC12SetPin 15       // (15: T3.2/T4.0, 17: T3.6) This pin remains HIGH until setting the HC-12 
+
 #elif defined Teensy36 
   #define RESET_DIO 28        // (23: T3.2/T4.0, 28: T3.6) OLED
   #define HC12SetPin 17       // (15: T3.2/T4.0, 17: T3.6) This pin remains HIGH until setting the HC-12
+  
 #elif defined Teensy40
   #define RESET_DIO 23        // (23: T3.2/T4.0, 28: T3.6) OLED
   #define HC12SetPin 15       // (15: T3.2/T4.0, 17: T3.6) This pin remains HIGH until setting the HC-12 
@@ -239,7 +244,8 @@ int prevState1 = HIGH;
 
 
 void setup() {
-  pinMode(HC12SetPin, OUTPUT);                    // Output High for Transparent / Low for Command
+  pinMode(offControlPin,  OUTPUT);                // Output High for Power Off / Keep low for continued operation 
+  pinMode(HC12SetPin,     OUTPUT);                // Output High for Transparent / Low for Command
 
   if (EEPROM.read(29) == 111) {                   // is flag for stored parameters set?
     EEPROM.get(0, paramStore);                    // Copies most recent parameters back in
@@ -252,6 +258,7 @@ void setup() {
 #else
   Serial.end();
 #endif
+  digitalWrite(offControlPin, LOW);               // ensure Power Off not selected  
   digitalWrite(HC12SetPin, LOW);                  // Enter Transparent mode
   pauseMe(80);
   u8x8.begin();

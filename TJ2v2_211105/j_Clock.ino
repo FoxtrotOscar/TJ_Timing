@@ -75,7 +75,7 @@ void sendNumber(int tColr, int cNum, int lnNum, int digits) {
 
 void goBlanking(uint8_t tOffset){                                 // writes a blanking frame on switch from 
   txtColour = 0; colNumber = tOffset; lnNumber = 30;              // 3 digits to 2 digits etc; No colour (0)         
-  sendNumber(txtColour, colNumber, lnNumber, n_Count + 1);                                        // overwrite with last larger digit
+  sendNumber(txtColour, colNumber, lnNumber, n_Count + 1);        // overwrite with last larger digit
 }
 
 /*
@@ -90,7 +90,6 @@ void handleCount(unsigned long secCount){
   
   while ((millis() - secCount) % tick > 0){  // apply a 'fuzzy' offset of 2 for Uno
     if (readButtonNoDelay(button1Pin) == 1 ) {
-      //clearFromLine(6);
       pauseMe(175);
       n_Count = 0;
     }

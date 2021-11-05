@@ -71,7 +71,7 @@ void writeInfoBigscreen(void){
   }
   pauseMe(tick);
   
-  lnNumber += 7;                                                            // Practice?
+  lnNumber += 7;                                                                  // Practice?
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "Practice");
   colNumber = 56; txtColour = orange;
   pauseMe(tick/4);
@@ -81,7 +81,7 @@ void writeInfoBigscreen(void){
   txtColour = green;
   lnNumber += 7;  // End duration
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "END ","Time: ");
-  colNumber = 48 +  ( startCounts[paramStore.startCountsIndex] < 10   ? 8 :       // centering the number on the matrix
+  colNumber = 48 +  ( startCounts[paramStore.startCountsIndex] < 10   ? 8 :       // Positioning the number on the matrix
                       startCounts[paramStore.startCountsIndex] < 20   ? 5 :
                       startCounts[paramStore.startCountsIndex] < 100  ? 3 : 
                       startCounts[paramStore.startCountsIndex] < 200  ? 0 : -2);
@@ -94,7 +94,7 @@ void writeInfoBigscreen(void){
   txtColour = green;
   lnNumber += 7;  // Number of Ends
   sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 0, /*line=*/ lnNumber, "END ","Count: ");
-  colNumber = 48 + (paramStore.maxEnds < 10 ? 8 : paramStore.maxEnds < 20 ? 5 : 3);
+  colNumber = 48 + (paramStore.maxEnds < 10 ? 8 : paramStore.maxEnds < 20 ? 5 : 3);// Positioning the number on the matrix
   txtColour = orange;
   pauseMe(tick/4);
   sendNumber(txtColour, colNumber, lnNumber, paramStore.maxEnds);
@@ -145,7 +145,7 @@ start_AB_menu:
  * Wipes the Matrix clear
  */
 void clearMatrix(void){
-  HC12.print(F("scrollloop 0\r"));                        //  if scroll in progress, kill it
+  HC12.print(F("scrollloop 0\r"));                                        //  if scroll in progress, kill it
   pauseMe(4*tock);
   HC12.print(F("clear\r"));
   HC12.print(F("paint\r"));    
@@ -239,43 +239,15 @@ void sendScrollW( uint16_t      scrollSpeed,
   for (uint8_t iter = 0; iter < strlen(scrollChar); iter ++){
     unsigned long timer = millis();
     HC12.print(F("font 17\r"));    HC12.flush();  pauseMe(tock);
-    HC12.print(F("scroll "));
-    HC12.print(txtColour1);
-    HC12.print(F(" "));
-    HC12.print(x1 + 12*iter + 4);           // x pos for window lhs corner
-    HC12.print(F(" "));
-    HC12.print(y1);                         // y pos for window lhs bottom
-    HC12.print(F(" "));
-    HC12.print(window1);                    // Scroll window width
-    HC12.print(F(" "));
-    HC12.print('"');
-    HC12.print(scrollChar[iter]);           //  Send each letter in turn
-    HC12.print('"');
-    HC12.print(F("\r"));    HC12.flush(); pauseMe(tock);
-    HC12.print(F("paint\r"));    HC12.flush();  pauseMe(tock);
+    HC12.printf(
+          F("scroll %u %u %u %u \"%c\"\rpaint\r"),
+              txtColour1, (x1 + 12*iter + 4), y1, window1, scrollChar[iter]);
     do{} while (millis() - timer < (delVal*100));    // 800UL
+    
     HC12.print(F("font 9\r"));     HC12.flush();  pauseMe(tock);              // Font for the static letter post-scroll
-    
-    HC12.print(F("text "));
-    
-    //HC12.print(iter == 1 ? green : orange);
-    HC12.print(orange);
-    
-    HC12.print(F(" "));
-    
-    HC12.print(x1 + 12*iter);               // x pos for text
-    
-    HC12.print(F(" "));
-    
-    HC12.print(y1);                         // y pos
-    
-    HC12.print(F(" "));
-    HC12.print('"');
-    HC12.print(scrollChar[iter]);
-    HC12.print('"');
-    HC12.print(F("\r"));    HC12.flush();  pauseMe(tock);
-    
-    HC12.print(F("paint\r"));    HC12.flush();  pauseMe(tock);
+    HC12.printf(
+          F("text %u %u %u \"%c\"\rpaint\r"),
+              orange, (x1 + 12*iter), y1, scrollChar[iter]);
     pauseMe(5);
   }
   pauseMe(tick);
@@ -286,55 +258,39 @@ void goWhistle(uint8_t whistles){
   HC12.print("~"); HC12.flush();              //uncomment for whistles
   HC12.print(whistles);  
   HC12.flush();
-  //pauseMe(30 );                                 
 }
 
 
 void stopSign(void){
   /*
-   * (circle colour x_centre y_centre radius)
+   * (circle: colour x_centre y_centre radius)
    */
   clearMatrix();
-  HC12.print(F("circle "));                                   // Draw a circle
-  HC12.print(red);
-  HC12.print(F(" 32 15 15\r"));
-  HC12.print(F("paint\r"));    HC12.flush();
-  HC12.print(F("circle "));
-  HC12.print(red);
-  HC12.print(F(" 32 15 14\r"));
-  HC12.print(F("paint\r"));    HC12.flush();
-  HC12.print(F("circle "));
-  HC12.print(red);
-  HC12.print(F(" 32 15 13\r"));
-  HC12.print(F("paint\r"));    HC12.flush();
-
-  
-  /*
-   * line colour x1 y1 x2 y2
-   * Draws a line between x1, y1 and x2, y2 in the specified colour
-   */ 
-  writeLine(red, 41, 6, 23, 24);                              //  Now bisect the circle
-
-  writeLine(red, 42, 7, 24, 25);
-
-  writeLine(red, 43, 8, 25, 26);
-
+  for (byte x=0; x<3; x++){
+    writeCircle(red, 32, 15, 15-x);
+    writeLine(red, 41+x, 6+x, 23+x, 24+x);
+  }
 }
 
 
-void writeRectangle(byte rCol, byte rX0, byte rY0, byte rWid, byte rHi ){
+void writeCircle(byte cCol1, byte cX1, byte cY1, byte cR1){
+    HC12.printf(
+        F("circle %u %u %u %u\rpaint\r"),
+            cCol1, cX1, cY1, cR1);
+}
+
+
+void writeRectangle(byte rCol, byte rX1, byte rY1, byte rWid, byte rHi ){
   HC12.printf(
     F("rect %u %u %u %u %u \rpaint\r"),
-      rCol, rX0, rY0, rWid, rHi
-  );
+      rCol, rX1, rY1, rWid, rHi);
   HC12.flush();
 }
 
 void writeLine(byte lCol, byte lX1, byte lY1, byte lX2, byte lY2) {
   HC12.printf(
     F("line %u %u %u %u %u \rpaint\r"),                         //  line colour, x1(), y1(), x2(), y2()
-      lCol, lX1, lY1, lX2, lY2
-  );
+      lCol, lX1, lY1, lX2, lY2);
   HC12.flush();
 }
 /*
@@ -358,7 +314,6 @@ void zeroSettings(void){
 void goReboot(void){
   HC12.print("^");
   HC12.print(9);  
-  //HC12.print("\r");
   HC12.flush();  
   pauseMe(100);
 }
@@ -437,14 +392,14 @@ uint8_t readButtonNoDelay(int pin) {        // as above, without small sleep if 
  */ 
 uint8_t readButtons() {
   uint8_t ret = 0;
-
+  
   if (   digitalRead(button1Pin)  == HIGH 
       && digitalRead(button2Pin)  == HIGH 
       && digitalRead(button3Pin)  == HIGH 
       && digitalRead(button4Pin)  == HIGH) {
       return 0;                                       // all are high - no buttons pressed 
   }
-  pauseMe(2);                                           // delay for level de-bouncing; 2nd read to confirm low
+  pauseMe(2);                                         // delay for level de-bouncing; 2nd read to confirm low
   if (!intervalOn && digitalRead(button1Pin) == LOW)
     ret |= BUTTON1;                                   // set leftmost bit in the 'ret' to 1
 
@@ -469,7 +424,7 @@ uint8_t readButtons() {
  * the buttons is pressed, and will return value of the 
  * button pressed (BUTTON1..BUTTON4), or bitmask for multiple buttons pressed at once 
  * Use this function when it is required to wait for 
- * user input, and there is nothing to do until user press some button
+ * user input, and there is nothing to do until user presses some button
 */ 
 uint8_t waitButton() {
   long long timeOut = millis();
@@ -487,8 +442,23 @@ uint8_t waitButton() {
     getRFID(&paramStore);
     
     uint8_t ret = readButtons();                            // read all button states
+    
     if (ret != 0) {
-      while (readButtons() != 0) delay(1);                  // and now wait for him to release the button
+      long long goTurnOff = millis();
+      while (readButtons() != 0) {
+        delay(1);                                           // and now wait for him to release the button
+      }                                                     // if release made after 4 secs then power off selected
+      if (millis() - goTurnOff > 4000
+          && ret == BUTTON4 ) {                             // if button 4 held for >4 secs 
+        wipeOLED();
+          u8x8.setContrast(253);
+        u8x8.draw2x2String(0, 2, "POWERING");
+        u8x8.draw2x2String(0, 6, "  DOWN  ");
+        clearMatrix();
+        writeSplash(false);
+        //pauseMe(1.5 * tick);
+        digitalWrite(offControlPin, HIGH);                  // turn Power OFF via the digital power switch
+      }
       HC12.print(F("brightness "));                         // return brightness to nominal 
       HC12.print(bright);                                                      
       HC12.print(F("\r"));
@@ -516,16 +486,13 @@ bool goEmergencyButton(uint8_t AIndex){
       if (n_Count == startCounts[paramStore.startCountsIndex]) {
         doBarCount(AIndex);
         writeOLED_Data(1);
-      } else if (n_Count != 0){
-        //goWhistle(1);
-        writeOLED_Data(1);
-      }
+      } else if (n_Count != 0) writeOLED_Data(1);
     } else if (AIndex == 3){                                // for in-barCount !STOP!
       displayParamsOnOLED();
       writeOLED_Data(1);
       ret = true;
     } else if (AIndex == 4){
-                                                            //saved for future use
+      //saved for future use <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
   }
   return ret;

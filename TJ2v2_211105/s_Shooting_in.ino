@@ -113,7 +113,7 @@ bool showWaiting(bool enAble){
   } else {                                        // Otherwise
     if (scrWait_Enable){
       HC12.print("scrollloop 0\r") ;
-      pauseMe(2*tick);                              // allow the scroll to finish - it is not immediate
+      pauseMe(2*tick);                             // allow the scroll to finish - it is not immediate
       scrWait_Enable = false;
       clearMatrix();
     }                           
