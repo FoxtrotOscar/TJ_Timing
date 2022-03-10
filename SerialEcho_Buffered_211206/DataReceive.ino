@@ -12,7 +12,7 @@ bool recvWithEndMarker() {
     rc = HC12.read();
     
     switch (rc) {
-      case '^':
+      case '^':                                 // force reboot 
         while (!HC12.available()) {}            // hang around until a char is received
         pauseMe(pMe);
         if (HC12.read() == '9') reboot();       //digitalWrite(rebootPin, LOW);
@@ -42,18 +42,18 @@ bool recvWithEndMarker() {
         newData = false;
       break;
 
-      case '*':                                 // marker for setup of the HC11 - confirm follows
+      case '*':                                 // marker for setup of the HC12 channel
         while (!HC12.available()) {}            // hang around until a char is received
         pauseMe(pMe);
         rc = HC12.read();
         pauseMe(pMe);
-        if (rc == '^' || rc == '&')  {
+        if (rc == '^'){
           goSetParam(rc);
         }
         newData = false;
       break;
 
-      case '$':                                 // marker for setup of the HC11 - confirm follows
+      case '$':                                 // marker for write splash - not in use
         while (!HC12.available()) {}            // hang around until a char is received
         pauseMe(pMe);
         rc = HC12.read();
@@ -74,7 +74,7 @@ bool recvWithEndMarker() {
         if (rc != endMarker) {
           receivedChars[ndx] = rc;              // fill the buffer
           ndx++;
-          ndx = (ndx >= numChars ? numChars-1 : ndx);
+           if (ndx >= numChars) ndx = numChars - 1;
           newData = false;
         } else {
           receivedChars[ndx] = endMarker;       // terminate the buffer string

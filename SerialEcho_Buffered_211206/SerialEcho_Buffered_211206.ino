@@ -16,14 +16,13 @@ HardwareSerial  Serial2(PA3, PA2);
 #define         MATRIXSER   Serial2               // RX-PA3 (NOT IN USE) / TX-PA2/
 #define         BAUD        2400
 #define         commandBAUD 9600
+#define         setupPin    PA11
 
 uint16_t      tick          =   1000;
 const byte    numChars      =   64;               // counter for buffer to hold incoming data packages
 bool          newData       =   false;
 const int     rebootPin     =   PB0;              // the reboot pulse output
 const int     whistlePin    =   PB1;              // the number of the LED pin
-const int     whistlePin1   =   PB10;
-const int     setupPin      =   PA11;
 uint8_t       numWhistles   =   0;                // how many whistles
 uint8_t       channNum      =   0;                // 
 uint8_t       tock          =   25;
@@ -51,26 +50,28 @@ enum        Colours:
 
 
 void setup() {
-  //HC12.begin      (BAUD,        SERIAL_8N1);    // TX-PA9/RX-PA10
-  commandBaudRate(false);              
-  MATRIXSER.begin (115200,      SERIAL_8N1);      // TX-PA2/RX-PA3
-  HC12ReadBuffer.reserve(64);                     // Reserve 64 bytes for Serial message input
+  MATRIXSER.begin (115200,      SERIAL_8N1);      // TX-PA2/RX-PA3  MCU to Matrix
+  
   pinMode         (whistlePin,  OUTPUT);
   pinMode         (rebootPin,   OUTPUT);
   pinMode         (setupPin,    OUTPUT);
   digitalWrite    (rebootPin,   HIGH);            // PB0, active low
   digitalWrite    (setupPin,    LOW);             // PC11: active low - to read channel
   digitalWrite    (whistlePin,  LOW);             // PB1: Active HIGH
-  delay(tick);
-
-  
+  commandBaudRate(true);                          // start the comms @9600BAUD, setting setupPin to low for COMMAND
+  HC12.println("AT+B2400");                       // ensure the HC12 is RXing @ 2400BAUD
+  pauseMe(500);
+  commandBaudRate(false);                         // now set comms from MCU to HC12 @2400              
+  pauseMe(500);
   configMatrix(sWidth, sHeight, sType, sBPP, sInv, sEnabA, sBright);
   delay(tock);
 
   showParam('^');                                 // Write the parameter details to the screen
   delay(tock);
 }
-
+/*
+ * ===============================================================================================
+ */
 void loop() {
   
   if (whistleFlag) {

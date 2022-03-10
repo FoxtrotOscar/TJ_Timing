@@ -55,7 +55,7 @@ void goSetChan() {
   do{
     HC12ByteIn = HC12.read();
     delay(2);
-  } while (HC12ByteIn !='A');
+  } while (HC12ByteIn !='A');                     // listen for the start of the command string AT+Cxxx
   HC12ReadBuffer += char(HC12ByteIn);
   while (HC12.available() && !HC12End) {          // While Arduino's HC12 soft serial rx buffer has data
     HC12ByteIn = HC12.read();                     // Store each character from rx buffer in byteIn
