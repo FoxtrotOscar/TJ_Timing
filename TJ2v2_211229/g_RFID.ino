@@ -47,8 +47,6 @@ void getRFID(struct PARAMSTORE *ps){
     return;
   }
 
-      
-
   status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
   
   /*  ****** Read last four bytes of block to compare with 127,212,42,198: if fail, no valid read *******/
@@ -62,7 +60,6 @@ void getRFID(struct PARAMSTORE *ps){
     
   if   ( (buffer[11] != 177) &&  guardBytes) {        // 0xB1: This byte is used only on Supervisor card 
                                                       // for re-programming the HC12 channel
-    
     mfrc522.MIFARE_Read(blockAddr, (byte*)ps, &size); // Here the data is copied into paramStore
     EEPROM.put(0, paramStore);                        // Here the paramStore data is copied into EEPROM 
     EEPROM.put(29, 111);                              // set flag for stored parameters

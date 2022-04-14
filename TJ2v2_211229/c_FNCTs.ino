@@ -729,3 +729,87 @@ void printDebugLine(uint16_t lineNo, const char* FileName){
           
   #endif      
 }
+
+
+void goDemoLoop() {
+  
+
+  const char demoChar1[] = "Cuchulainn";
+  const char demoChar2[] = "Archers";
+  
+  const char demoChar3[] = "We don't do";
+  const char demoChar4[] = "'LUCK' !";
+  const char demoChar5[] = "We";
+  const char demoChar6[] = "AIM TRUE";
+  const char demoChar7[] = "for the";
+  const char demoChar8[] = "GOLD";
+  const char demoChar9[] = "C";
+  const char demoChar10 = 250;
+  const char demoChar11[] = "Ab"; 
+  
+  for (;;) {
+    clearMatrix();    
+    writeSplash(false);
+    timeOut(2000);
+    clearMatrix();
+    timeOut(2000);    
+    HC12.print(F("font 11\r"));    HC12.flush();
+    sendSerialS( orange, /*column=*/ 2, /*line=*/ 20, demoChar2);
+    timeOut(2500);
+    clearMatrix();    
+    HC12.print(F("font 4\r"));    HC12.flush();
+    sendSerialS( green, /*column=*/ 4, /*line=*/ 10, demoChar3);
+    timeOut(800);
+    HC12.print(F("font 10\r"));    HC12.flush();
+    sendSerialS( red, /*column=*/ 2, /*line=*/ 30, demoChar4);
+    timeOut(2000);
+    clearMatrix();
+    timeOut(500);
+    HC12.print(F("font 4\r"));    HC12.flush();
+    sendSerialS( green, /*column=*/ 25, /*line=*/ 10, demoChar5);    
+    timeOut(500);
+    HC12.print(F("font 9\r"));    HC12.flush();
+    sendSerialS( green, /*column=*/ 2, /*line=*/ 28, demoChar6);
+    timeOut(1500);
+    clearMatrix();
+    HC12.print(F("font 4\r"));    HC12.flush();
+    sendSerialS( green, /*column=*/ 14, /*line=*/ 10, demoChar7);    
+    timeOut(800);
+    HC12.print(F("font 11\r"));    HC12.flush();
+    sendSerialS( orange, /*column=*/ 9, /*line=*/ 28, demoChar8);
+    timeOut(3000);
+    clearMatrix();
+    HC12.print(F("font 14\r"));    HC12.flush();
+    for (byte n = 0; n <= 2; n++){
+      for (byte i = 4; i<=45; i+=28){
+      sendSerialS( orange, /*column=*/ i, /*line=*/ 30, demoChar9);
+      sendChar( orange, /*column=*/ i + 15, /*line=*/ 30, demoChar10);
+      }
+      timeOut(500);
+      clearMatrix();
+      
+      sendSerialS( green, /*column=*/ 10, /*line=*/ 30, demoChar11);
+      sendChar( green, /*column=*/ 40, /*line=*/ 30, demoChar10);
+      timeOut(500);
+      clearMatrix();
+    }
+    timeOut(2000);       
+    if (!demoMode) break;
+    
+  }
+  clearMatrix(); 
+  return;
+}
+
+
+void timeOut(long long intervalSet) {
+  long long demoTimer = millis();  
+ for(;;) {
+  if (readButtons() == BUTTON4) {
+    clearMatrix();
+    demoMode = false;
+    return;
+    }
+  if (millis() - demoTimer >=  intervalSet) break;
+  }
+}

@@ -83,8 +83,11 @@ uint8_t         dataStore[]   = { 1, 10, 10, 2,           // |
                                   2, 0, 10, 0,            // |- default parameters; overwritten by card write
                                   0, 0, 0, 0,
                                   0, 0, 0, 0,             // |
-                                  //127, 212, 42, 198,      // security key - prevents cards being copied
                                   0, 0, 0};               // spares
+const byte Key1 =   127;
+const byte Key2 =   212;
+const byte Key3 =   042; 
+const byte Key4 =   198;                                  
 
 const char*     teamParam[15] = {"-OFF-",          " T R ", "MT R ",  " T C ", "MT C ",
                                 "","","","","","", " Tp R", "MTp R",  " Tp C", "MTp C" };

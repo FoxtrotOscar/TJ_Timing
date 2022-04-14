@@ -192,6 +192,9 @@ bool        intervalOn    = false;
 bool        started       = false;                // referencing the countdown timer status
 bool        reStartEnd    = false;
 bool        scrWait_Enable= false;                // status of waiting graphic scroll
+bool        demoMode      = true; //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 float       chFrq;
 uint16_t    lapsed        = 0;
 uint16_t    tempOffset    = 0;                    // used to hold the last format value in Clock
@@ -321,7 +324,7 @@ void setup() {
       goPowerOff();                               // check timer - if 1 mins passed, start 1 min countdown to shutoff
     }
   }
-  
+  if (demoMode) goDemoLoop(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   HC12.print(F("font 13\r"));                     //  Bignum font
   HC12.flush();
   wipeOLED();
