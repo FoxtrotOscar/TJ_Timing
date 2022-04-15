@@ -7,25 +7,20 @@ void introScreen(void){
     u8x8.setContrast(127);
     u8x8.draw2x2String(0, 2, " SYSTEM ");
     u8x8.draw2x2String(0, 6, "STARTING");
-    pause = millis();
-    do {} while (millis() - pause < tick);
-
+    pauseMe(tick);
     firstTime = false;
     wipeOLED();
-    pause = millis();
-    do {} while (millis() - pause < 100);
+    pauseMe(100);
     u8x8.draw2x2String(0, 2, "  READ ");
     u8x8.draw2x2String(0, 5, "SETTINGS");
-    pause = millis();      
-    do {} while (millis() - pause <  tick);
+    pauseMe(tick);
     wipeOLED();
   
     u8x8.draw2x2String(0, 2, "DATA TO");
     u8x8.draw2x2String(0, 6, " WRITE:");
-    pause = millis();
-    do {} while (millis() - pause < 2 * tick);
+    pauseMe(2*tick);
     wipeOLED();
-    showParams(12);
+    showAllParams(12);
 }
 
 
@@ -49,6 +44,19 @@ void writeReady (void){
   EEPROM.put(29, 111); 
   u8x8.setCursor(0, 7);
   u8x8.print("Cancel Write:[4]");
+}
+
+void pauseMe(uint16_t holdOff){
+  long long pause = millis();
+  do {} while (millis() - pause < holdOff);
+}
+
+void printParamVals(void){
+  for (byte i = 0; i <= 15; i++) {
+    Serial.print(nameParam[i]); 
+    Serial.print("  \t"); 
+    Serial.println(dataStore[i]); 
+  }
 }
 
 /*

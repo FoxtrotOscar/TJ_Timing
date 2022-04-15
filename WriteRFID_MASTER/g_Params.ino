@@ -2,23 +2,23 @@
 
 
 uint8_t pickParam(byte ct){
-  showParams(ct);
+  showAllParams(ct);
   for(;;){
     byte btn = readButtons();
     if (btn == BUTTON1) {
         break;                                          // exit with val
     } else if (btn == BUTTON2) {
         ct == 0 ? ct = 11 : ct -- ;                     // subtract, unless bounds reached
-        showParams(ct);
+        showAllParams(ct);
         
     } else if (btn == BUTTON3) {         
         ct >= 11 ? ct = 0 : ct ++ ;                     // add, unless bounds reached
-        showParams(ct);
+        showAllParams(ct);
         
     } else if (btn == BUTTON4) {
       printDebugLine(__LINE__, __NAME__);
       ct = 12;
-      showParams(ct);                                   // put out of parameter bounds.
+      showAllParams(ct);                                // put out of parameter bounds.
       break;
     }
   }
@@ -26,7 +26,7 @@ uint8_t pickParam(byte ct){
   return ct;
 }
 
-void showParams(byte index){
+void showAllParams(byte index){
   byte ct = 0;
   do{
     index == ct ? u8x8.inverse() : u8x8.noInverse();    // if the index == ct then hightlight
@@ -48,7 +48,7 @@ void showOneParam(byte ct, byte index){
   byte z;                                    
   u8x8.setCursor(x, y);                             
   u8x8.print(nameParam[ct]);                            // display the parameter name
-  z = ( ct == 0 ? startCounts[dataStore[ct]] :           
+  z = ( ct == 0 ? startCounts[dataStore[ct]] :
       ( ct == 11 ? (dataStore[ct] == 177 ? 1 : 
         dataStore[ct]): dataStore[ct]));                // mask Supervisor code
   u8x8.setCursor((z < 100 ?                             // parse the x position of the number
@@ -56,10 +56,12 @@ void showOneParam(byte ct, byte index){
                    : x+4), y);                          // and set its xy coordinates 
   u8x8.print(z);                                        // send it
 }
+/*teamParam[15] = {"-OFF-",           " T R ", "MT R ",  " T C ", "MT C ",
+                   "","","","","","", " Tp R", "MTp R",  " Tp C", "MTp C" };
+*/
 
 
-
-byte showParamVal(uint8_t ct){                           // cut one from the list and display solo
+void showParamVal(uint8_t ct){                           // cut one from the list and display solo
     wipeOLED();
     delay(300);
     clearFromLine(1);
@@ -69,45 +71,46 @@ byte showParamVal(uint8_t ct){                           // cut one from the lis
     u8x8.draw2x2String(12, 2, ": ");
     u8x8.setFont (u8x8_font_profont29_2x3_n);
     u8x8.setCursor(6, 4);
-    byte z =  ( ct ==  0 ? startCounts[dataStore[ct]] :   
-              ( ct == 11 ? (dataStore[ct] == 177 ? 1 : 
-                dataStore[ct]): dataStore[ct]));        // mask Supervisor code
-    u8x8.print(z);  
+    byte z =  ct ==  0 ? startCounts[dataStore[ct]] :   // the time value  
+              ct == 11 ? dataStore[ct] == 177 ? 1 :     // masking Supervisor code
+                dataStore[ct] : dataStore[ct] ;        
+    ct == 8 ? u8x8.print(teamParam[dataStore[ct]]) :    // show the TEAM setting
+              u8x8.print(z);                            // and print as set 
     u8x8.setFont(u8x8_font_chroma48medium8_r);
     u8x8.setCursor(0, 7);
     u8x8.print("[1]Yes < > No[4]");
-    return ct;
+    return;
 }
 
 void showTempVal(uint8_t ct, uint8_t temp){
     
-    u8x8.setFont (u8x8_font_profont29_2x3_n);
-    u8x8.setCursor(6, 4);
-    u8x8.print("    ");
-    u8x8.setCursor(6, 4);
-    u8x8.print(ct == 11 ? (temp == 177 ? 1: temp) : temp); // mask Supervisor code
+    u8x8.setFont (u8x8_font_profont29_2x3_r);
+    u8x8.setCursor(4, 4);
+    u8x8.print("       ");
+    ct == 8 ? u8x8.setCursor(3, 4) : u8x8.setCursor(6, 4);
+    ct == 8 ? u8x8.print(teamParam[temp]) : u8x8.print(ct == 11 ? (temp == 177 ? 1: temp) : temp); // mask Supervisor code
     u8x8.setFont(u8x8_font_chroma48medium8_r);
     u8x8.setCursor(0, 7);
     u8x8.print("[1]Yes < > No[4]");
 
   
 }  
+//
+//void setParams(void){
+//  uint8_t ct = pickParam(0);
+//  if (ct > 11) {
+//    ct = 0;
+//    return;
+//  }
+//  showParamVal(ct);
+//  alterParam(ct);
+//}
 
-void setParams(void){
-  uint8_t ct = pickParam(0);
-  if (ct > 11) {
-    ct = 0;
-    return;
-  }
-  showParamVal(ct);
-  alterParam(ct);
-}
 
 
-
-byte alterParam(uint8_t ct){
+void alterParam(uint8_t ct){
 /* nameParam[12] = {"Time" 0,8, "Walk" 1,2, "Ends" 2,byte<20 "Dets" 3,2, "Prac" 4,4, "Fnls" 5,bool, 
-                    "BrkT" 6,255, "Altr" 7,bool, "Team" 8,[0, 20, 21, 30, 31] , "A/B?" 9,bool, "Flnt" 10,bool, "Supv" 11, bool}*/
+                    "BrkT" 6,255, "Altr" 7,bool, "Team" 8,teamParam[15] , "A/B?" 9,bool, "Flnt" 10,bool, "Supv" 11, bool}*/
   uint8_t tempVal;
   
   switch (ct) {
@@ -315,23 +318,43 @@ byte alterParam(uint8_t ct){
       }
       break;
       
-    case  8:                                      //  TEAMPLAY: 4
-      tempVal = dataStore[ct];
-  
+    case  8:                                      // TEAMPLAY: 15
+      tempVal = dataStore[ct];                    // Team       1 = Recurve;  2= mixed Recurve;  3 Comp;   4 Mixed Comp                                               
+                                                  // TeamPlay  11 = Recurve; 12= mixed Recurve; 13 Comp;  14 Mixed Comp
+                                                  
+      showTempVal(ct, tempVal);
       for (bool valid = false; !valid; ) {
         switch (waitButton()) {
           case BUTTON1:
             dataStore[ct] = tempVal;
+            switch (dataStore[ct]){               // set default timing parameter for TEAM / MIXED TEAM
+              case 1:
+              case 3:
+              case 11:
+              case 13:
+                dataStore[0] = 1;
+                dataStore[2] = 5;                
+                break;
+              case  2:
+              case  4:
+              case 12:
+              case 14:
+                dataStore[0] = 2;
+                dataStore[2] = 5;
+                break;
+              default:
+                break;
+            }
             valid = true;
             break;  
       
           case BUTTON2: 
-            tempVal == 4 ? tempVal = 0 : tempVal ++ ;
+            tempVal == 4 ? tempVal = 11 : (tempVal == 14 ? tempVal = 0 : tempVal ++) ;
             showTempVal(ct, tempVal);
             break;
       
           case BUTTON3: 
-            tempVal == 0 ? tempVal = 4 : tempVal -- ;
+            tempVal == 0 ? tempVal = 14 : (tempVal == 11 ? tempVal = 4 : tempVal --) ;
             showTempVal(ct, tempVal);
             break;
       
@@ -416,6 +439,5 @@ byte alterParam(uint8_t ct){
       printDebugLine(__LINE__, __NAME__);
       break;
   }
-  printDebugLine(__LINE__, __NAME__);
-  return ct;
+  return;
 }

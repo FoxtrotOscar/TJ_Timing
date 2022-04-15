@@ -1,4 +1,4 @@
-
+ 
 
 
 void processRFID(void){
@@ -18,10 +18,9 @@ void processRFID(void){
   u8x8.draw2x2String(0, 2, "QUITTING");
   u8x8.draw2x2String(3, 4, "WRITE");
   u8x8.draw2x2String(4, 6, "MODE");
-  long long pause = millis();
-  do {} while (millis() - pause < 2 * tick);
+  pauseMe(2*tick); 
   wipeOLED();
-  showParams(12);
+  showAllParams(12);
 }
 
 void writeRFID(void){  
@@ -32,9 +31,9 @@ void writeRFID(void){
       return;
 
   #ifdef DEBUG
-    Serial.print(F("Card UID:"));                             // Show some details of the PICC (that is: the tag/card)
+    Serial.print(F("Card UID:"));                           // Show some details of the PICC (that is: the tag/card)
   #endif
-  dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
+  dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);   // Gets the UID into 'mfrc522.uid.uidByte' 
   #ifdef DEBUG
     Serial.println();
     Serial.print(F("PICC type: "));
@@ -49,44 +48,34 @@ void writeRFID(void){
     wipeOLED();
     u8x8.draw2x2String(5, 2, "BAD");
     u8x8.draw2x2String(4, 6, "CARD");
-    long long pause = millis();
-    do {} while (millis() - pause < 750);
+    pauseMe(750); 
     writeReady();
     return;
   }
+  byte numberOfBlocks = 2;
   byte sector         = 1;                                  //  we use the second sector: sector #1
   byte blockAddr      = 4;                                  // covering block #4 up to and including block #7
+  byte blockAddr1     = 5;
+  bool ctFlag         = false;
+  byte dataBlock[16];
+  byte i = sizeof(dataBlock);
+  while ( i-- ) *( dataBlock + i ) = *( dataStore + i );    // pop dataStore into dataBlock
 
-  
-  byte dataBlock[]    = {    
-
-      dataStore[0] , dataStore[1], dataStore[2], dataStore[3], 
-       
-      dataStore[4], dataStore[5], dataStore[6], dataStore[7], 
-       
-      dataStore[8], dataStore[9], dataStore[10], dataStore[11],
-       
-                                                            //    127, 212, 42, 198  :      SECURITY KEY
-                                                            //    0x7f, 0xd4, 0x2a, 0xc6 :  KEY in HEX
-      mfrc522.uid.uidByte[0] ^ dataStore[12],               //|
-      mfrc522.uid.uidByte[1] ^ dataStore[13],               //|_  XOR  UID with KEY to generate GUARD bytes
-      mfrc522.uid.uidByte[2] ^ dataStore[14],               //|   which will be decoded in target sys
-      mfrc522.uid.uidByte[3] ^ dataStore[15]                //|
+  byte dataBlock1[16]    = {
+                        0x00, 0x00, 0x00, 0x00,             //  
+                        0x00, 0x00, 0x00, 0x00,             //  
+                        0x00, 0x00, 0x00, 0x00,             //  
+                        mfrc522.uid.uidByte[0] ^ Key1,      //|   0x7f, 0xd4, 0x2a, 0xc6 :  KEY in HEX12-15
+                        mfrc522.uid.uidByte[1] ^ Key2,      //|_  positions 12-15
+                        mfrc522.uid.uidByte[2] ^ Key3,      //|   XOR  card UID with this KEY to generate GUARD bytes
+                        mfrc522.uid.uidByte[3] ^ Key4       //| 
   };
-
   
-  byte blockAddr1      = 5;
-  byte dataBlock1[]    = {
-      0x04, 0x03, 0x02, 0x01, //  4,   3,   2,  1,
-      0x08, 0x07, 0x06, 0x05, //  8,   7,   6,  5,
-      0x09, 0x0a, 0xff, 0x0b, //  9,  10, 255, 11,
-      0x0c, 0x0d, 0x0e, 0x0f  // 12,  13,  14, 15
-  };
   byte trailerBlock   = 7;
   MFRC522::StatusCode status;
   byte buffer[18];
   byte size = sizeof(buffer);
-
+  memset(buffer, 0, size);                                  // zero all of buffer
                                                      
   #ifdef DEBUG
     Serial.println(F("Authenticating using key A..."));       // Authenticate using key A
@@ -102,11 +91,12 @@ void writeRFID(void){
     u8x8.draw2x2String(0, 2, "PCD Auth");
     u8x8.draw2x2String(0, 6, " FAILED ");
     
-    pause = millis();
-    do {} while (millis() - pause < 500);
+    pauseMe(500);
     return;
   }
-
+  
+/* #################################################################*/
+//START OF OPERATION READ
   #ifdef DEBUG
     Serial.println(F("Current data in sector:"));             // Show the whole sector as it currently is
   #endif  
@@ -145,9 +135,13 @@ void writeRFID(void){
     #endif  
       return;
   }
-
+  printParamVals();
+  
+/*###########################################################################*/  
+// WRITING BLOCK STARTS HERE
+  
   #ifdef DEBUG
-    Serial.print(F("Writing data into block "));              // Write data to the block 
+    Serial.print(F("Writing data into block "));              
     Serial.print(blockAddr);
     Serial.println(F(" ..."));
   #endif
@@ -155,35 +149,39 @@ void writeRFID(void){
   #ifdef DEBUG
     Serial.println();
   #endif
-  //dump_byte_array(dataBlock1, 16); Serial.println();
-  status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr, dataBlock, 16);
+  status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr, dataBlock, 16);        // writing here
   if (status != MFRC522::STATUS_OK) {
     #ifdef DEBUG
       Serial.print(F("MIFARE_Write() failed: "));
       Serial.println(mfrc522.GetStatusCodeName(status));
     #endif  
   }
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   #ifdef DEBUG
     Serial.println();
-    Serial.print(F("Writing data into block "));              // Write data to the second block 
+    Serial.print(F("Writing data into block ")); 
     Serial.print(blockAddr1);
     Serial.println(F(" ..."));
   #endif
   dump_byte_array(dataBlock1, 16); Serial.println();
-  status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr1, dataBlock1, 16);
+  
+  status = (MFRC522::StatusCode) mfrc522.MIFARE_Write(blockAddr1, dataBlock1, 16);      // Write data to the second block 
   if (status != MFRC522::STATUS_OK) {
     #ifdef DEBUG
       Serial.print(F("MIFARE_Write() failed: "));
       Serial.println(mfrc522.GetStatusCodeName(status));
     #endif  
   }
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+// READBACK  
   #ifdef DEBUG
     Serial.println();
     Serial.print(F("Reading data from block "));              // Read data from the block 
     Serial.print(blockAddr);                                  // (again, should now be what we have written) 
     Serial.println(F(" ..."));
   #endif
-  status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);
+  status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr, buffer, &size);  
   if (status != MFRC522::STATUS_OK) {
     #ifdef DEBUG
       Serial.print(F("MIFARE_Read() failed: "));
@@ -193,10 +191,11 @@ void writeRFID(void){
   #ifdef DEBUG
     Serial.print(F("Data in block ")); Serial.print(blockAddr); Serial.println(F(":"));
   #endif
-  dump_byte_array(buffer, 16); 
+  dump_byte_array(buffer, 16);                           
   #ifdef DEBUG
     Serial.println();
   #endif
+  
   // Check that data in block is what we have written
   // by counting the number of bytes that are equal
   #ifdef DEBUG
@@ -211,34 +210,76 @@ void writeRFID(void){
   #ifdef DEBUG
     Serial.print(F("Number of bytes that match = ")); Serial.println(count);
   #endif
-  if (count == 16) {
+  if (count == 16) ctFlag = true;
+  #ifdef DEBUG
+    Serial.println();
+    Serial.print(F("Reading data from block "));              // Read data from the block 
+    Serial.print(blockAddr1);                                  // (again, should now be what we have written) 
+    Serial.println(F(" ..."));
+  #endif
+  status = (MFRC522::StatusCode) mfrc522.MIFARE_Read(blockAddr1, buffer, &size);  
+  if (status != MFRC522::STATUS_OK) {
+    #ifdef DEBUG
+      Serial.print(F("MIFARE_Read() failed: "));
+      Serial.println(mfrc522.GetStatusCodeName(status));
+    #endif  
+  }
+  #ifdef DEBUG
+    Serial.print(F("Data in block ")); Serial.print(blockAddr1); Serial.println(F(":"));
+  #endif
+  dump_byte_array(buffer, 16); 
+  #ifdef DEBUG
+    Serial.println();
+  #endif
+  
+  // Check that data in block is what we have written
+  // by counting the number of bytes that are equal
+  #ifdef DEBUG
+    Serial.println(F("Checking result..."));
+  #endif
+//  byte count = 0;
+  count = 0;
+  for (byte i = 0; i < 16; i++) {
+      // Compare buffer (= what we've read) with dataBlock (= what we've written)
+      if (buffer[i] == dataBlock1[i])
+          count++;
+  }
+  #ifdef DEBUG
+    Serial.print(F("Number of bytes that match = ")); Serial.println(count);
+  #endif
+  if (count == 16 && ctFlag) {
     #ifdef DEBUG
       Serial.println(F("Success :-)"));
     #endif
-    wipeOLED();
-    u8x8.draw2x2String(0, 3, "SUCCESS ");
-    long long pause = millis();
-    do {} while (millis() - pause < tick/2);
-    writeReady();
+
+    
+
+    #ifdef DEBUG
+    Serial.println();
+    // Dump the sector data
+    Serial.println(F("Data now in sector:"));
+  #endif
+  mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
+  #ifdef DEBUG
+    Serial.println();
+  #endif
+
   } else {
     #ifdef DEBUG
       Serial.println(F("Failure, no match :-("));
       Serial.println(F("  perhaps the write didn't work properly..."));
     #endif  
   }
-  #ifdef DEBUG
-    Serial.println();
-    // Dump the sector data
-    Serial.println(F("Current data in sector:"));
-  #endif
-  mfrc522.PICC_DumpMifareClassicSectorToSerial(&(mfrc522.uid), &key, sector);
-  #ifdef DEBUG
-    Serial.println();
-  #endif
+
   // Halt PICC
   mfrc522.PICC_HaltA();
   // Stop encryption on PCD
   mfrc522.PCD_StopCrypto1();
+  
+  wipeOLED();
+  u8x8.draw2x2String(0, 3, "SUCCESS ");
+  pauseMe(tick);
+  writeReady();
 }
 
 /**

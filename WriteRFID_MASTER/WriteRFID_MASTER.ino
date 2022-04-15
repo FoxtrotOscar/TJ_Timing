@@ -1,4 +1,4 @@
-/**
+ /**
  * Arduino Mega2650
  * 
  * Writes Parameters to the RFID cards used in the TimeJudge system
@@ -69,21 +69,30 @@ MFRC522::MIFARE_Key key;
 
 const uint16_t  tick          = 1000;
 
-uint8_t         startCounts[] = {240, 120, 80, 40, 20, 180, 90, 180, 30};
-uint8_t         teamPlay[]    = {0, 20, 21, 30, 31};
+const byte      startCounts[9] = {240, 120, 80, 40, 20, 180, 90, 180, 30};
 const char*     flintWalk[5]  = {"30 YD", "25 YD", "20 YD", "15 YD", ""};
 const char*     flint[6]      = {"25 YD", "20 FT", "30 YD", "15 YD", "20 YD", "10 YD"};
 
 
-const char*     nameParam[12] = {"Time", "Walk", "Ends", "Dets", 
+const char*     nameParam[16] = {"Time", "Walk", "Ends", "Dets", 
                                   "Prac", "Fnls", "BrkT", "Altr", 
-                                  "Team", "A/B?", "Flnt", "Supv"};
+                                  "Team", "A/B?", "Flnt", "Supv"
+                                  "","","","Bann"};
 
-uint8_t         dataStore[]   = { 1, 10, 10, 2,           // |
-                                  2, 0, 10, 0,            // |- default parameters; overwritten by card write
-                                  0, 0, 0, 0,             // |
-                                  127, 212, 42, 198,      // security key - prevents cards being copied
-                                  199, 200};              // spares
+uint8_t         dataStore[16]   = { 1, 10, 10, 2,         // |
+                                    2, 0, 10, 0,          // |- default parameters; overwritten by card write
+                                    0, 0, 0, 0,           // |
+                                    0, 0, 0, 0  };        // spares
+
+                                                                    
+const byte Key1 =   127;
+const byte Key2 =   212;
+const byte Key3 =   42; 
+const byte Key4 =   198;                                  
+
+const char*     teamParam[15] = {"-OFF-",          " T R ", "MT R ",  " T C ", "MT C ",
+                                "","","","","","", " Tp R", "MTp R",  " Tp C", "MTp C" };
+                                  
 
 enum ButtonValueMask {
   BUTTON1       = 1,                                    // in binary: 00001
@@ -100,7 +109,6 @@ const int button4Pin = 4;
 int currState1 = HIGH;
 int prevState1 = HIGH;
 
-long long pause = 0;
 bool firstTime = true;
 
  //****************************************************************************
@@ -120,11 +128,14 @@ void setup() {
   pinMode(button2Pin, INPUT_PULLUP);                // Button2 for RESTART / MENU / UP / 
   pinMode(button3Pin, INPUT_PULLUP);                // Button3 for DOWN
   pinMode(button4Pin, INPUT_PULLUP);                // Button4 for EMERGENCY STOP / menu EXIT, no change
-    
+  //for (byte i = 0; i <= 16; i++) EEPROM.put(i, 0);// clean the EEPROM  
+  
+  // 
   if (EEPROM.read(29) == 111) {                     // if flag for parameters stored is set?
     EEPROM.get(0, dataStore);                       // Copies most recent parameters back in
   }
-  
+  pauseMe(200);
+  dataStore[15] = 0;
   mfrc522.PCD_Init(); // Init MFRC522 card
   mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
                                                     // Prepare the key (used both as key A and as key B)
@@ -168,14 +179,15 @@ void loop() {
           showParamVal(paramIndex);
           alterParam(paramIndex);
           clearFromLine(1);
-          showParams(paramIndex);
+          showAllParams(paramIndex);
           delay(50);
           printDebugLine(__LINE__, __NAME__);
           
         }
       } while (!(waitButton() == BUTTON4) || (paramIndex == 12));
      clearFromLine(1); 
-     showParams(12);
+     showAllParams(12);
+     printParamVals();
     }
   }
 }    
