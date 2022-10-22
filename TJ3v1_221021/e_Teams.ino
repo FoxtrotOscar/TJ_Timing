@@ -93,8 +93,10 @@ void goTeamPlay(byte teamType){                                                 
           HC12.print(F("font 13\r"));
           goClock(offSet, nID);                                                     // Handles formatting of the display
           sendNumber((n_Count_[nID] > 0 ? txtColour : 1), colNumber, lnNumber, n_Count_[nID] );
-          n_Count_[nID] > 0 ? n_Count_[nID]-- : nID = (nID == 1? set_B(1) : set_A(2)); // catch rou-out
+          n_Count_[nID] > 0 ? n_Count_[nID]-- : 
+                              nID = (nID == 1? set_B(1) : set_A(2));                // catch run-out
           if(flipFlag || shootOff){                                                 // if alternative screens and detail change is invoked
+            goWhistle(1);          
             shootOff ?
                 tempArrowCount[nID] -= 1 :                                          // as shootoff reduce arrowcount in flip-flop 
                 tempArrowCount[nID] -= set_size;                                    // reduce by the qty of arrows per set of 2 or 3  
@@ -137,7 +139,7 @@ void goTeamPlay(byte teamType){                                                 
     }
     writeShootOff();
     //printDebugLine(false, __LINE__, __NAME__); 
-    //if (sEcount > 1 && sEcount <= p_Store.maxEnds ) writeScoring();
+    //if (sEcount > 1 && sEcount <= p_Store.maxEnds ) writeReadySet();
     //clearFromLine(shootOff ? 6 : 1);
     clearFromLine(6);
     u8x8.setCursor(0, 6);

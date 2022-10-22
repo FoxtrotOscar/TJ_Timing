@@ -144,6 +144,7 @@ struct PARAMSTORE {
   uint8_t   whichArcher         =  0;             // (9)  0 = ""; 1 = "A"; 2 = "B"
   uint8_t   isFlint             =  0;             //(10)  if True this is a flint round
   uint8_t   curChan             =  0;             //(11)
+
   uint8_t   B_ScrCh             =  0;             //(12)  shows chann no. if dual screens are set up
   uint8_t   which_Scr_1st       =  0;             //(13)  false until screen-flip in progress, then 1 or 2 for A or B
   uint8_t   PS14                =  0;             //(14)|___  Spares
@@ -178,9 +179,9 @@ constexpr uint16_t tick   = 1000;
 constexpr uint16_t tock   = 5;
 
                                                   // This is the main count index!!!
-int         n_Count_[]    = {startCounts[p_Store.startCountsIndex],
+int         n_Count_[]    = { startCounts[p_Store.startCountsIndex],
                               startCounts[p_Store.startCountsIndex], 
-                              startCounts[p_Store.startCountsIndex]};
+                              startCounts[p_Store.startCountsIndex] };
 bool        shootDetail   = 0;                    // toggled for Details AB or CD: 0=AB, 1=CD
 int8_t      sE_iter       = 0;                    // Count of End iterations
 int8_t      sEcount       = 1;                    // Count of  actual Ends, from 1 to maxEnds

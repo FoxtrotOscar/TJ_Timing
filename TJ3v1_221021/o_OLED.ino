@@ -59,7 +59,7 @@ void writeStopwatch(int n ){
   u8x8.inverse();
   u8x8.setFont(u8x8_font_pressstart2p_n);
   u8x8.print(" ");
-  u8x8.print(n );                                                   // Running Time
+  u8x8.print(n < 0 ? 0 : n );                                     // Running Time
   u8x8.print(" ");
   u8x8.noInverse();
   u8x8.setFont(u8x8_font_chroma48medium8_r);
@@ -74,7 +74,7 @@ void writeOLED_Data(uint8_t archerIndex, byte nID){
   u8x8.setCursor(11,1);
   u8x8.print("     ");
   u8x8.setCursor(11,1);
-  u8x8.print(n_Count_[nID] );                                       // Running Time
+  u8x8.print(n_Count_[nID] < 0 ? 0 : n_Count_[nID]);                // Running Time
   u8x8.setCursor(11,2);
   if (!countPractice){   
     u8x8.print(sEcount) ;                                           // Running End Count

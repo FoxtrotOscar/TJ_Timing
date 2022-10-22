@@ -212,7 +212,6 @@ void clearMatrix(bool scrollOn){
     pauseMe(4*tock);
   }
   HC12.print(F("clear\r"));
-  //HC12.flush();
   HC12.print(F("paint\r"));
   HC12.flush();
   pauseMe(100);
@@ -735,22 +734,33 @@ void printDebugLine(bool dets, uint16_t lineNo, const char* FileName){
     Serial.print(F(" in TAB: "));
     Serial.println(FileName);
     if (dets){
-      Serial.print(F("continueOn :\t"));
-      Serial.println(continueOn);
-      Serial.print(F("startOver :\t"));
-      Serial.println(startOver);
-      Serial.print(F("sEcount :\t"));
-      Serial.println(sEcount);
-      Serial.print(F("sE_iter :\t"));
-      Serial.println(sE_iter);    
-      Serial.print(F("countPractice :\t"));
-      Serial.println(countPractice); 
-      Serial.print(F("arrowCount :\t"));
-      Serial.println(arrowCount);
       Serial.print(F("pS.CtIndex :\t"));
       Serial.println(p_Store.startCountsIndex);
+      Serial.print(F("pS.walkUp :\t"));
+      Serial.println(p_Store.walkUp);
+      Serial.print(F("pS.maxEnds :\t"));
+      Serial.println(p_Store.maxEnds);
+      Serial.print(F("pS.Details :\t"));
+      Serial.println(p_Store.Details);
+
+      Serial.print(F("pS.maxPrac :\t"));
+      Serial.println(p_Store.maxPrac);
+      Serial.print(F("pS.isFinals :\t"));
+      Serial.println(p_Store.isFinals);
+      Serial.print(F("pS.breakPeriod :\t"));
+      Serial.println(p_Store.breakPeriod);
+      Serial.print(F("pS.isAlternating :\t"));
+      Serial.println(p_Store.isAlternating);
+
+      Serial.print(F("pS.teamPlay :\t"));
+      Serial.println(p_Store.teamPlay);
+      Serial.print(F("pS.whichArcher :\t"));
+      Serial.println(p_Store.whichArcher);
+      Serial.print(F("pS.isFlint :\t"));
+      Serial.println(p_Store.isFlint);
       Serial.print(F("pS.curChan :\t"));
       Serial.println(p_Store.curChan);
+
       Serial.print(F("pS.B_ScrCh :\t"));
       Serial.println(p_Store.B_ScrCh);
       Serial.print(F("pS.which_Scr_1st :\t"));
@@ -759,16 +769,33 @@ void printDebugLine(bool dets, uint16_t lineNo, const char* FileName){
       Serial.println(p_Store.PS14);
       Serial.print(F("pS.PS15 :\t"));
       Serial.println(p_Store.PS15);
+      
+      
+      Serial.print(F("shootDetail :\t"));
+      Serial.println(shootDetail);
+      Serial.print(F("sE_iter :\t"));
+      Serial.println(sE_iter);
+      Serial.print(F("sEcount :\t"));
+      Serial.println(sEcount);
+      Serial.print(F("countPractice :\t"));
+      Serial.println(countPractice);
+      Serial.print(F("continueOn :\t"));
+      Serial.println(continueOn);
+      Serial.print(F("startOver :\t"));
+      Serial.println(startOver);
+          
+       
+      Serial.print(F("arrowCount :\t"));
+      Serial.println(arrowCount);
+
+      ;
       Serial.print(F("n_Count_[0] :\t"));
       Serial.println(n_Count_[0]);
       Serial.print(F("n_Count_[1] :\t"));
       Serial.println(n_Count_[1]);
       Serial.print(F("n_Count_[2] :\t"));
       Serial.println(n_Count_[2]);             
-//      Serial.print(F("pS.PS16 :\t"));
-//      Serial.println(p_Store.PS16);
-//      Serial.print(F("pS.PS17 :\t"));
-//      Serial.println(p_Store.PS17);      
+      
 //      Serial.print(F("Key12 :\t"));
 //      Serial.println(Key12);
 //      Serial.print(F("Key13 :\t"));

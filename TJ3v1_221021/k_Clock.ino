@@ -21,7 +21,7 @@
   118 sendSerialS  x3
   146 writeHalt
   180 writeReady
-  209 writeScoring
+  209 writeReadySet
   232 doBarCount
   276 doCountdownBar
   338 goGreenZero
@@ -176,9 +176,11 @@ void writeHalt(void){
       }
     }
   }else {
-    printDebugLine(true, __LINE__, __NAME__);
-    if (continueOn) writeScoring();
-    else if (!(sEcount > p_Store.maxEnds)) writeReady() ; 
+    printDebugLine(false, __LINE__, __NAME__);
+    see("continueOn", continueOn);
+    if (continueOn) writeReadySet();
+    else if (!(sEcount > p_Store.maxEnds)) writeReady() ;
+    pauseMe(2000); //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<kill 
   }
 }
 
@@ -206,13 +208,7 @@ void writeReady(void){
   sendSerialS( /*colour=*/ orange, /*column=*/ 1, /*line=*/ 30, i0,i1);
 }
 
-void writeScoring(void){
-  score_Collect();
-#ifdef DEBUG
-  pauseMe(2000); 
-#else
-  pauseMe(6000);
-#endif
+void writeReadySet(void){
   clearMatrix(false);
   sendSerialS(2, 0, 15, "   READY");
   sendSerialS(2, 0, 29, "   SET:");
@@ -227,7 +223,11 @@ void score_Collect(void){
   HC12.flush();
   sendSerialS(2, 10, 15, "SCORE +");
   sendSerialS(2, 5, 29, "COLLECT");
-  
+  #ifdef DEBUG
+  pauseMe(2000); 
+#else
+  pauseMe(6000);
+#endif
 }
 
 /*
@@ -246,8 +246,8 @@ void doBarCount(uint8_t archerIndex, byte nID){                     // set to p_
   writeOLED_Data(archerIndex, nID);
   if (!p_Store.isFinals && 
       !p_Store.B_ScrCh  && 
-      !countPractice    && 
-       sEcount >= 1)         {                                      // if not final/team and the count is >1
+      !countPractice    /*&& 
+       sEcount >= 1*/)         {                                      // if not final/team and the count is >1
     HC12.print(F("font "));
     HC12.print((!p_Store.isFlint && !p_Store.isAlternating) ? 7 : 9 );   // if not a flint && not alternating
     HC12.print(F("\r"));
@@ -266,6 +266,7 @@ void doBarCount(uint8_t archerIndex, byte nID){                     // set to p_
       sendNumber(orange, colNumber, lnNumber, sEcount);             //If not (flint && count >7)
     }
   } else if (!p_Store.B_ScrCh && !countPractice && p_Store.isAlternating ){
+    printDebugLine(false, __LINE__, __NAME__);
     HC12.print(F("font 9\r")); 
     i0 = "ARCHER: ";
     i1 = (archerIndex == 1 ? "A" : "B");                            // Write Archer:

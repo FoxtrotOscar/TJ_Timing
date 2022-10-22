@@ -16,7 +16,8 @@
 */
 
 void loop() {
-  //if (demoMode) goDemoLoop(); 
+  //if (demoMode) goDemoLoop();
+  printDebugLine(false, __LINE__, __NAME__); 
   if ((sEcount > p_Store.maxEnds) || startOver) {          // test here for DONE or reset
     if (p_Store.maxEnds != 1) {                            // But not for single ends
       clearFromLine(1);
@@ -69,6 +70,7 @@ void loop() {
       HC12.flush();                                    
       if (p_Store.isAlternating && p_Store.teamPlay < 11) {
         clearFromLine(5);
+        printDebugLine(false, __LINE__, __NAME__);
         goChooseArcher();
       } else  p_Store.whichArcher = 0;
     }

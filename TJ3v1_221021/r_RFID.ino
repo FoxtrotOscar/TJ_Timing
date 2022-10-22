@@ -77,7 +77,7 @@ void getRFID(struct PARAMSTORE *p_S){
     len = sizeof(buffer2);
     blockAddr      = 4;                                       // Go to BLOCK 4 to read for DATA
 //    MFRC522::StatusCode status;
-    //status = (MFRC522::StatusCode) mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, /*trailerBlock*/ 4, &key, &(mfrc522.uid));
+//    status = (MFRC522::StatusCode) mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, /*trailerBlock*/ 4, &key, &(mfrc522.uid));
 //    status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, 4, &key, &(mfrc522.uid));
 //    if (status != MFRC522::STATUS_OK) {
 //      return;
@@ -88,14 +88,15 @@ void getRFID(struct PARAMSTORE *p_S){
     //printDebugLine(false, __LINE__, __NAME__);
     buffChk(buffer2, 0, len);
     if (buffer2[15] == 1) {
-      EEPROM.put(27, 180);                                  // Set flag for loaded banner
+      EEPROM.update(27, 180);                                  // Set flag for loaded banner
       pauseMe(160);
       clearFromLine(1);
       u8x8.draw2x2String(2, 2, "BANNER");
       u8x8.draw2x2String(2, 4, "LOADED");
       pauseMe(tick/2);
     } else {
-      EEPROM.put(27, 0);                                  // Set flag for no loaded banner
+      //EEPROM.put(27, 0);                                  // Set flag for no loaded banner
+      EEPROM.update(27, (char)0);                                  // Set flag for no loaded banner
       pauseMe(120);
     }
       
@@ -105,28 +106,37 @@ void getRFID(struct PARAMSTORE *p_S){
       //for (byte i = 0; i<=30; i++) EEPROM.put(i, 0);//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       
       //mfrc522.MIFARE_Read(blockAddr, (byte*)p_S, &size);   // Here the data is copied into p_S
+      // printDebugLine(false, __LINE__, __NAME__);
+      // see("sEcount", sEcount);
       mfrc522.MIFARE_Read(blockAddr, (byte*)p_S, &len); 
-      //printDebugLine(true, __LINE__, __NAME__);
-      //debugEEPROM(0, 28);
+      // printDebugLine(false, __LINE__, __NAME__);
+      // see("sEcount", sEcount);
       pauseMe(180);
       EEPROM.put(0, p_Store);                               // Here the p_Store data is copied into EEPROM 
+      // printDebugLine(false, __LINE__, __NAME__);
+      // see("sEcount", sEcount);
       pauseMe(200);
       if (EEPROM.read(0) > 8) {
         goodFlag = false;
-        printDebugLine(true, __LINE__, __NAME__);
-        debugEEPROM(0, 28);
+        //printDebugLine(false, __LINE__, __NAME__);
+        // debugEEPROM(0, 28);
       }        
       p_Store.curChan = currentCh;                          // write the channel(s) back in to the parameters
       p_Store.B_ScrCh = B_Ch;
       EEPROM.put(20, 111);                                  // set flag for stored parameters
       pauseMe(200);
-      debugEEPROM(20, 0);
+      // printDebugLine(false, __LINE__, __NAME__);
+      // see("sEcount", sEcount);
+      // debugEEPROM(20, 0);
       if (goodFlag) displayParamsOnOLED(); //############################################+
       goodFlag ? clearFromLine(5) : clearFromLine(1) ;
       u8x8.inverse(); 
       u8x8.draw2x2String(0, 6, goodFlag ? "TIME-TAP" : "ERR-redo");
-      u8x8.noInverse();       
+      u8x8.noInverse();
+      // printDebugLine(false, __LINE__, __NAME__); 
+      // see("sEcount", sEcount);      
       sEcount = 1;                                          // reset the count to beginning as new params set
+      // see("sEcount", sEcount);
       zeroSettings();
       
       if (p_Store.teamPlay && goodFlag) {
@@ -141,7 +151,7 @@ void getRFID(struct PARAMSTORE *p_S){
     }
     else if (alterChannelWarning())   new_Channel(true);    // Supervisor: test intent & proceed with GLOBAL channel change
     else {                                                  // otherwise discard the command and return to top menu.
-      displayParamsOnOLED();                                
+      displayParamsOnOLED(); 
       clearFromLine(5);
       u8x8.inverse(); 
       u8x8.draw2x2String(0, 6, "-DISCARD");
@@ -161,7 +171,9 @@ void getRFID(struct PARAMSTORE *p_S){
   mfrc522.PCD_StopCrypto1();
   goodFlag ? displayParamsOnOLED() : u8x8.draw2x2String(0, 6, " -OOPS ");
   writeMenuCommands();
-  debugEEPROM(20, 0);
+  // printDebugLine(false, __LINE__, __NAME__);
+  // see("sEcount", sEcount);
+  // debugEEPROM(20, 0);
 }
 
 void buffChk( byte buff[18], byte lowBuff, byte hiBuff){                   // serial print the BUFFER
