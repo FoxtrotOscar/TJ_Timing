@@ -26,7 +26,7 @@
   347   redBorder
   353   sendChar
   360   sendScrollChar
-  371   zeroSettings
+  395   zeroSettings
   385   goReboot
   401   readButton
   412   readButtonNoDelay
@@ -807,15 +807,17 @@ void printDebugLine(bool dets, uint16_t lineNo, const char* FileName){
     }
 }
 
-void see(const char* peek,  uint8_t seeMe){
-  #ifndef DEBUG
-  return;
-  #endif  
-  Serial.print(F("peek at var '"));
-  Serial.print((const char*) peek);
-  Serial.print("': ");
-  Serial.println(seeMe);
-}
+// void see(const char* peek,  uint8_t seeMe){
+//   #ifndef DEBUG
+//   return;
+//   #endif  
+//   Serial.print(F("peek at var '"));
+//   Serial.print((const char*) peek);
+//   Serial.print("': ");
+//   Serial.println(seeMe);
+// }
+
+
 
 
 /*#############################################################################################################*/

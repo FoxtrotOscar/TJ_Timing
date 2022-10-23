@@ -177,7 +177,7 @@ void writeHalt(void){
     }
   }else {
     printDebugLine(false, __LINE__, __NAME__);
-    see("continueOn", continueOn);
+    see(continueOn);
     if (continueOn) writeReadySet();
     else if (!(sEcount > p_Store.maxEnds)) writeReady() ;
     pauseMe(2000); //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<kill 

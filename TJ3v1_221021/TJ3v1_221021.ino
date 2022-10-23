@@ -86,6 +86,19 @@ byte noWhistles = false;      // set to false unless dev.
 
 #define __NAME__ (strrchr(__FILE__,'\\') ? strrchr(__FILE__,'\\')+1 : __FILE__)
                               // setup part of DEBUG string, so TAB can be reported
+#define see(variableName) \
+        Serial.print( F( #variableName" = ") ); \
+        Serial.println(variableName); 
+
+/*
+#define line(lineNo, FileName, variableName) \
+        Serial.print( F( #lineNo" = ") ); \
+        Serial.print(lineNo); \
+        Serial.print( F( ", "#fileName" = ") ); \
+        Serial.print(fileName); \
+        Serial.print( F( ", "#variableName" = ") ); \
+        Serial.println(variableName);
+*/
 uint16_t BAUD         = 2400;
 uint16_t commandBAUD  = 9600;
 
@@ -148,8 +161,10 @@ struct PARAMSTORE {
   uint8_t   B_ScrCh             =  0;             //(12)  shows chann no. if dual screens are set up
   uint8_t   which_Scr_1st       =  0;             //(13)  false until screen-flip in progress, then 1 or 2 for A or B
   uint8_t   PS14                =  0;             //(14)|___  Spares
-  uint8_t   PS15                =  0;             //(15)|
-};
+  uint8_t   PS15                =  1;             //(15)| Banner loaded ?
+  uint8_t   PS16                =  0;             //(16)|___  Spares
+  uint8_t   PS17                =  0;             //(17)|
+}  __attribute__ ((packed));
 struct    PARAMSTORE p_Store;
 
 

@@ -267,72 +267,67 @@ byte setControlChannel(byte newChan){                       // Write to the cont
 
 void setB_Chan(void){                                       // in TEAMPLAY we use 2 x screens showing independently
   byte B_Chan = p_Store.curChan;
-  //printDebugLine(true, __LINE__, __NAME__);
-  //debugEEPROM(18, 0);
-  //for (;;) {
-
-    if (EEPROM.read(18) == 1) {                             // If this screen channel selection is already done:
-      clearFromLine(1);  
-      u8x8.setCursor(0, 4);
-      u8x8.print("A&B screens SET");
-      pauseMe(tick);
-      u8x8.setCursor(0, 5);
-      u8x8.print("Keep     :BTN[2]");
-      u8x8.setCursor(0, 6);
-      u8x8.inverse();
-      u8x8.print("Redo SET: BTN[3]");
-      u8x8.noInverse();
-      u8x8.setCursor(0, 7);
-      u8x8.print("NO TeamPl:BTN[4]");
-      
-      pauseMe(tick);
-      //unsigned long offTimer = millis();
-      bool flag = false;
-      for (;;) {
-        
-        switch (readButtons()){
-          
-          case BUTTON2:                                     // KEEP
-              
-              flag = true;
-              break;
-  
-          case BUTTON3:                                     // DO OVER
-              p_Store.B_ScrCh = 0;
-              flag = true;
-              break;
+  if (EEPROM.read(18) == 1) {                             // If this screen channel selection is already done:
+    clearFromLine(1);  
+    u8x8.setCursor(0, 4);
+    u8x8.print("A&B screens SET");
+    pauseMe(tick);
+    u8x8.setCursor(0, 5);
+    u8x8.print("Keep     :BTN[2]");
+    u8x8.setCursor(0, 6);
+    u8x8.inverse();
+    u8x8.print("Redo SET: BTN[3]");
+    u8x8.noInverse();
+    u8x8.setCursor(0, 7);
+    u8x8.print("NO TeamPl:BTN[4]");
     
-          case BUTTON4:                                     // EXIT Teamplay setup 
-              clearFromLine(1);                        
-              u8x8.draw2x2String(5, 2, "Use");
-              u8x8.draw2x2String(0, 5, "ONE Chan");
-              setControlChannel (p_Store.B_ScrCh);          // change frequency to the B chann 
-              writeRemoteChannel(p_Store.curChan);          // set B chan back to main A channel.
-              setControlChannel (p_Store.curChan);          // back to square 1
-              pauseMe(1000);
-              p_Store.teamPlay    -= 10;                    // Step to standard, single-chann Team setup
-              p_Store.B_ScrCh     = 0;
-              EEPROM.put(18, 0);                            // UnSet B_Screen flag
-              goWhistle(1);
-              pauseMe(12);
-              return;                                       // get out of the function
-              
-        }
-        if (flag) break;                                    // exit 
-      }
-      if (p_Store.B_ScrCh) return;                         // if Accept as Set (eg true), return 
-    }
-            
-/*      
- *  Write "Turn off all A chann screens and proceed with desired B chann screens only".       
- *  -> OK to proceed
- */ 
-    clearFromLine(1);
+    pauseMe(tick);
+    //unsigned long offTimer = millis();
+    bool flag = false;
     for (;;) {
+      
+      switch (readButtons()){
+        
+        case BUTTON2:                                     // KEEP
+            
+            flag = true;
+            break;
+
+        case BUTTON3:                                     // DO OVER
+            p_Store.B_ScrCh = 0;
+            flag = true;
+            break;
+  
+        case BUTTON4:                                     // EXIT Teamplay setup 
+            clearFromLine(1);                        
+            u8x8.draw2x2String(5, 2, "Use");
+            u8x8.draw2x2String(0, 5, "ONE Chan");
+            setControlChannel (p_Store.B_ScrCh);          // change frequency to the B chann 
+            writeRemoteChannel(p_Store.curChan);          // set B chan back to main A channel.
+            setControlChannel (p_Store.curChan);          // back to square 1
+            pauseMe(1000);
+            p_Store.teamPlay    -= 10;                    // Step to standard, single-chann Team setup
+            p_Store.B_ScrCh     = 0;
+            EEPROM.put(18, 0);                            // UnSet B_Screen flag
+            goWhistle(1);
+            pauseMe(12);
+            return;                                       // get out of the function
+            
+      }
+      if (flag) break;                                    // exit 
+    }
+    if (p_Store.B_ScrCh) return;                         // if Accept as Set (eg true), return 
+  }
+            
+    /*      
+    *  Write "Turn off all A chann screens and proceed with desired B chann screens only".       
+    *  -> OK to proceed
+    */ 
+  clearFromLine(1);
+  for (;;) {
     p_Store.curChan <= 91 ?                                 // get the ++new channel number, separated by 5Ch
                       B_Chan = p_Store.curChan +5 :
                       B_Chan = p_Store.curChan -5;          // if MAX ch then --ch
-    //printDebugLine(true, __LINE__, __NAME__);                  
     const long    _interval   = 500;
     unsigned long toggle      = millis();
     bool          toggleFlag  = false;                   
@@ -368,31 +363,30 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
         p_Store.B_ScrCh     = 0;
         EEPROM.put(18, 0);                                // unset B_Screen flag
         goWhistle(1);
-        pauseMe(120);
+        //pauseMe(120);
         return;        //
       }
     }
-    //printDebugLine(true, __LINE__, __NAME__);
     clearFromLine(1);
     u8x8.draw2x2String(0, 6, "..WAIT..");
     /* 
-     *  Name the current chan: p_Store.curChan
-     *  here select the channel (auto +5 with option to change)
-     */
+      *  Name the current chan: p_Store.curChan
+      *  here select the channel (auto +5 with option to change)
+      */
     writeRemoteChannel(B_Chan);                           // set the new channel freq. on to all active screens (usually +5)
     EEPROM.put(18, 1);                                    // set B_Screen flag
     goWhistle(1);
     pauseMe(12);
     p_Store.B_ScrCh = B_Chan;
-  /*              
-  * Display B chann on screens and request conf.              
-  * -> OK  -> TEST or -> REDO
-  * Write "Turn on all screens, A & B" 
-  * -> OK for test
-  * Test seq: 
-  * -> OK  or -> REDO
-  * if OK then write READY
-  */
+      /*              
+      * Display B chann on screens and request conf.              
+      * -> OK  -> TEST or -> REDO
+      * Write "Turn on all screens, A & B" 
+      * -> OK for test
+      * Test seq: 
+      * -> OK  or -> REDO
+      * if OK then write READY
+      */
     setControlChannel(B_Chan);                            // Now shift the controller freq. to talk to the new channel
     pauseMe(2*tick);
     HC12.print(F("font 9\r"));    HC12.flush();
@@ -457,7 +451,6 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
           pauseMe(120);
           flag = true;
           break;
-             
       }
       if (flag) break;                                        // exit infinite loop if BUTTON1 has been selected
     }   

@@ -10,8 +10,10 @@ void goFinals_Op(byte nID){
   /*
   * check for button1 press to start
   */
-  while (continueOn && !startOver) {  
-    printDebugLine(false, __LINE__, __NAME__);
+  while (continueOn && !startOver) { 
+    printDebugLine(false, __LINE__, __NAME__); 
+    see(offSet);
+    see(menu0[3]);
     arrowCount = shootOff ? 1 : 3;                      // if a shootoff then 1 arrow per player unless teamplay
     tempCount  = 0;
     while (arrowCount > 0 ) {
