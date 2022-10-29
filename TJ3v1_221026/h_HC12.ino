@@ -203,6 +203,7 @@ byte set_A(byte nID){                                       // alter the operati
   redBorder(true, 2);                                       // write red border on B channel and fill with n_Count_[2]
   pauseMe(50);
   setControlChannel(p_Store.curChan);                       // change control to A
+  pauseMe(50);
   redBorder(false, 0);                                      // flash green screen
   pauseMe(50);
   return 1;
@@ -214,27 +215,36 @@ byte set_B(byte nID){
   redBorder(true, 1);                                       // write red border on A channel and fill with n_Count_[1]
   pauseMe(50);
   setControlChannel(p_Store.B_ScrCh);                       // change control to B
+  pauseMe(50);
   redBorder(false, 0);                                      // flash green screen
   pauseMe(50);
   return 2;
 }
 
 void clearAB(byte nID, bool score){                         // empty both screens
-  nID == 1 ? setControlChannel(p_Store.B_ScrCh) : setControlChannel(p_Store.curChan);
-  pauseMe(50);
+  // nID == 1 ? setControlChannel(p_Store.B_ScrCh) : setControlChannel(p_Store.curChan);
+  // pauseMe(50);
   clearMatrix(false);
-  if (score) score_Collect();
-  nID == 1 ? setControlChannel(p_Store.curChan) : setControlChannel(p_Store.B_ScrCh) ;
-  pauseMe(50);
+  if (score) score_Collect(false);
+  //HC12.flush();
+  pauseMe(20);
+  nID <= 1 ? setControlChannel(p_Store.B_ScrCh) : setControlChannel(p_Store.curChan);
   clearMatrix(false);
-  if (score) score_Collect();
-  
+  if (score) score_Collect(false);
+  //HC12.flush();
+  pauseMe(20);
+  nID <= 1 ? setControlChannel(p_Store.curChan) : setControlChannel(p_Store.B_ScrCh);
+  // #ifdef DEBUG
+  // pauseMe(2000); 
+  // #else
+  // pauseMe(6000);
+  // #endif
 }
 
 
 byte setControlChannel(byte newChan){                       // Write to the controller with a channel change
   char    HC12ByteIn;                                       // Temporary variable
-  bool isOK = false;                                        // True when successful
+  bool    isOK            = false;                          // True when successful
   String  HC12ReadBuffer  = "";                             // Read/Write Buffer 1 for HC12
   String  tmp_str = makeControlString(newChan);             // parse the text needed for the command
   digitalWrite(HC12SetPin, LOW);                            // Now enter COMMAND mode locally
@@ -291,6 +301,7 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
         case BUTTON2:                                     // KEEP
             
             flag = true;
+            readyAB();
             break;
 
         case BUTTON3:                                     // DO OVER
@@ -388,9 +399,10 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
       * if OK then write READY
       */
     setControlChannel(B_Chan);                            // Now shift the controller freq. to talk to the new channel
-    pauseMe(2*tick);
-    HC12.print(F("font 9\r"));    HC12.flush();
+    pauseMe(2*tick);                                      // Allow STM (matrix) changes to take effect
     clearMatrix(false);
+    //delay(20);
+    HC12.print(F("font 9\r"));    HC12.flush();
     sendSerialS(green, /*column=*/ 0, /*line=*/ 15, "B CH: SET");
     pauseMe(tick);
     sendSerialS(green, /*column=*/ 0, /*line=*/ 31, "TEST:  OK");
@@ -421,19 +433,8 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
           u8x8.noInverse();
           u8x8.setCursor(0, 7);
           u8x8.print("Proceed:  BTN[1]");
-          for(;;) {
-            if (readButtons() == BUTTON1) {
-              writeReady();
-              sendSerialS(3, 0, 29, "       B");
-              HC12.flush();
-              pauseMe(50);
-              setControlChannel(p_Store.curChan);             // return to the base (A) channel and exit
-              writeReady();
-              sendSerialS(3, 0, 29, "       A");
-              flag = true;
-            }
-            if (flag) break;
-          }
+          readyAB();
+          flag = true;
           break;
             
         case BUTTON3:
@@ -459,6 +460,23 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
   return ;
 }
 
+
+void readyAB (void){
+  bool flag = false;
+  for(;;) {
+    if (readButtons() == BUTTON1) {
+      writeReady();
+      sendSerialS(3, 0, 29, "       B");
+      HC12.flush();
+      pauseMe(50);
+      setControlChannel(p_Store.curChan);             // return to the base (A) channel and exit
+      writeReady();
+      sendSerialS(3, 0, 29, "       A");
+      flag = true;
+    }
+    if (flag) break;
+  }
+}
 
 /*
  * Write a given channel number to the remote unit(s) and return the AT+Cxxx char

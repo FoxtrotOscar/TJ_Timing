@@ -121,13 +121,14 @@ void goFinals_Op(byte nID){
     }                                                                           // where arrowCount runs out, change ends?
     sEcount ++;
     if (sEcount > p_Store.maxEnds){
+      printDebugLine(false, __LINE__, __NAME__); 
       goWhistle(3);
       clearFromLine(1);
-      score_Collect();
+      score_Collect(true);
       //clearMatrix(false);
       shootOff = checkForShootoff();
       if (shootOff) {
-        writeShootOff();
+        writeShootOff(nID, false);
         continueOn = true;
         sEcount = p_Store.maxEnds +1;
       }else{                                                                    // Accept a winner and exit to DONE
@@ -137,8 +138,9 @@ void goFinals_Op(byte nID){
     } 
     
     if (sEcount >= 1 && sEcount <= p_Store.maxEnds ) {
+      printDebugLine(false, __LINE__, __NAME__); 
       goWhistle(3);
-      score_Collect();
+      score_Collect(false);
     }
     clearFromLine(shootOff ? 6 : 1);
     arrowCount = shootOff ? 1 : 3;

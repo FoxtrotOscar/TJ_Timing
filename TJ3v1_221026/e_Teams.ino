@@ -38,6 +38,7 @@ void goTeamPlay(byte teamType){                                                 
   uint8_t nID           = 0;
   bool    shootOff      = false;
   uint8_t firstToShoot  = 0;
+  //uint8_t tempArrowCount[3];
   sEcount               = 0;
   startOver             = false;
   continueOn            = true;
@@ -47,20 +48,22 @@ void goTeamPlay(byte teamType){                                                 
   */
   while (continueOn && !startOver ) {
     while (sEcount < p_Store.maxEnds || shootOff) {
-      n_Count_[1] = n_Count_[2] = shootOff ? 20  :  startCounts[p_Store.startCountsIndex];
-      clearAB(1, false);                                                            // clear both screens
-      !shootOff ? nID = goChooseArcher() : firstToShoot ;
+      n_Count_[1] = n_Count_[2] = (shootOff ? 20  :  startCounts[p_Store.startCountsIndex]);
+      if (!sEcount) clearAB(nID, false);                                                          // clear both screens
+      nID = !shootOff ? goChooseArcher() : firstToShoot ;                           // The team that shot first in the match shall start shooting
+      printDebugLine(false, __LINE__, __NAME__);
+      if (sEcount) clearAB(nID, false); 
       nID == 1 ? set_A(1) : set_B(2) ;                                              // set nID to match first team up, and send info to screens
       pauseMe(20);
-      if (!sEcount) firstToShoot = nID;                                             // save the first team to go, for tie-breaks  
+      if (!sEcount) firstToShoot = nID;                                             // save the first team up, for tie-breaks  
       sEcount ++;
       if (shootOff)  shootOff_ct ++;
+      
       writeOLED_Data(nID, nID);
       HC12.print(F("font 9\r"));
-      clearMatrix(false);
       sendSerialS(2, 0, 15, "   READY");
       sendSerialS(2,  0,  29, shootOff ? "TIE BREAK" : "   SET:");
-      sendNumber (2, 44 , 29, shootOff ? shootOff_ct :  sEcount );
+      if (!shootOff) sendNumber (2, 44 , 29, sEcount );
       goMenu(true);                                                                 // wait for proceed
       clearMatrix(false);
       doBarCount(nID, nID); 
@@ -86,7 +89,8 @@ void goTeamPlay(byte teamType){                                                 
       *  Green Button re-commences.
       */
       writeOLED_Data(nID, nID );                                                    // set up for 5 ends of 4 or 6 arrows in 
-      uint8_t tempArrowCount[] = {0, arrowCount, arrowCount};                       // sets of either 2 or 3 (Mixed/std) 
+      uint8_t tempArrowCount[] = {0, arrowCount, arrowCount};
+      if (shootOff) tempArrowCount[1] = tempArrowCount[2] = 1;
       while (n_Count_[nID] > 0){                                                    // repeat until n_Count[current] < 0
         if (!goEmergencyButton(nID, nID)) {                                         // are we halting???
           writeStopwatch(n_Count_[nID]);                                            // run a set
@@ -98,7 +102,7 @@ void goTeamPlay(byte teamType){                                                 
           if(flipFlag || shootOff){                                                 // if alternative screens and detail change is invoked
             goWhistle(1);          
             shootOff ?
-                tempArrowCount[nID] -= 1 :                                          // as shootoff reduce arrowcount in flip-flop 
+                tempArrowCount[nID] -= 2*set_size :                                          // as shootoff reduce arrowcount in flip-flop 
                 tempArrowCount[nID] -= set_size;                                    // reduce by the qty of arrows per set of 2 or 3  
             tempArrowCount[nID] == 0 ? n_Count_[nID] = 0 : n_Count_[nID] += 1;      // Unless at zero, keep the screen count right for holding
             //byte temp = (nID == 1? set_B(1) : set_A(2));                            // Hold the curr count in red and change screen
@@ -118,9 +122,9 @@ void goTeamPlay(byte teamType){                                                 
         }
       }
       goWhistle(3);
-      pauseMe(100);
+      //pauseMe(100);
       clearAB(nID, true);                                                           // 3x whistle, clear matrix with Score and Collect message
-      pauseMe(80);
+      //pauseMe(80);
       //continueMatch();//<<<<<<<<<<<<<<<<<<< write function to check for end of match
       shootOff = false;
     }                                                                               // where arrowCount runs out, change ends?
@@ -132,13 +136,13 @@ void goTeamPlay(byte teamType){                                                 
     if (checkForShootoff()) {                                                       // select whether a shoot-off is needed
       shootOff = true;
       continueOn = true;
-      //sEcount = 1;
+      arrowCount = 1;
     }else{
       clearFromLine(1);
       return;
     }
-    writeShootOff();
-    //printDebugLine(false, __LINE__, __NAME__); 
+    writeShootOff(nID, true);
+    
     //if (sEcount > 1 && sEcount <= p_Store.maxEnds ) writeReadySet();
     //clearFromLine(shootOff ? 6 : 1);
     clearFromLine(6);
@@ -150,7 +154,7 @@ void goTeamPlay(byte teamType){                                                 
       bool flag = false;
       switch (readButtons()) {
         case BUTTON1: 
-          n_Count_[nID] = startCounts[p_Store.startCountsIndex];
+          //n_Count_[nID] = startCounts[p_Store.startCountsIndex];
           flag = true;
           break;
         
@@ -164,14 +168,10 @@ void goTeamPlay(byte teamType){                                                 
       }
       if (flag) break;
     }
-    //arrowCount = shootOff ? (1 : 3;
-    // if (p_Store.isAlternating) {
-    //   clearFromLine(5);
-    //   goChooseArcher();
-    //   nID = p_Store.whichArcher;
-    // } else  nID = 0;
-    displayParamsOnOLED();
-    writeOLED_Data(0, nID);
+    // clearFromLine(5);
+    // nID = firstToShoot;
+    // displayParamsOnOLED();
+    // writeOLED_Data(0, nID);
     clearMatrix(false);
     //if (!shootOff) doBarCount(nID, nID);
   }

@@ -51,7 +51,7 @@
 
 */
 
-#define DEBUG               // Kills splashscreen, whistles etc
+//#define DEBUG               // Kills splashscreen, whistles etc
 //#define DEBUG_t             // makes seconds shorter
 byte noWhistles = false;      // set to false unless dev.
 

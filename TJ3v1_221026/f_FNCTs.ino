@@ -190,17 +190,27 @@ bool checkForShootoff(void){
         break;
     } 
   }
-  return flag;                                    // true if yes to SHOOTOFF
+  return flag;                                                            // true if yes to SHOOTOFF
 }
 
-void writeShootOff(void){
+void writeShootOff(byte nID, bool AB){
   clearMatrix(false);
   HC12.print(F("font 9\r"));   
+  sendSerialS(2, 0, 20, "SHOOTOFF");                                      // Bigscreen
+  //do{} while (HC12.available());
   HC12.flush();
-  sendSerialS(2, 0, 20, "SHOOTOFF");              // Bigscreen
-  
+  if (AB) {
+    nID == 1 ? setControlChannel(p_Store.B_ScrCh) : setControlChannel(p_Store.curChan);
+    clearMatrix(false);
+    HC12.print(F("font 9\r"));   
+    //HC12.flush();
+    sendSerialS(2, 0, 20, "SHOOTOFF");
+    //do{} while (HC12.available());
+     HC12.flush();
+    nID == 1 ? setControlChannel(p_Store.curChan) : setControlChannel(p_Store.B_ScrCh);
+  }
   clearFromLine(4);
-  u8x8.draw2x2String(6, 4, "OK");                 // acknowledge on controller                
+  u8x8.draw2x2String(6, 4, "OK");                                         // acknowledge on controller                
 }
 
 /*
@@ -208,13 +218,14 @@ void writeShootOff(void){
  */
 void clearMatrix(bool scrollOn){
   if (scrollOn) {
-    HC12.print(F("scrollloop 0\r"));                                        //  if scroll in progress, kill it
+    HC12.print(F("scrollloop 0\r"));                                      //  if scroll in progress, kill it
     pauseMe(4*tock);
   }
   HC12.print(F("clear\r"));
+  pauseMe(10);
   HC12.print(F("paint\r"));
   HC12.flush();
-  pauseMe(100);
+  pauseMe(110);
 }
   
 
@@ -354,14 +365,14 @@ void redBorder(bool borderOn, byte nID){
   if (borderOn == true) {
     clearMatrix(false);
     writeRectangle(1, 0, 31, 64, 32);
-    if (n_Count_[nID] > 1) {                                          // if the count is not run out. . .
-      writeRectangle(0, 2, 29, 60, 28);                               // blank centre
+    //if (n_Count_[nID] > 1) {                                          // if the count is not run out. . .
+      writeRectangle(0, 1, 30, 62, 30);                               // blank centre
       HC12.print(F("font 13\r"));                                     // large numbers font
       HC12.flush();
       //pauseMe(50);
       goClock(offSet, nID);                                           
       sendNumber(1, colNumber, lnNumber, n_Count_[nID]);              // parks the count in red
-    }
+    //}
     pauseMe(50);
   } else if (!borderOn){
     //printDebugLine(false, __LINE__, __NAME__);

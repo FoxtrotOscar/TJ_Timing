@@ -22,6 +22,7 @@
   146 writeHalt
   180 writeReady
   209 writeReadySet
+  218 score_Collect
   232 doBarCount
   276 doCountdownBar
   338 goGreenZero
@@ -215,19 +216,20 @@ void writeReadySet(void){
   sendNumber(2, 44 , 29, sEcount);
 }
 
-void score_Collect(void){
-  writeRectangle( 1, 0, 31, 64, 32);                                  // fill screen with red
-  pauseMe(2*tick);
-  clearMatrix(false);
+void score_Collect(bool red){
+  if (red) {
+    writeRectangle( 1, 0, 31, 64, 32);                                  // fill screen with red
+    pauseMe(2*tick);
+  }
+  //clearMatrix(false);
   HC12.print(F("font 9\r"));   
-  HC12.flush();
+  //HC12.flush();
   sendSerialS(2, 10, 15, "SCORE +");
+  HC12.flush();
   sendSerialS(2, 5, 29, "COLLECT");
-  #ifdef DEBUG
-  pauseMe(2000); 
-#else
-  pauseMe(6000);
-#endif
+  HC12.flush();
+  //pauseMe(20);
+
 }
 
 /*
