@@ -56,7 +56,6 @@
 byte noWhistles = false;      // set to false unless dev.
 
 #include <EEPROM.h>
-//#include <U8x8lib.h>
 #include <U8g2lib.h>
 #include <SPI.h>
 #include <MFRC522.h>
@@ -156,7 +155,7 @@ struct PARAMSTORE {
   uint8_t   teamPlay            =  0;             // (8)  Teams: 1: mixed Recurve, 2 mixed Comp; 3 = Recurve, 4 Comp; 11 - 14 Teamplay ditto
   uint8_t   whichArcher         =  0;             // (9)  0 = ""; 1 = "A"; 2 = "B"
   uint8_t   isFlint             =  0;             //(10)  if True this is a flint round
-  uint8_t   curChan             =  0;             //(11)
+  uint8_t   curChan             =  1;             //(11)
 
   uint8_t   B_ScrCh             =  0;             //(12)  shows chann no. if dual screens are set up
   uint8_t   which_Scr_1st       =  0;             //(13)  false until screen-flip in progress, then 1 or 2 for A or B
@@ -291,23 +290,23 @@ void setup() {
 #else
   Serial.end();
 #endif
-//for (byte i = 0; i <= 29; i++) EEPROM.put(i, 0);// clean the EEPROM  
+//for (byte i = 0; i <= 29; i++) EEPROM.put(i, 0);  // clean the EEPROM  (dev only)
   pinMode(offControlPin,      OUTPUT);              // Output High for Power Off / Keep low for continued operation 
   pinMode(HC12SetPin,         OUTPUT);              // Output High for Transparent / Low for Command
   digitalWrite(HC12SetPin,    HIGH);                // Enter TRANSPARENT mode
   digitalWrite(offControlPin, LOW);                 // ensure Power Off not selected  
   pauseMe(tick);  
   if (EEPROM.read(18) != 1) {
-    EEPROM.update(18, 0);                              //?????????????????????????
+    EEPROM.update(18, 0);                           
     pauseMe(120);
     goWhistle(1);
     pauseMe(10);
     
   }
   if (EEPROM.read(20) == 111) {                   // is flag for stored parameters set?
-    
     EEPROM.get(0, p_Store);                       // Copies most recent parameters back in
-    pauseMe(10);     
+    pauseMe(10);
+    setControlChannel(p_Store.curChan);           // ensure saved base-channel is set on the controller
     zeroSettings();
   }
   pauseMe(tick);
@@ -331,7 +330,10 @@ void setup() {
     key.keyByte[i] = 0xFF;
   }
   goReboot();                                     // Reboot the screen unit
-
+  pauseMe(2*tick);
+  // HC12.print("^1");                               // writes the Splash (Matrix native)
+  // pauseMe(5 * tick);
+  //clearMatrix(false);
   clearFromLine(6);
   u8x8.setCursor(0, 6);
   u8x8.inverse();
@@ -364,12 +366,9 @@ void setup() {
   u8x8.draw2x2String(0, 6, "..WAIT..");
   #ifdef DEBUG 
   HC12.print("title\r");
-  //HC12.print("paint\r");
-
   pauseMe(3000);
   #endif
   writeSplash(true);
-
   if (p_Store.teamPlay)  
   p_Store.teamPlay = 0;
   p_Store.isFlint  = 0;
@@ -382,8 +381,7 @@ void setup() {
   clearFromLine(0);
   displayParamsOnOLED();                          // show current (default) setting
   u8x8.draw2x2String(0, 6, "..WAIT..");
-  writeSplash(false);
-  pauseMe(2 * tick); 
+  writeSplash(false); 
   shootDetail = 0;                                // bool for Detail odd/even, counters
   sE_iter = 0; sEcount = 1;
   countPractice = p_Store.maxPrac; 

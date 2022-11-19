@@ -15,29 +15,29 @@
   134   goChooseArcher
   173   checkForShootoff
   196   writeShootOff
-  209   clearMatrix
-  222   writeSplash
-  270   sendScrollW
+  218   clearMatrix
+  235   writeSplash
+  281   sendScrollW
   311   goWhistle
   318   stopSign
-  329   writeCircle
-  335   writeRectangle
-  341   writeLine
-  347   redBorder
-  353   sendChar
-  360   sendScrollChar
-  395   zeroSettings
-  385   goReboot
-  401   readButton
-  412   readButtonNoDelay
-  422   readButtons
-  458   waitButton
-  519   goEmergencyButton
-  530   handleEmergencyRestart
-  582   displayMenuPage
-  594   commandBaudRate
-  605   pauseMe
-  610   goPowerOff
+  327   writeCircle
+  333   writeRectangle
+  340   writeLine
+  346   redBorder
+  368   sendChar
+  375   sendScrollChar
+  386   zeroSettings
+  400   goReboot
+  419   readButton
+  427   readButtonNoDelay
+  437   readButtons
+  473   waitButton
+  510   goEmergencyButton
+  546   handleEmergencyRestart
+  598   displayMenuPage
+  610   commandBaudRate
+  621   pauseMe
+  626   goPowerOff
     
  DEBUGGING   
     dispSrcFileDetails
@@ -203,10 +203,9 @@ void writeShootOff(byte nID, bool AB){
     nID == 1 ? setControlChannel(p_Store.B_ScrCh) : setControlChannel(p_Store.curChan);
     clearMatrix(false);
     HC12.print(F("font 9\r"));   
-    //HC12.flush();
     sendSerialS(2, 0, 20, "SHOOTOFF");
-    //do{} while (HC12.available());
-     HC12.flush();
+    pauseMe(tick);
+    HC12.flush();
     nID == 1 ? setControlChannel(p_Store.curChan) : setControlChannel(p_Store.B_ScrCh);
   }
   clearFromLine(4);
@@ -216,71 +215,31 @@ void writeShootOff(byte nID, bool AB){
 /*
  * Wipes the Matrix clear
  */
+
 void clearMatrix(bool scrollOn){
-  if (scrollOn) {
-    HC12.print(F("scrollloop 0\r"));                                      //  if scroll in progress, kill it
-    pauseMe(4*tock);
-  }
-  HC12.print(F("clear\r"));
-  pauseMe(10);
-  HC12.print(F("paint\r"));
-  HC12.flush();
-  pauseMe(110);
-}
-  
+  //HC12.print(F("$"));
+  scrollOn ? HC12.print(F("$1")) : HC12.print(F("$0"));
+  pauseMe(scrollOn ? tick : 2*tock);
+} 
 
 
 /* 
  *  Splashscreen of Logo "Time Judge"
 */
-void writeSplash(bool scrolling){
+void writeSplash(bool scrolling){ 
   clearMatrix(false);
   #ifdef DEBUG
     HC12.print(F("font 8\r"));    HC12.flush();
     sendSerialS( green, /*column=*/ 2, /*line=*/ 24, "[ SPLASH ]");
   return;
   #endif
-  
-  for (uint16_t br = 0; br <= bright; br += 17){                           // fade increment [10]
-    unsigned long timer = millis();
-    HC12.printf(
-          F("brightness %u\rpaint\r"),                                     //  | Fade in "Time"
-            br);
-    HC12.print(F("font 16\r"));    HC12.flush();
-    sendSerialS( green, /*column=*/ 2, /*line=*/ 24, "Time");
-    //pauseMe(2*tock);
-    do{} while (millis() - timer < 2UL);                                  // allow serial traffic time (15UL)
-    }
-  const char scrollChar[] = "JUDGE";
-  HC12.print(F("font 9\r"));    
-  pauseMe(2);
-  if (scrolling){
-    pauseMe(2);
-    sendScrollW(  /*speed=*/  5,                                           // 3 - 15
-                  /*loop=*/   0,
-                  /*wiggle=*/ 3,
-                  /*colour=*/ orange,
-                  /*column=*/ 4, 
-                  /*line=*/   30,
-                  /*window=*/ 63, 
-                            scrollChar );                                   // animate of JUDGE
-  } else {
-    for (uint8_t iter = 0; iter < strlen(scrollChar); iter ++) {
-      sendChar(orange, (4 + 12*iter), 30, scrollChar[iter]);
-      pauseMe(9);
-    }
-  }
-  pauseMe(tock);
+  HC12.print(scrolling ? "^1" : "^0");                                                         // to localise to Matrix send ^0 (false) or ^1 (true)
+  pauseMe(scrolling ? 5*tick : 3*tick);
 }
 
-
-
 /*
- * Sends a scroll command to screen with text running through 
- * a window defined by bottom left corner @ x1,y1 and window1
- * wide and as tall as the current font height. If wiggle >0
- * then letters will move wiggle pixels above and below the 
- * baseline set.
+ * Sends a scroll command to screen with text running through a window defined by bottom left corner @ x1,y1 and window1 wide
+ * and as tall as the current font height. If wiggle >0 then letters will move wiggle pixels above and below the baseline set.
  */
 
  
@@ -292,16 +251,11 @@ void sendScrollW( uint16_t      scrollSpeed,
                   uint8_t       y1, 
                   int           window1,
                   const char    scrollChar[]  ){
-//  #ifdef DEBUG
-//  return;
-//  #endif
-  //uint16_t delVal = scrollSpeed;
 
   HC12.printf(
     F("scrollspeed %u \r scrollloop %u \r scrollwiggle %u \r"),
       scrollSpeed, scrollLoop, scrollWiggle);
   HC12.flush();  pauseMe(tock);    
-  //pauseMe(20);
   for (uint8_t iter = 0; iter < strlen(scrollChar); iter ++){
     unsigned long timer = millis();
     HC12.print(F("font 17\r"));    
@@ -310,16 +264,13 @@ void sendScrollW( uint16_t      scrollSpeed,
     HC12.printf(
           F("scroll %u %u %u %u \"%c\"\rpaint\r"),
               txtColour1, (x1 + 12*iter + 1/*+4*/), y1, window1, scrollChar[iter]);
-    // do{} while (millis() - timer < (scrollSpeed*105));    // 800UL
     do{} while (millis() - timer < (scrollSpeed*140));    // 800UL
     HC12.print(F("font 9\r"));     //HC12.flush();  pauseMe(tock);              // Font for the static letter post-scroll
     sendChar(orange, (x1 + 12*iter), y1, scrollChar[iter]);
-    //pauseMe(15);
     pauseMe(2);
   }
   pauseMe(tick);
 }
-
 
 
 void goWhistle(uint8_t whistles){
@@ -330,9 +281,7 @@ void goWhistle(uint8_t whistles){
 
 
 void stopSign(void){                                                          // writes a bisected circle "STOP" sign
-  /*
-   * (circle: colour x_centre y_centre radius)
-   */
+  /*(circle: colour x_centre y_centre radius) */
   clearMatrix(false);
   for (byte x=0; x<3; x++){
     writeCircle(red, 32, 15, 15-x);
@@ -351,7 +300,6 @@ void writeRectangle(byte rCol, byte rX1, byte rY1, byte rWid, byte rHi ){
     F("rect %u %u %u %u %u \rpaint\r"),
       rCol, rX1, rY1, rWid, rHi);
       HC12.flush();
-
 }
 
 void writeLine(byte lCol, byte lX1, byte lY1, byte lX2, byte lY2) {
@@ -363,22 +311,21 @@ void writeLine(byte lCol, byte lX1, byte lY1, byte lX2, byte lY2) {
 void redBorder(bool borderOn, byte nID){
   byte offSet = 13;
   if (borderOn == true) {
-    clearMatrix(false);
-    writeRectangle(1, 0, 31, 64, 32);
-    //if (n_Count_[nID] > 1) {                                          // if the count is not run out. . .
-      writeRectangle(0, 1, 30, 62, 30);                               // blank centre
-      HC12.print(F("font 13\r"));                                     // large numbers font
-      HC12.flush();
-      //pauseMe(50);
-      goClock(offSet, nID);                                           
-      sendNumber(1, colNumber, lnNumber, n_Count_[nID]);              // parks the count in red
-    //}
+    HC12.print(F("$3"));
+    // clearMatrix(false);
+    // writeRectangle(1, 0, 31, 64, 32);
+    // writeRectangle(0, 1, 30, 62, 30);                               // blank centre
+    // HC12.print(F("font 13\r"));                                     // large numbers font
+    // HC12.flush();
+    goClock(offSet, nID);                                           
+    sendNumber(1, colNumber, lnNumber, n_Count_[nID]);              // parks the count in red
     pauseMe(50);
-  } else if (!borderOn){
+  } else {
+    HC12.print(F("$2"));
     //printDebugLine(false, __LINE__, __NAME__);
-    writeRectangle(2, 0, 31, 64, 32);
-    pauseMe(100);
-    clearMatrix(false);
+    // writeRectangle(2, 0, 31, 64, 32);
+    // pauseMe(100);
+    // clearMatrix(false);
     //printDebugLine(false, __LINE__, __NAME__);
   }
   //printDebugLine(false, __LINE__, __NAME__);
@@ -514,6 +461,7 @@ uint8_t waitButton() {
       }                                                     // if release made after 4 secs then power off selected
       if (millis() - goTurnOff > 4000
           && ret == BUTTON4 ) {                             // if button 4 held for >4 secs 
+          
         goPowerOff();                                       // turn controller Power OFF via the digital power switch
       }
       HC12.print(F("brightness "));                         // return brightness to nominal 
@@ -630,9 +578,9 @@ bool commandBaudRate(bool command){
   HC12.flush();
   HC12.end();
   pauseMe(800);
-  command ? HC12.begin(9600) : HC12.begin(2400);
+  command ? HC12.begin(9600) : HC12.begin(2400);      // always set to 2400 atm
    pauseMe(800);
-  while(HC12.available()) HC12.read();        // empty  out possible garbage
+  while(HC12.available()) HC12.read();                // empty  out possible garbage
   return command;
 }
 

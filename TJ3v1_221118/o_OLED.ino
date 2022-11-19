@@ -40,7 +40,6 @@ void displayParamsOnOLED() {
   u8x8.print(p_Store.maxEnds);
   u8x8.setCursor(9, 2);
   u8x8.print(": ");
-
   u8x8.print(countPractice ? 0 : (sEcount > p_Store.maxEnds ? 0 : sEcount ));  // if still in practice show end zero
   u8x8.setCursor(6, 3);
   u8x8.print(p_Store.maxPrac);

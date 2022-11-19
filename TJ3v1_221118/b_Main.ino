@@ -105,7 +105,7 @@ void loop() {
       pauseMe(3 * tick);
     }
   }
-  //printDebugLine(true, __LINE__, __NAME__);
+  printDebugLine(true, __LINE__, __NAME__);
   if      (p_Store.teamPlay >= 11) goTeamPlay(p_Store.teamPlay);
   else if (p_Store.isFinals) goFinals_Op(0);
   else    goNormal_Op();

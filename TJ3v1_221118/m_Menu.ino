@@ -1,38 +1,39 @@
-///*
-//
-//  uint8_t startCountsIndex = 1;         // (1)Number from 0 to 4 indentifying which of startCounts is used in this round, default 120 
-//  uint8_t walkUp = 10;                  // (2)
-//  uint8_t maxEnds = 4;                  // (3)Total number of Ends for competition
-//  uint8_t Details = 2;                  // (4)Single (1) or Double detail (2)
-//  uint8_t maxPrac = 2;                  // (5)Initially set as 2x practice ends
-//  uint8_t isFinals = 0;                 // (6)For alternating A & B session
-//  uint8_t isAlternating = 0;            // (8)1 == Archer A, Archer B; 0 == Simultaneous
-//  uint8_t teamPlay = 0;                 // (9)
-//  uint8_t whichArcher = 1;              //(10)
-//  FUNCTIONS:
-//    displayMenuPage
-//    goMenu
-//      awaiting_confirmation_1
-//      awaiting_confirmation_2
-//      menu_root
-//      start_INTERVALS_menu
-//      start_duration_menu
-//      start_ends_menu
-//      start_practice_menu
-//      start_details_menu
-//      start_walkup_menu
-//      start_finals_menu
-//      start_alternating_menu
-//      confirmed
-//    doButtonMenu
-//    writeMenuCommands
-//    handleEmergencyRestart
-//    readButton
-//    readButtonNoDelay
-//    readButtons
-//    waitButton
-//    goEmergencyButton
-//*/
+/*
+
+ uint8_t startCountsIndex = 1;         // (1)Number from 0 to 4 indentifying which of startCounts is used in this round, default 120 
+ uint8_t walkUp = 10;                  // (2)
+ uint8_t maxEnds = 4;                  // (3)Total number of Ends for competition
+ uint8_t Details = 2;                  // (4)Single (1) or Double detail (2)
+ uint8_t maxPrac = 2;                  // (5)Initially set as 2x practice ends
+ uint8_t isFinals = 0;                 // (6)For alternating A & B session
+ uint8_t isAlternating = 0;            // (8)1 == Archer A, Archer B; 0 == Simultaneous
+ uint8_t teamPlay = 0;                 // (9)
+ uint8_t whichArcher = 1;              //(10)
+
+ FUNCTIONS:
+   displayMenuPage
+   goMenu
+     awaiting_confirmation_1
+     awaiting_confirmation_2
+     menu_root
+     start_INTERVALS_menu
+     start_duration_menu
+     start_ends_menu
+     start_practice_menu
+     start_details_menu
+     start_walkup_menu
+     start_finals_menu
+     start_alternating_menu
+     confirmed
+   doButtonMenu
+   writeMenuCommands
+   handleEmergencyRestart
+   readButton
+   readButtonNoDelay
+   readButtons
+   waitButton
+   goEmergencyButton
+*/
 // **************************************************************************************
 //                    Sergey Parshin          Menu2
 // **************************************************************************************

@@ -62,7 +62,7 @@ bool recvWithEndMarker() {
           case '%':
           writeSplash(true);
           break;
-          case '£':
+          case '9':
           writeSplash(false);
           break;
         }

@@ -1,21 +1,29 @@
 
 /* RFID OPERATION
  * 
- * 
-  uint8_t startCountsIndex = 1;         // (0)Number from 0 to 8 indentifying which of startCounts is used in this round, default 120 
-  uint8_t walkUp = 10;                  // (1)
-  uint8_t maxEnds = 4;                  // (2)Total number of Ends for competition
-  uint8_t Details = 2;                  // (3)Single (1) or Double detail (2)
-  
-  uint8_t maxPrac = 2;                  // (4)Initially set as 2x practice ends
-  uint8_t isFinals = 0;                 // (5)For alternating A & B session
-  uint8_t breakPeriod                   // (6)
-  uint8_t isAlternating = 0;            // (7)1 == Archer A, Archer B; 0 == Simultaneous
-  
-  uint8_t teamPlay = 0;                 // (8)
-  uint8_t whichArcher = 1;              // (9)
-  uint8_t Flint                         //(10)
-  uint8_t curChan / Suprv.              //(11)
+ * PARAMETERS UNDERGOING ALTERATION
+  uint8_t   startCountsIndex    =  1;             // (0)  Number from 0 to 8 indentifying startCounts[] used, default 1 (120)
+  uint8_t   walkUp              = 10;             // (1)
+  uint8_t   maxEnds             = 10;             // (2)  Total number of Ends for competition
+  uint8_t   Details             =  2;             // (3)  Single (1) or Double detail (2)
+
+  uint8_t   maxPrac             =  2;             // (4)  Initially set as 2x practice ends
+  uint8_t   isFinals            =  0;             // (5)  For alternating A & B session
+  uint8_t   breakPeriod         = 10;             // (6)  Between sessions break times, max 240min, default 10
+  uint8_t   isAlternating       =  0;             // (7)  1 / 2 == Recurve / Compound A/B; 0 == Simultaneous
+
+  uint8_t   teamPlay            =  0;             // (8)  Teams: 1: mixed Recurve, 2 mixed Comp; 3 = Recurve, 4 Comp; 11 - 14 Teamplay ditto
+  uint8_t   whichArcher         =  0;             // (9)  0 = ""; 1 = "A"; 2 = "B"
+  uint8_t   isFlint             =  0;             //(10)  if True this is a flint round
+  uint8_t   curChan             =  0;             //(11)
+
+  uint8_t   B_ScrCh             =  0;             //(12)  shows chann no. if dual screens are set up
+  uint8_t   which_Scr_1st       =  0;             //(13)  false until screen-flip in progress, then 1 or 2 for A or B
+  uint8_t   PS14                =  0;             //(14)|___  Spares
+  uint8_t   PS15                =  1;             //(15)| Banner loaded ?
+  uint8_t   PS16                =  0;             //(16)|___  Spares
+  uint8_t   PS17                =  0;             //(17)|
+
   
   "Time", "Walk", "Ends", "Dets", 
   "Prac", "Fnls", "BrkT", "Altr", 

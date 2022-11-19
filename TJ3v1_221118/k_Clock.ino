@@ -10,29 +10,26 @@
   uint8_t isAlternating = 0;            // (8)1 == Archer A, Archer B; 0 == Simultaneous
   uint8_t teamPlay = 0;                 // (9)
   uint8_t whichArcher = 1;              //(10)
-*/
 
-/*
  * Clock functions that handles the screen formatting etc:
   33  goClock
-  71  goBlanking
-  80  sendNumber
-  97  handleCount
-  118 sendSerialS  x3
-  146 writeHalt
-  180 writeReady
-  209 writeReadySet
-  218 score_Collect
-  232 doBarCount
-  276 doCountdownBar
-  338 goGreenZero
-  358 sendDetail
-  378 writeA_B
-  386 writeC_D
-  394 writeArcher
+  80  goBlanking
+  89  sendNumber
+  99  handleCount
+  114 sendSerialS  x3
+  139 writeHalt
+  182 writeReady
+  203 writeReadySet
+  210 score_Collect
+  225 doBarCount
+  270 doCountdownBar
+  333 goGreenZero
+  352 sendDetail
+  371 writeA_B
+  380 writeC_D
+  389 writeArcher
  */
 
- 
 void goClock(uint8_t offSet, byte nID){                             // Setup for formatting the main count numbers
 
 switch(n_Count_[nID] ){
@@ -85,7 +82,6 @@ void goBlanking(uint8_t tOffset, byte nID){                         // writes a 
   sendNumber(txtColour, colNumber, lnNumber, n_Count_[nID] + 1);    // overwrite with last larger digit
 }
 
- 
 /*
  * Function to output the actual clock output to the screen
  */
@@ -96,14 +92,10 @@ void sendNumber(int tColr, int cNum, int lnNum, int digits) {
       HC12.flush();
 }
 
-
 /*
- * Handle the count using millis() for accuracy.
- * We take secCount (set at beginning of each round)
- * and use it to find the point where millis() crosses a 
- * second (defined in tick = 1000)
+ * Handle the count using millis() for accuracy. We take secCount (set at beginning of each round)
+ * and use it to find the point where millis() crosses a second (defined in tick = 1000)
  */
- 
 byte handleCount(unsigned long secCount, byte nID){
   uint8_t flipFlag = 0;
   while ((millis() - secCount) % tick > 0){         // apply a 'fuzzy' offset of 2 for Uno
@@ -129,6 +121,7 @@ void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, cons
       i2 != nullptr ? i2 : ""
       );  
   HC12.flush();
+  pauseMe(2);
 }
 
 // this one calls the big one above 
@@ -158,7 +151,6 @@ void writeHalt(void){
   clearMatrix(false);  
 
   HC12.print(F("font 9\r"));    HC12.flush();
-                                               
   if (p_Store.Details == 2){
     if (sEcount < p_Store.maxEnds) {                                // ???
       writeReady();
@@ -216,20 +208,10 @@ void writeReadySet(void){
   sendNumber(2, 44 , 29, sEcount);
 }
 
-void score_Collect(bool red){
-  if (red) {
-    writeRectangle( 1, 0, 31, 64, 32);                                  // fill screen with red
-    pauseMe(2*tick);
-  }
-  //clearMatrix(false);
-  HC12.print(F("font 9\r"));   
-  //HC12.flush();
-  sendSerialS(2, 10, 15, "SCORE +");
+void score_Collect(bool redScreen){                                 // remote located function
+  HC12.print(redScreen ? "^3" : "^2");                              // 2 == false 3 == true
   HC12.flush();
-  sendSerialS(2, 5, 29, "COLLECT");
-  HC12.flush();
-  //pauseMe(20);
-
+  pauseMe(30);
 }
 
 /*

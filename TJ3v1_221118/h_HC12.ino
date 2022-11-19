@@ -10,10 +10,11 @@
  * 201  set_A
  * 212  set_B
  * 222  clearAB
- * 235  setControlChannel
- * 268  setB_Chan
- * 473  writeRemoteChannel
- * 488  makeControlString
+ * 234  setControlChannel
+ * 267  setB_Chan
+ * 477  writeRemoteChannel
+ * 492  makeControlString
+ *      splashAB
  */
 
 
@@ -189,8 +190,6 @@ void new_Channel(bool alterGlobally) {
  * Routine to alter the Tx/Rx channel setup
  */
 bool change_Channel(int newChan, bool alterGlobally){
-  digitalWrite(HC12SetPin, HIGH);                           // Ensure TRANSPARENT mode locally
-  pauseMe(80);  
   if (alterGlobally) {                                      // Write the channel to the remote unit(s) first
     writeRemoteChannel(newChan);
   }
@@ -201,11 +200,10 @@ bool change_Channel(int newChan, bool alterGlobally){
 byte set_A(byte nID){                                       // alter the operational channel and 
   if (nID == 1) setControlChannel(p_Store.B_ScrCh) ;        // if not on B_chan
   redBorder(true, 2);                                       // write red border on B channel and fill with n_Count_[2]
-  pauseMe(50);
+  pauseMe(70);
   setControlChannel(p_Store.curChan);                       // change control to A
-  pauseMe(50);
-  redBorder(false, 0);                                      // flash green screen
-  pauseMe(50);
+  pauseMe(70);
+  clearMatrix(false);
   return 1;
 }
 
@@ -213,32 +211,22 @@ byte set_A(byte nID){                                       // alter the operati
 byte set_B(byte nID){
   if (nID == 2) setControlChannel(p_Store.curChan);         // if not on A_chan
   redBorder(true, 1);                                       // write red border on A channel and fill with n_Count_[1]
-  pauseMe(50);
+  pauseMe(70);
   setControlChannel(p_Store.B_ScrCh);                       // change control to B
-  pauseMe(50);
-  redBorder(false, 0);                                      // flash green screen
-  pauseMe(50);
+  pauseMe(70);
+  clearMatrix(false);
   return 2;
 }
 
 void clearAB(byte nID, bool score){                         // empty both screens
-  // nID == 1 ? setControlChannel(p_Store.B_ScrCh) : setControlChannel(p_Store.curChan);
-  // pauseMe(50);
-  clearMatrix(false);
+  //clearMatrix(false);
   if (score) score_Collect(false);
-  //HC12.flush();
-  pauseMe(20);
+  pauseMe(10);
   nID <= 1 ? setControlChannel(p_Store.B_ScrCh) : setControlChannel(p_Store.curChan);
-  clearMatrix(false);
+  //clearMatrix(false);
   if (score) score_Collect(false);
-  //HC12.flush();
-  pauseMe(20);
+  pauseMe(10);
   nID <= 1 ? setControlChannel(p_Store.curChan) : setControlChannel(p_Store.B_ScrCh);
-  // #ifdef DEBUG
-  // pauseMe(2000); 
-  // #else
-  // pauseMe(6000);
-  // #endif
 }
 
 
@@ -277,7 +265,7 @@ byte setControlChannel(byte newChan){                       // Write to the cont
 
 void setB_Chan(void){                                       // in TEAMPLAY we use 2 x screens showing independently
   byte B_Chan = p_Store.curChan;
-  if (EEPROM.read(18) == 1) {                             // If this screen channel selection is already done:
+  if (EEPROM.read(18) == 1) {                              // If this screen channel selection is already done:
     clearFromLine(1);  
     u8x8.setCursor(0, 4);
     u8x8.print("A&B screens SET");
@@ -301,11 +289,11 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
         case BUTTON2:                                     // KEEP
             
             flag = true;
-            readyAB();
             break;
 
         case BUTTON3:                                     // DO OVER
             p_Store.B_ScrCh = 0;
+            EEPROM.update(18, 0);
             flag = true;
             break;
   
@@ -327,7 +315,11 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
       }
       if (flag) break;                                    // exit 
     }
-    if (p_Store.B_ScrCh) return;                         // if Accept as Set (eg true), return 
+    //if (p_Store.B_ScrCh) return;                         // if Accept as Set (eg true), return 
+    if (EEPROM.read(18) == 1) {
+      printDebugLine(false, __LINE__, __NAME__);
+      return;
+    }
   }
             
     /*      
@@ -482,15 +474,19 @@ void readyAB (void){
  * Write a given channel number to the remote unit(s) and return the AT+Cxxx char
  */
 void writeRemoteChannel(byte newChan) {
-  digitalWrite(HC12SetPin, HIGH);                             // Ensure TRANSPARENT mode locally
-    
+  //digitalWrite(HC12SetPin, HIGH);                             // Ensure TRANSPARENT mode locally
   String newChanTxt = makeControlString(newChan);             // parse the string to send
   HC12.print("*^");                                           // call remote HC12(s) to announce change coming 
   HC12.flush();
   pauseMe(180);                                               // let HC12 get ready
   HC12.println(newChanTxt);                                   // Send command to REMOTE HC12
   HC12.flush();
-  pauseMe(180);
+  pauseMe(2*tick);
+  // HC12.printf(
+  //     // F(%s%s%s\"\rpaint\r"),
+  //     //   *, ^, newChanTxt
+
+    
 }
 
 /*
@@ -506,3 +502,8 @@ String makeControlString(byte newChan){
   tmp_str[7] = '\n';
   return tmp_str;
 }
+
+// void splashAB(nID) {
+//   writeSplash(false);                                         // to localise to Matrix send $£ (false) or $% (true)
+
+// }

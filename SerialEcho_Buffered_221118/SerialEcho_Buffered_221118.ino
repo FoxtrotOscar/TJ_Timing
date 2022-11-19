@@ -1,4 +1,4 @@
-
+ 
 
 /*  STM32F103C8T6 as Serial translator and HC11 programmer
  *  By F.Judge for the TimeJudge system
@@ -11,22 +11,31 @@
  *  Serial            //USB (PA11/PA12) 
 */
 
+
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <hardwareserial.h>
+
+
 HardwareSerial  Serial2(PA3, PA2);
-#define         HC12        Serial1               // RX-PA10 / TX-PA9
+//#define         DEBUG
+#define         _RADIO      Serial                // RX-PA10 / TX-PA9
 #define         MATRIXSER   Serial2               // RX-PA3 (NOT IN USE) / TX-PA2/
 #define         BAUD        2400
-#define         commandBAUD 9600
-#define         setupPin    PA11
+#define         cBAUD       9600
+#define         setupPin    PA15
 
-uint16_t      tick          =   1000;
+
 const byte    numChars      =   64;               // counter for buffer to hold incoming data packages
 bool          newData       =   false;
 const int     rebootPin     =   PB0;              // the reboot pulse output
 const int     whistlePin    =   PB1;              // the number of the LED pin
+const int     screenBright  =   255;              // (max) brightness of the matrix screen
 uint8_t       numWhistles   =   0;                // how many whistles
-uint8_t       channNum      =   0;                // 
+uint8_t       channNum      =   0;
+uint16_t      tick          =   1000;             // timing aids
 uint8_t       tock          =   25;
-uint8_t       n;                                  // serve the whistle count-down
+uint8_t       whistleCt     =    0;               // serve the whistle count-down
 String        HC12ReadBuffer=   "";               // Read/Write Buffer 1 for HC12
 bool          HC12End       =   false;            // Flag to indiacte End of HC12 String
 char          HC12ByteIn;                         // Temporary holding variable
@@ -35,7 +44,7 @@ long long     whistleClock  =   0;                // time the whistlePin activat
 byte          colNumber ; 
 byte          txtColour ; 
 byte          lnNumber  ;
-byte          screenBright  =   255;
+
 char          receivedChars[numChars];            // an array to store the received data
 enum          screenConfig:                       // configpanel width height paneltype bitsperpixel
      int    { sWidth        = 64, 
@@ -50,24 +59,21 @@ enum        Colours:
 
 
 void setup() {
-  MATRIXSER.begin (115200,      SERIAL_8N1);      // TX-PA2/RX-PA3  MCU to Matrix
-  
+  _RADIO.begin    (2400);
+  MATRIXSER.begin (115200, SERIAL_8N1);          // TX-PA2/RX-PA3  MCU to Matrix
   pinMode         (whistlePin,  OUTPUT);
   pinMode         (rebootPin,   OUTPUT);
   pinMode         (setupPin,    OUTPUT);
   digitalWrite    (rebootPin,   HIGH);            // PB0, active low
-  digitalWrite    (setupPin,    LOW);             // PC11: active low - to read channel
   digitalWrite    (whistlePin,  LOW);             // PB1: Active HIGH
-  commandBaudRate(true);                          // start the comms @9600BAUD, setting setupPin to low for COMMAND
-  HC12.println("AT+B2400");                       // ensure the HC12 is RXing @ 2400BAUD
-  pauseMe(500);
-  commandBaudRate(false);                         // now set comms from MCU to HC12 @2400              
-  pauseMe(500);
-  configMatrix(sWidth, sHeight, sType, sBPP, sInv, sEnabA, sBright);
-  delay(tock);
+  digitalWrite    (setupPin,    HIGH);            // PC11: active low - to read/control channel, high for Serial pass-through
+  pauseMe(800);
+  // Serial.print("AT+B2400\n");                      // making sure the Serial channel is at the correct baud rate
+  // pauseMe(800);
 
-  showParam('^');                                 // Write the parameter details to the screen
-  delay(tock);
+  configMatrix(sWidth, sHeight, sType, sBPP, sInv, sEnabA, sBright);
+  pauseMe(100);
+  showParam();                                 // Write the parameter details to the screen
 }
 /*
  * ===============================================================================================

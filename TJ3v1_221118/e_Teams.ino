@@ -12,10 +12,9 @@
  */
 
 /*
- * In this section I (check for, then) apply the screen & set_size
- * to enable A & B teams handling
- * 
- */
+ 19   goTeamPlay   
+ 173  writeSet_sizeType
+*/
 
 void goTeamPlay(byte teamType){                                                     // teamType is p_Store.teamPlay val 0 - 4  Zero is Off
   
@@ -24,7 +23,7 @@ void goTeamPlay(byte teamType){                                                 
    * Set frequency of controller to suit and when ready do a countdown bar to first team
    * Write max time to first and commence countdown
    * 
-   * run first SET and flip freq. to complete set.
+   * run first team and flip freq. to complete set.
    * On flip: Turn count to red and hold - switch freq to alternate and turn to GRN; commence count
    * 
    * Rinse and repeat according to val of <set_size> 
@@ -38,20 +37,23 @@ void goTeamPlay(byte teamType){                                                 
   uint8_t nID           = 0;
   bool    shootOff      = false;
   uint8_t firstToShoot  = 0;
-  //uint8_t tempArrowCount[3];
+  uint8_t whistleCount  = 0;
   sEcount               = 0;
   startOver             = false;
   continueOn            = true;
+  
 
   /*
   * check for button1 press to start
   */
   while (continueOn && !startOver ) {
+    printDebugLine(false, __LINE__, __NAME__);
     while (sEcount < p_Store.maxEnds || shootOff) {
-      n_Count_[1] = n_Count_[2] = (shootOff ? 20  :  startCounts[p_Store.startCountsIndex]);
+      printDebugLine(false, __LINE__, __NAME__);
+      n_Count_[1] = n_Count_[2] = (shootOff ? 20*set_size  :  startCounts[p_Store.startCountsIndex]);
       if (!sEcount) clearAB(nID, false);                                                          // clear both screens
       nID = !shootOff ? goChooseArcher() : firstToShoot ;                           // The team that shot first in the match shall start shooting
-      printDebugLine(false, __LINE__, __NAME__);
+      //printDebugLine(false, __LINE__, __NAME__);
       if (sEcount) clearAB(nID, false); 
       nID == 1 ? set_A(1) : set_B(2) ;                                              // set nID to match first team up, and send info to screens
       pauseMe(20);
@@ -64,7 +66,9 @@ void goTeamPlay(byte teamType){                                                 
       sendSerialS(2, 0, 15, "   READY");
       sendSerialS(2,  0,  29, shootOff ? "TIE BREAK" : "   SET:");
       if (!shootOff) sendNumber (2, 44 , 29, sEcount );
-      goMenu(true);                                                                 // wait for proceed
+      continueOn = false;
+      goMenu(true); 
+                                                                      // wait for proceed
       clearMatrix(false);
       doBarCount(nID, nID); 
       unsigned long secCount = millis();
@@ -90,7 +94,7 @@ void goTeamPlay(byte teamType){                                                 
       */
       writeOLED_Data(nID, nID );                                                    // set up for 5 ends of 4 or 6 arrows in 
       uint8_t tempArrowCount[] = {0, arrowCount, arrowCount};
-      if (shootOff) tempArrowCount[1] = tempArrowCount[2] = 1;
+      if (shootOff) tempArrowCount[1] = tempArrowCount[2] = set_size;
       while (n_Count_[nID] > 0){                                                    // repeat until n_Count[current] < 0
         if (!goEmergencyButton(nID, nID)) {                                         // are we halting???
           writeStopwatch(n_Count_[nID]);                                            // run a set
@@ -99,18 +103,14 @@ void goTeamPlay(byte teamType){                                                 
           sendNumber((n_Count_[nID] > 0 ? txtColour : 1), colNumber, lnNumber, n_Count_[nID] );
           n_Count_[nID] > 0 ? n_Count_[nID]-- : 
                               nID = (nID == 1? set_B(1) : set_A(2));                // catch run-out
-          if(flipFlag || shootOff){                                                 // if alternative screens and detail change is invoked
-            goWhistle(1);          
+          if(flipFlag){                                                             // if alternative screens and detail change is invoked
+            if (whistleCount++ <= set_size) goWhistle(1);                           // skip 1 x whistle when about to hit 3 x whistle.
             shootOff ?
-                tempArrowCount[nID] -= 2*set_size :                                          // as shootoff reduce arrowcount in flip-flop 
+                tempArrowCount[nID] -- :                                            // as shootoff reduce arrowcount in flip-flop 
                 tempArrowCount[nID] -= set_size;                                    // reduce by the qty of arrows per set of 2 or 3  
             tempArrowCount[nID] == 0 ? n_Count_[nID] = 0 : n_Count_[nID] += 1;      // Unless at zero, keep the screen count right for holding
-            //byte temp = (nID == 1? set_B(1) : set_A(2));                            // Hold the curr count in red and change screen
-            nID = (nID == 1? set_B(1) : set_A(2));                            // Hold the curr count in red and change screen
+            nID = (nID == 1? set_B(1) : set_A(2));                                  // Hold the curr count in red and change screen
             pauseMe(50);
-            //clearMatrix(false);
-            //tempArrowCount[nID] == 0 ? n_Count_[nID] = 0 : n_Count_[nID] -= 1;      // set it back 1 after holding value sent
-            //nID = temp;                                                             // new nID applied now
           }
           //printDebugLine(false, __LINE__, __NAME__);
           flipFlag = handleCount(secCount, nID);                                    // if flipFlag is false then the count didn't run out
@@ -122,12 +122,10 @@ void goTeamPlay(byte teamType){                                                 
         }
       }
       goWhistle(3);
-      //pauseMe(100);
+      whistleCount = 0;                                                             // reset to restart
       clearAB(nID, true);                                                           // 3x whistle, clear matrix with Score and Collect message
-      //pauseMe(80);
-      //continueMatch();//<<<<<<<<<<<<<<<<<<< write function to check for end of match
       shootOff = false;
-    }                                                                               // where arrowCount runs out, change ends?
+    }                                                                               
 
     continueOn = false;
     clearFromLine(1);
@@ -136,15 +134,16 @@ void goTeamPlay(byte teamType){                                                 
     if (checkForShootoff()) {                                                       // select whether a shoot-off is needed
       shootOff = true;
       continueOn = true;
-      arrowCount = 1;
     }else{
       clearFromLine(1);
+      sEcount = 0;
+      clearAB(nID, false);
+      writeSplash(true);
+            
       return;
     }
     writeShootOff(nID, true);
     
-    //if (sEcount > 1 && sEcount <= p_Store.maxEnds ) writeReadySet();
-    //clearFromLine(shootOff ? 6 : 1);
     clearFromLine(6);
     u8x8.setCursor(0, 6);
     u8x8.inverse();
@@ -154,7 +153,6 @@ void goTeamPlay(byte teamType){                                                 
       bool flag = false;
       switch (readButtons()) {
         case BUTTON1: 
-          //n_Count_[nID] = startCounts[p_Store.startCountsIndex];
           flag = true;
           break;
         
@@ -168,12 +166,7 @@ void goTeamPlay(byte teamType){                                                 
       }
       if (flag) break;
     }
-    // clearFromLine(5);
-    // nID = firstToShoot;
-    // displayParamsOnOLED();
-    // writeOLED_Data(0, nID);
     clearMatrix(false);
-    //if (!shootOff) doBarCount(nID, nID);
   }
 }
 
@@ -391,15 +384,5 @@ Teams:
     A three-arrow (two-arrow for Mixed Team) shoot-off for score, a single arrow by each team member;
     If the score is tied, the team with the arrow closest to the centre shall win;
     If still tied the second arrow (or third) closest to the centre shall determine the winner.
-
-7.2.4.1.3.
-Set-up for four and two 40cm vertical triple faces.
-When using four vertical triple 40cm faces, the centres of the middle faces shall be 130cm above the floor.
-With four vertical triple faces, there shall be a space of at least 10cm between the scoring zones of the 
-second and third column, and a maximum distance of 2cm between the scoring zones of columns 1 and 2, and columns 3 and 4.
-With two vertical triple faces (individual and team event), there shall be a space of minimum 25cm between 
-the scoring areas of each column.
-With one vertical triple face set-up horizontally (team shoot-off), the centre of the vertical triple face 
-shall be 130cm above the floor.
 
 */

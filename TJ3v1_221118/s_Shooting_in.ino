@@ -18,31 +18,30 @@ void checkIntervalTimer(void){
       started = true;
       showWaiting(false);                         // for event where restarting timer during waiting
       goCountdownTimer();
-      intervalTimer = millis();
-      secondsTimer  = millis(); 
-      //n_Count = 60;
-      pauseMe(109);
+      intervalTimer = secondsTimer  = millis();
+      
+      pauseMe(109);                               // fucked if I know. . .
     }
     if (lapsed < 60) {                            // when count reaches 1 min blank and post end data
       intervalOn = false;                         // one min = 60000 milliseconds
       lapsed = p_Store.breakPeriod;
-      writeInfoBigscreen();
+      pauseMe(tick);                              // allow the time to show for remainder of sec
+      writeInfoBigscreen();                       // show what's coming
       pauseMe(2*tick);
       clearMatrix(false);  
       HC12.print(F("font 9\r"));    HC12.flush();
-      goWhistle(4);
-      for (byte i = 0; i < 4; i++){               // flash the prepare message
-        sendSerialS( /*colour=*/ 2, /*column=*/ 0, /*line=*/ 18, "PREPARE...");
+      goWhistle(4);                               // alert all
+      for (byte i = 0; i < 4; i++){               // flash the prepare message four times
+        sendSerialS( /*colour=*/ 2, /*column=*/ 0, /*line=*/ 18, " PREPARE...");
         pauseMe(2*tick);
         clearMatrix(false);
         pauseMe(tick);
       }
-      showWaiting(true);
+      showWaiting(true);                          // enable the "waiting" _underline_ scroll
       return;
     }
     if ((millis() - intervalTimer) > tick) {      
-      intervalTimer = millis();
-      secondsTimer  = millis();
+      intervalTimer = secondsTimer  = millis();
       if (lapsed >=60) lapsed = goCountdownTimer();
     }
   }
@@ -55,23 +54,18 @@ void checkIntervalTimer(void){
 */
 
 uint16_t goCountdownTimer(){
-  if ((lapsed == p_Store.breakPeriod *60) || (lapsed %60 == 0)) { 
+  if ((lapsed == p_Store.breakPeriod *60) || (lapsed %60 == 0)) { // if time to change a minute field
     clearMatrix(false);
-    
     HC12.print(F("font 1\r"));     HC12.flush();
-    sendSerialS(green, /*column=*/ 2, /*line=*/ 5, "Shooting in:");
-  
+    sendSerialS(green, /*column=*/ 2, /*line=*/ 5, "Starting in:");
     HC12.print(F("font 9\r"));    HC12.flush();
     --lapsed;
-    sendSerialS((lapsed <= 120 ? 3 : 2), 13, 25,
-                  TimeToString(lapsed));                          // choose digit colour and decrement
+    sendSerialS((lapsed <= 120 ? 3 : 2), 13, 25,                // choose digit colour
+                  TimeToString(lapsed));                          // and decrement          
   }
-    
-  HC12.print(F("font 5\r"));     HC12.flush();
+  HC12.print(F("font 5\r"));     HC12.flush();                    // set font for small secs
   sendSerialS(3, 42, 26, SecToString(lapsed));                    // choose digit colour(R1G2O3) and decrement
-  lapsed --;
-  
-  return lapsed;
+  return --lapsed;
 }
 
                                      
