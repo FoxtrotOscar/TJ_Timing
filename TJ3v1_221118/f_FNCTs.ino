@@ -12,32 +12,32 @@
 
   FUNCTIONS:
   56    writeInfoBigscreen
-  134   goChooseArcher
-  173   checkForShootoff
-  196   writeShootOff
-  218   clearMatrix
-  235   writeSplash
-  281   sendScrollW
-  311   goWhistle
-  318   stopSign
-  327   writeCircle
-  333   writeRectangle
-  340   writeLine
-  346   redBorder
-  368   sendChar
-  375   sendScrollChar
-  386   zeroSettings
-  400   goReboot
-  419   readButton
-  427   readButtonNoDelay
-  437   readButtons
-  473   waitButton
-  510   goEmergencyButton
-  546   handleEmergencyRestart
-  598   displayMenuPage
-  610   commandBaudRate
-  621   pauseMe
-  626   goPowerOff
+  129   goChooseArcher
+  167   checkForShootoff
+  190   writeShootOff
+  212   clearMatrix
+  221   writeSplash
+  238   sendScrollW
+  267   goWhistle
+  274   stopSign
+  283   writeCircle
+  289   writeRectangle
+  296   writeLine
+  302   redBorder
+  316   sendChar
+  323   sendScrollChar
+  334   zeroSettings
+  348   goReboot
+  367   readButton
+  374   readButtonNoDelay
+  384   readButtons
+  420   waitButton
+  450   goEmergencyButton
+  485   handleEmergencyRestart
+  536   displayMenuPage
+  548   command_ON
+  554   pauseMe
+  578   goPowerOff
     
  DEBUGGING   
     dispSrcFileDetails
@@ -101,31 +101,26 @@ void writeInfoBigscreen(void){
   pauseMe(tick/4);
   sendNumber(orange, colNumber, lnNumber, p_Store.maxPrac);
   pauseMe(tick/4);
-  //if (! p_Store.teamPlay) { 
-    lnNumber += 7;                                                                // End duration
-    sendSerialS( green, /*column=*/ 0, /*line=*/ lnNumber, "END ","Time: ");
-    colNumber = 48 +  ( startCounts[p_Store.startCountsIndex] < 10   ? 8 :     // Positioning the number on the matrix
-                        startCounts[p_Store.startCountsIndex] < 20   ? 5 :
-                        startCounts[p_Store.startCountsIndex] < 100  ? 3 : 
-                        startCounts[p_Store.startCountsIndex] < 200  ? 0 : -2);
-                        
-    pauseMe(tick/4);
-    sendNumber(orange, colNumber, lnNumber, startCounts[p_Store.startCountsIndex]);
-    pauseMe(tick/4);  
-    
-    lnNumber += 7;  // Number of Ends
-    sendSerialS( green, /*column=*/ 0, /*line=*/ lnNumber, "END ","Count: ");
-    colNumber = 48 + (p_Store.maxEnds < 10 ? 8 : 
-                      p_Store.maxEnds < 20 ? 5 : 3);                           // Positioning the number on the matrix
-    pauseMe(tick/4);
-    sendNumber(orange, colNumber, lnNumber, p_Store.maxEnds);
-  //}
+  lnNumber += 7;                                                                // End duration
+  sendSerialS( green, /*column=*/ 0, /*line=*/ lnNumber, "END ","Time: ");
+  colNumber = 48 +  ( startCounts[p_Store.startCountsIndex] < 10   ? 8 :     // Positioning the number on the matrix
+                      startCounts[p_Store.startCountsIndex] < 20   ? 5 :
+                      startCounts[p_Store.startCountsIndex] < 100  ? 3 : 
+                      startCounts[p_Store.startCountsIndex] < 200  ? 0 : -2);
+                      
+  pauseMe(tick/4);
+  sendNumber(orange, colNumber, lnNumber, startCounts[p_Store.startCountsIndex]);
+  pauseMe(tick/4);  
+  
+  lnNumber += 7;  // Number of Ends
+  sendSerialS( green, /*column=*/ 0, /*line=*/ lnNumber, "END ","Count: ");
+  colNumber = 48 + (p_Store.maxEnds < 10 ? 8 : 
+                    p_Store.maxEnds < 20 ? 5 : 3);                           // Positioning the number on the matrix
+  pauseMe(tick/4);
+  sendNumber(orange, colNumber, lnNumber, p_Store.maxEnds);
   pauseMe(5*tick);
   clearMatrix(false);
 }
-
-
-
 
 /*
  * Choose which archer is UP
@@ -134,7 +129,6 @@ void writeInfoBigscreen(void){
 byte goChooseArcher(void){
   uint8_t menuArcher  = 1;
   bool setFlag        = false;
-  
   for(;;) {  
     clearFromLine(1);
     u8x8.setCursor(0, 2);
@@ -197,7 +191,6 @@ void writeShootOff(byte nID, bool AB){
   clearMatrix(false);
   HC12.print(F("font 9\r"));   
   sendSerialS(2, 0, 20, "SHOOTOFF");                                      // Bigscreen
-  //do{} while (HC12.available());
   HC12.flush();
   if (AB) {
     nID == 1 ? setControlChannel(p_Store.B_ScrCh) : setControlChannel(p_Store.curChan);
@@ -217,7 +210,6 @@ void writeShootOff(byte nID, bool AB){
  */
 
 void clearMatrix(bool scrollOn){
-  //HC12.print(F("$"));
   scrollOn ? HC12.print(F("$1")) : HC12.print(F("$0"));
   pauseMe(scrollOn ? tick : 2*tock);
 } 
@@ -233,7 +225,7 @@ void writeSplash(bool scrolling){
     sendSerialS( green, /*column=*/ 2, /*line=*/ 24, "[ SPLASH ]");
   return;
   #endif
-  HC12.print(scrolling ? "^1" : "^0");                                                         // to localise to Matrix send ^0 (false) or ^1 (true)
+  HC12.print(scrolling ? "^1" : "^0");                                                         // Localsed to Matrix; send ^0 (false) or ^1 (true)
   pauseMe(scrolling ? 5*tick : 3*tick);
 }
 
@@ -259,13 +251,12 @@ void sendScrollW( uint16_t      scrollSpeed,
   for (uint8_t iter = 0; iter < strlen(scrollChar); iter ++){
     unsigned long timer = millis();
     HC12.print(F("font 17\r"));    
-    //HC12.flush();  pauseMe(tock);
     pauseMe(20);
     HC12.printf(
           F("scroll %u %u %u %u \"%c\"\rpaint\r"),
               txtColour1, (x1 + 12*iter + 1/*+4*/), y1, window1, scrollChar[iter]);
-    do{} while (millis() - timer < (scrollSpeed*140));    // 800UL
-    HC12.print(F("font 9\r"));     //HC12.flush();  pauseMe(tock);              // Font for the static letter post-scroll
+    do{} while (millis() - timer < (scrollSpeed*140));                       // 800UL
+    HC12.print(F("font 9\r"));                                               // Font for the static letter post-scroll
     sendChar(orange, (x1 + 12*iter), y1, scrollChar[iter]);
     pauseMe(2);
   }
@@ -275,7 +266,7 @@ void sendScrollW( uint16_t      scrollSpeed,
 
 void goWhistle(uint8_t whistles){
   if (noWhistles) return;
-  HC12.print("~"); //HC12.flush();              //uncomment for whistles
+  HC12.print("~");                                                            //uncomment for whistles
   HC12.print(whistles);  
 }
 
@@ -312,23 +303,13 @@ void redBorder(bool borderOn, byte nID){
   byte offSet = 13;
   if (borderOn == true) {
     HC12.print(F("$3"));
-    // clearMatrix(false);
-    // writeRectangle(1, 0, 31, 64, 32);
-    // writeRectangle(0, 1, 30, 62, 30);                               // blank centre
-    // HC12.print(F("font 13\r"));                                     // large numbers font
-    // HC12.flush();
+    pauseMe(5);
     goClock(offSet, nID);                                           
     sendNumber(1, colNumber, lnNumber, n_Count_[nID]);              // parks the count in red
     pauseMe(50);
   } else {
     HC12.print(F("$2"));
-    //printDebugLine(false, __LINE__, __NAME__);
-    // writeRectangle(2, 0, 31, 64, 32);
-    // pauseMe(100);
-    // clearMatrix(false);
-    //printDebugLine(false, __LINE__, __NAME__);
   }
-  //printDebugLine(false, __LINE__, __NAME__);
 }
 
 
@@ -388,8 +369,7 @@ uint8_t readButton(int pin) {
   pauseMe(5);                                 // only reached if pin goes LOW, de-bounce delay, confirm read
   return (digitalRead(pin) == LOW) ? 1 : 0;
 }
-/*
- *  B)  
+/* B)  
 */                                    
 uint8_t readButtonNoDelay(int pin) {        // as above, without small sleep if button press detected
   return (digitalRead(pin) == LOW) ? 1 : 0;
@@ -443,30 +423,23 @@ uint8_t waitButton() {
   for (;;) {
     if (!intervalOn && !flag && (millis() - timeOut > (tick*60*15))) {
       clearMatrix(false);
-      bright = 25;                                          // dim the logo after the period above
+      HC12.print(F("^8L"));                                 // dim the logo after the period above
       writeSplash(true); 
-      bright = 255;                                         // reset the brightness
       flag = true;
     }
     checkIntervalTimer();
-    
     getRFID(&p_Store);
-    
     uint8_t ret = readButtons();                            // read all button states
-    
-    if (ret != 0) {
+    if (ret != 0) {                                         // start of power-off routine
       long long goTurnOff = millis();
       while (readButtons() != 0) {
-        delay(1);                                           // and now wait for him to release the button
-      }                                                     // if release made after 4 secs then power off selected
-      if (millis() - goTurnOff > 4000
-          && ret == BUTTON4 ) {                             // if button 4 held for >4 secs 
-          
+        delay(1);                                           // and now wait for button release as millis() clocks
+      }                              
+      if (millis() - goTurnOff > 4000                       // if release made after 4 secs then power off selected
+          && ret == BUTTON4 ) {                             
         goPowerOff();                                       // turn controller Power OFF via the digital power switch
       }
-      HC12.print(F("brightness "));                         // return brightness to nominal 
-      HC12.print(bright);                                                      
-      HC12.print(F("\r"));
+      HC12.print(F("^8H"));                                 // brightness back to high
       return ret;                                           // finally return value of the button he pressed moments ago
       }
     pauseMe(1);
@@ -486,7 +459,6 @@ bool goEmergencyButton(uint8_t AIndex, byte nID){
     u8x8.print("STOP");
     pauseMe(5*tick);
     n_Count_[nID] = handleEmergencyRestart(nID);                     // go fetch the next step decision
-    
     if (AIndex < 3){    
       displayParamsOnOLED();
       if (n_Count_[nID] == startCounts[p_Store.startCountsIndex]) {
@@ -505,7 +477,7 @@ bool goEmergencyButton(uint8_t AIndex, byte nID){
 }
 
 /*
- * Write a menu to select 1 of two options:
+ * menu to select 1 of 3 options:
  * 1 go back 10 secs and resume
  * 2 go back to zero secs and resume
  * 3 do a re-start keeping current parameters
@@ -558,7 +530,6 @@ int16_t handleEmergencyRestart(byte nID){
       n_Count_[nID] = 0;
     break;
   }
-  
   return n_Count_[nID] ;
 }
 
@@ -574,16 +545,11 @@ void displayMenuPage(uint8_t idx, uint8_t selectionIdx) {
   }  
 }
 
-bool commandBaudRate(bool command){
-  HC12.flush();
-  HC12.end();
-  pauseMe(800);
-  command ? HC12.begin(9600) : HC12.begin(2400);      // always set to 2400 atm
-   pauseMe(800);
-  while(HC12.available()) HC12.read();                // empty  out possible garbage
-  return command;
+void command_ON(bool command){                        // enter and exit HC12 Command mode
+  digitalWrite(HC12SetPin, command ? LOW : HIGH);     // COMMAND MODE
+  pauseMe(80);                                        // settle
+  while(HC12.available()) HC12.read();            // empty  out possible garbage
 }
-
 
 void pauseMe(uint16_t holdOff){
   long long pause = millis();
@@ -789,9 +755,10 @@ void goDemoLoop() {
   const char demoChar2[] = "Archers";
   
   const char demoChar3[] = "Welcome to";
-  const char demoChar4[] = "a  W.R.S.";
-//  const char demoChar5[] = "";
-  const char demoChar6[] = " 2 X WA18";
+  //const char demoChar4[] = "a  W.R.S.";
+  const char demoChar4[] = "a  Wintery";
+  const char demoChar5[] = "  W.R.S. ";
+  const char demoChar6[] = " WA18 X 2";
   const char demoChar7[] = "Aim  for the";
   const char demoChar8[] = "GOLD";
   const char demoChar9[] = "C";                                   // |

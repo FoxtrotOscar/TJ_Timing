@@ -13,7 +13,7 @@ bool recvWithEndMarker() {
     rc = _RADIO.read();
     
     switch (rc) {
-      case '^':                                 // force reboot 
+      case '^':                                   // initiator for Splash, Score & Collect, Dim screen, Reboot
         while (!_RADIO.available()) {}            // hang around until a char is received
         pauseMe(pMe);
         rc = _RADIO.read();
@@ -35,8 +35,18 @@ bool recvWithEndMarker() {
             score_Collect(true);
             break;
 
+          case '8':                                 // dim the screen to val Low/Med/Bright given
+            while (!_RADIO.available()) {}          // hang around until a char is received
+            pauseMe(pMe);
+            rc = _RADIO.read();
+            screenBright = (rc == 'L'? 25 : rc == 'M'? 100 : sBright);
+              MATRIXSER.print(F("brightness "));
+              MATRIXSER.print(screenBright);
+              MATRIXSER.print(F("\r"));
+            break;
+
           case '9':
-            reboot();       //digitalWrite(rebootPin, LOW);
+            reboot();                              //digitalWrite(rebootPin, LOW);
             configMatrix(sWidth, sHeight, sType, sBPP, sInv, sEnabA, sBright);
             digitalWrite    (setupPin, LOW); 
             pauseMe(800);
@@ -47,7 +57,7 @@ bool recvWithEndMarker() {
         newData = false;
       break;
       
-      case '~':                                   // marker for whistle - count follows
+      case '~':                                   // initiator for whistle - count follows
         while (!_RADIO.available()) {}            // hang around until a char is received
         pauseMe(pMe);
         rc = _RADIO.read();  
@@ -64,7 +74,7 @@ bool recvWithEndMarker() {
         newData = false;
       break;
 
-      case '*':                                   // marker for setup of the HC12 channel
+      case '*':                                   // initiator for setup of the HC12 channel
         while (!_RADIO.available()) {}            // hang around until a char is received
         pauseMe(pMe);
         rc = _RADIO.read();
@@ -75,7 +85,7 @@ bool recvWithEndMarker() {
         newData = false;
       break;
 
-      case '$':                                   // marker for write splash - not in use
+      case '$':                                   // initiator for Matrix wipe, red border,  
         while (!_RADIO.available()) {}            // hang around until a char is received
         pauseMe(pMe);
         rc = _RADIO.read();
@@ -106,7 +116,7 @@ bool recvWithEndMarker() {
 
       default:
         if (rc != endMarker) {
-          receivedChars[ndx] = rc;              // fill the buffer
+          receivedChars[ndx] = rc;              // No initiators so fill the buffer until an end marker received
           ndx++;
            if (ndx >= numChars) ndx = numChars - 1;
           newData = false;
@@ -118,7 +128,7 @@ bool recvWithEndMarker() {
       break;
     }
   }
-  return newData;
+  return newData;                               // return with the received string and a flag to say you have mail...
 }
 
 

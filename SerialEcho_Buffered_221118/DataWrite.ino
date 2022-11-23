@@ -5,7 +5,7 @@ void printNewData() {
     MATRIXSER.print(receivedChars);             // send the buffered data to the Matrix
     delay(1);                                   // Now empty it
     memset(receivedChars, 0, sizeof(receivedChars));
-    newData = false;
+    newData = false;                            // clear new mail flag
 }
 
 
@@ -36,29 +36,29 @@ void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, cons
 /*
  * Function to output the actual clock output to the screen
  */
-// void sendNumber(int tColr, int cNum, int lnNum, int digits) {
-//   MATRIXSER.printf(
-//     F("text %u %u %u \"%u\"\rpaint\r"),
-//       tColr, cNum, lnNum, digits);
-//   MATRIXSER.flush();
-//   pauseMe(tock);      
-// }
-
-void sendNumber(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, int digits) {
-  MATRIXSER.print("text ");
-  MATRIXSER.print(txtColour1);
-  MATRIXSER.print(" ");
-  MATRIXSER.print(colNumber1);                   // x pos for text
-  MATRIXSER.print(" ");
-  MATRIXSER.print(lnNumber1);                    // y pos
-  MATRIXSER.print(" ");
-  MATRIXSER.print('"');
-  MATRIXSER.print(digits);
-  MATRIXSER.print('"');
-  MATRIXSER.print("\r");
-  delay(tock);
-  MATRIXSER.print("paint\r");
+void sendNumber(int tColr, int cNum, int lnNum, int digits) {
+  MATRIXSER.printf(
+    F("text %u %u %u \"%u\"\rpaint\r"),
+      tColr, cNum, lnNum, digits);
   MATRIXSER.flush();
-  
-  delay(tock);   
+  pauseMe(tock);      
 }
+
+// void sendNumber(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, int digits) {
+//   MATRIXSER.print("text ");
+//   MATRIXSER.print(txtColour1);
+//   MATRIXSER.print(" ");
+//   MATRIXSER.print(colNumber1);                   // x pos for text
+//   MATRIXSER.print(" ");
+//   MATRIXSER.print(lnNumber1);                    // y pos
+//   MATRIXSER.print(" ");
+//   MATRIXSER.print('"');
+//   MATRIXSER.print(digits);
+//   MATRIXSER.print('"');
+//   MATRIXSER.print("\r");
+//   delay(tock);
+//   MATRIXSER.print("paint\r");
+//   MATRIXSER.flush();
+  
+//   delay(tock);   
+// }

@@ -11,7 +11,6 @@
 
 
 void checkIntervalTimer(void){
-
   if (intervalOn){
     if (!started ){
       lapsed = p_Store.breakPeriod *60;
@@ -68,8 +67,6 @@ uint16_t goCountdownTimer(){
   return --lapsed;
 }
 
-                                     
-
 char* TimeToString(unsigned long t) {                           // t is time in seconds = millis()/1000;
  static char str[9];
  long h = t / 3600;
@@ -86,8 +83,6 @@ char* SecToString(unsigned long t) {
  sprintf(str, ":%02d",s);
  return str;
 }
-
-
 
 bool showWaiting(bool enAble){
   if (enAble){                                    // if True

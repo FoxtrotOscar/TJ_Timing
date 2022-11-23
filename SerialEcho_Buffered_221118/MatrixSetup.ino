@@ -22,7 +22,11 @@ void configMatrix(byte pWidth, byte pHeight, byte pType, byte pBPP, byte pInv, b
   delay(2*tock);      
 }
 
-
+void panelBright( uint16_t brightness){
+  MATRIXSER.print(F("brightness "));
+  MATRIXSER.print(brightness == 0 ? sBright : brightness);
+  MATRIXSER.print(F("\r"));
+}
 void reboot(void){
   digitalWrite(rebootPin, LOW);                 //  Send a pulse to the Matrix Controller to 
   delay(4*tock);                                //  reboot it - clearing any spurious commands

@@ -16,8 +16,6 @@
 */
 
 void loop() {
-  //if (demoMode) goDemoLoop();
-  printDebugLine(false, __LINE__, __NAME__); 
   if ((sEcount > p_Store.maxEnds) || startOver) {          // test here for DONE or reset
     if (p_Store.maxEnds != 1) {                            // But not for single ends
       clearFromLine(1);
@@ -44,7 +42,6 @@ void loop() {
     continueOn = false;
     startOver = false;
     showWaiting(false);                                       // Turn off scrolling wait indic - if running
-    //clearMatrix();
     sEcount = 1;
     sE_iter = 0;
     countPractice = p_Store.maxPrac;
@@ -58,19 +55,18 @@ void loop() {
       clearFromLine(5);
       u8x8.draw2x2String(0, 6, " FINALS ");
       clearMatrix(false);
-      sendScrollW( /*speed=*/  4,                              // 3 - 15
-                               /*loop=*/   0,
-                               /*wiggle=*/ 2,
-                               /*colour=*/ 3,
-                               /*column=*/ 1,
-                               /*line=*/   22 ,
-                               /*window=*/ 63,
-                                          "FINAL!" );          // animation of finals
+      sendScrollW(/*speed=*/    4,                              // 3 - 15
+                  /*loop=*/     0,
+                  /*wiggle=*/   2,
+                  /*colour=*/   3,
+                  /*column=*/   1,
+                  /*line=*/    22,
+                  /*window=*/  63,
+                          "FINAL!" );                           // animation of finals
       #endif
       HC12.flush();                                    
       if (p_Store.isAlternating && p_Store.teamPlay < 11) {
         clearFromLine(5);
-        printDebugLine(false, __LINE__, __NAME__);
         goChooseArcher();
       } else  p_Store.whichArcher = 0;
     }

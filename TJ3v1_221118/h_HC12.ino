@@ -2,26 +2,24 @@
  * HC12 433MHz RADIO DEVICE 
  * Read the current channel, write to p_Store and display
  *
- * 21   readChannel
- * 69   writeChannel_OLED
- * 89   alterChannelWarning
+ * 22   readChannel
+ * 67   writeChannel_OLED
+ * 87   alterChannelWarning
  * 132  new_Channel
- * 191  change_Channel
- * 201  set_A
- * 212  set_B
- * 222  clearAB
- * 234  setControlChannel
- * 267  setB_Chan
- * 477  writeRemoteChannel
- * 492  makeControlString
- *      splashAB
+ * 187  change_Channel
+ * 194  set_A
+ * 205  set_B
+ * 215  clearAB
+ * 225  setControlChannel
+ * 256  setB_Chan
+ * 434  readyAB
+ * 454  writeRemoteChannel
+ * 467  makeControlString
  */
 
 
-
 void readChannel(void){
-  digitalWrite (HC12SetPin, LOW);                           // enable Control Mode locally
-  pauseMe(1000);
+  command_ON(true);                                         // enable Control Mode locally
   p_Store.curChan = 0;
   char endMarker = '\n';                                    // a return (EOL) char at end of data from HC12
   char rc;                                                  // data returned from HC12 interrogation
@@ -62,9 +60,7 @@ void readChannel(void){
   }                                                         // and re-commence query
   
   u8x8.draw2x2String(u8x8ColNumber++, 4, temp_str);
-  digitalWrite (HC12SetPin, HIGH);                          // HC12 to TRANSPARENT mode to DISable writing (IF NOT)
-  pauseMe(800);                 
-  
+  command_ON(false);                                        // disable Control Mode locally
 }
 
 void writeChannel_OLED (int channel){
@@ -126,10 +122,12 @@ bool alterChannelWarning(void){
 }
 
 
+
 /*
  * Call HC12 to change operational channel
  * 2 parts:  Local, and Remote with Local.
  */
+
 void new_Channel(bool alterGlobally) {
   pauseMe(tick);
   uint8_t newChan = p_Store.curChan;
@@ -182,10 +180,6 @@ void new_Channel(bool alterGlobally) {
   }
 }
 
-
-
-
-
 /*
  * Routine to alter the Tx/Rx channel setup
  */
@@ -195,7 +189,6 @@ bool change_Channel(int newChan, bool alterGlobally){
   }
   return setControlChannel(newChan);                        // returns true if successful
 }
-
 
 byte set_A(byte nID){                                       // alter the operational channel and 
   if (nID == 1) setControlChannel(p_Store.B_ScrCh) ;        // if not on B_chan
@@ -219,11 +212,9 @@ byte set_B(byte nID){
 }
 
 void clearAB(byte nID, bool score){                         // empty both screens
-  //clearMatrix(false);
   if (score) score_Collect(false);
   pauseMe(10);
   nID <= 1 ? setControlChannel(p_Store.B_ScrCh) : setControlChannel(p_Store.curChan);
-  //clearMatrix(false);
   if (score) score_Collect(false);
   pauseMe(10);
   nID <= 1 ? setControlChannel(p_Store.curChan) : setControlChannel(p_Store.B_ScrCh);
@@ -235,7 +226,7 @@ byte setControlChannel(byte newChan){                       // Write to the cont
   bool    isOK            = false;                          // True when successful
   String  HC12ReadBuffer  = "";                             // Read/Write Buffer 1 for HC12
   String  tmp_str = makeControlString(newChan);             // parse the text needed for the command
-  digitalWrite(HC12SetPin, LOW);                            // Now enter COMMAND mode locally
+  command_ON(true);                                         // Now enter COMMAND mode locally
   pauseMe(80);                                              // allow catch-up
   do{     
     bool HC12End = false; 
@@ -248,8 +239,7 @@ byte setControlChannel(byte newChan){                       // Write to the cont
       if (HC12ByteIn == '\n') HC12End = true;               // Set HC12End flag to exit WHILE loop
     }
     isOK = HC12ReadBuffer.startsWith("OK") ? true : false;      
-    digitalWrite(HC12SetPin, HIGH);                         // Exit command & enter transparent mode
-    pauseMe(80);                                            // Delay before proceeding to allow HC12 resetting
+    command_ON(false);                                      // Exit command & enter transparent mode
     HC12ReadBuffer = "";
   } while (isOK == false);
   u8x8.setCursor(14,0);                                     //  |
@@ -261,7 +251,6 @@ byte setControlChannel(byte newChan){                       // Write to the cont
   return newChan;
 }
   
-
 
 void setB_Chan(void){                                       // in TEAMPLAY we use 2 x screens showing independently
   byte B_Chan = p_Store.curChan;
@@ -280,14 +269,10 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
     u8x8.print("NO TeamPl:BTN[4]");
     
     pauseMe(tick);
-    //unsigned long offTimer = millis();
     bool flag = false;
     for (;;) {
-      
       switch (readButtons()){
-        
         case BUTTON2:                                     // KEEP
-            
             flag = true;
             break;
 
@@ -311,15 +296,10 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
             goWhistle(1);
             pauseMe(12);
             return;                                       // get out of the function
-            
       }
-      if (flag) break;                                    // exit 
+      if (flag) break;                                    // exit infinite loop
     }
-    //if (p_Store.B_ScrCh) return;                         // if Accept as Set (eg true), return 
-    if (EEPROM.read(18) == 1) {
-      printDebugLine(false, __LINE__, __NAME__);
-      return;
-    }
+    if (EEPROM.read(18) == 1) return;                     // done
   }
             
     /*      
@@ -343,7 +323,7 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
     u8x8.setCursor(0, 2);
     u8x8.print("Sel. A&B screens");
     pauseMe(500);
-    for (;;) {    // Setup switch to B channel
+    for (;;) {                                            // Setup switch to B channel
       u8x8.setCursor(0, 3);
       if (millis() - toggle >= _interval ) {              // setup a flashing OFF action-word
         toggleFlag = !toggleFlag;
@@ -366,8 +346,7 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
         p_Store.B_ScrCh     = 0;
         EEPROM.put(18, 0);                                // unset B_Screen flag
         goWhistle(1);
-        //pauseMe(120);
-        return;        //
+        return; 
       }
     }
     clearFromLine(1);
@@ -393,12 +372,10 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
     setControlChannel(B_Chan);                            // Now shift the controller freq. to talk to the new channel
     pauseMe(2*tick);                                      // Allow STM (matrix) changes to take effect
     clearMatrix(false);
-    //delay(20);
     HC12.print(F("font 9\r"));    HC12.flush();
     sendSerialS(green, /*column=*/ 0, /*line=*/ 15, "B CH: SET");
     pauseMe(tick);
     sendSerialS(green, /*column=*/ 0, /*line=*/ 31, "TEST:  OK");
-    
     clearFromLine(3);
     u8x8.inverse();
     u8x8.setCursor(0, 4);
@@ -474,7 +451,6 @@ void readyAB (void){
  * Write a given channel number to the remote unit(s) and return the AT+Cxxx char
  */
 void writeRemoteChannel(byte newChan) {
-  //digitalWrite(HC12SetPin, HIGH);                             // Ensure TRANSPARENT mode locally
   String newChanTxt = makeControlString(newChan);             // parse the string to send
   HC12.print("*^");                                           // call remote HC12(s) to announce change coming 
   HC12.flush();
@@ -482,11 +458,6 @@ void writeRemoteChannel(byte newChan) {
   HC12.println(newChanTxt);                                   // Send command to REMOTE HC12
   HC12.flush();
   pauseMe(2*tick);
-  // HC12.printf(
-  //     // F(%s%s%s\"\rpaint\r"),
-  //     //   *, ^, newChanTxt
-
-    
 }
 
 /*
@@ -503,7 +474,3 @@ String makeControlString(byte newChan){
   return tmp_str;
 }
 
-// void splashAB(nID) {
-//   writeSplash(false);                                         // to localise to Matrix send $£ (false) or $% (true)
-
-// }

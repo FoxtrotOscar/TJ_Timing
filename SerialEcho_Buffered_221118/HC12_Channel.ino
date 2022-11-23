@@ -11,7 +11,7 @@ void showParam(void){
   pauseMe(50);
   char endMarker = '\n';
   char rc;
-  commandBaudRate(true);
+  command_ON(true);                                 // enter Command mode
   colNumber = 46;
   byte pMe = 4;
   for (;;) {
@@ -25,12 +25,10 @@ void showParam(void){
       while (!flag && !read_error){                   // typical response: "OK+C021"
         rc = _RADIO.read();                           // keep reading until '+' returns
         pauseMe(pMe);  
-        flag  = (rc == '+');                          // means we have a good response, exit loop
-        read_error = (rc == 'E');                     // means we have a bad  response, exit loop
+        flag        = (rc == '+');                    // means we have a good response, exit loop
+        read_error  = (rc == 'E');                    // means we have a bad  response, exit loop
       }
-      if (read_error) {
-        break;
-      }                                               // exit to next iteration of (;;)
+      if (read_error) break;                          // skip the rest and re-enter the loop
       pauseMe(pMe);
       rc = _RADIO.read();                             // get the next char
       pauseMe(pMe);
@@ -43,9 +41,9 @@ void showParam(void){
         }
       }
     }
-    if (!read_error) break; 
+    if (!read_error) break;                           // done
   }
-  commandBaudRate(false);
+  command_ON(false);                                  // Exit command mode
   pauseMe(20);
 }
 
@@ -92,9 +90,8 @@ void goSetParam(char newParam) {
 }
 
 
-void commandBaudRate(bool command){
+void command_ON(bool command){                        // enter and exit HC12 Command mode
   digitalWrite(setupPin, command ? LOW : HIGH);       // COMMAND MODE
-  pauseMe(80);
+  pauseMe(80);                                        // settle
   while(_RADIO.available()) _RADIO.read();            // empty  out possible garbage
-
 }

@@ -47,8 +47,12 @@ Parameters may also be changed using Yellow <BTN 2> to enter Menu Mode and follo
 •	Red     <BTN 4>		Exit the menu mode to HOME:  	
 
 TIME-TAP offers extra options (Flint round, IFAF round, etc) that are not available through the menu alone and are available to purchase on-line from our web site www.tjudge.com.
+
+TEAM FINAL ROUNDS (Alternating screens)
+This mode is ONLY available with a Team Round (Final) TimeTap card.
+Present the appropriate card and follow the on-screen Controller instructions. 
  
-Run a Competition:
+RUNNING A COMPETITION:
 Ensure you have the correct competition parameters selected and proceed:
 Green <BTN1> :
 •	START 	the play

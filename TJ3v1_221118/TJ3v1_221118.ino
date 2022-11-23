@@ -60,12 +60,12 @@ byte noWhistles = false;      // set to false unless dev.
 #include <SPI.h>
 #include <MFRC522.h>
 
-#define HC12 Serial1          // HC12 transmitter serial port
-#define __CS0 10              // SSD1325 CS   OLED
-#define __DC  9               // SSD1325 DC   OLED
-#define SS_PIN  19            // RFID  SDA/SS/SPI
-#define offControlPin 6       // used to kill power with long-press RED button via Digital Power Switch
-#ifdef Teensy32
+#define   HC12 Serial1          // HC12 transmitter serial port
+#define   __CS0 10              // SSD1325 CS   OLED
+#define   __DC  9               // SSD1325 DC   OLED
+#define   SS_PIN  19            // RFID  SDA/SS/SPI
+#define   offControlPin 6       // used to kill power with long-press RED button via Digital Power Switch
+#ifdef    Teensy32
   #define RESET_DIO 23        // (23: T3.2/T4.0, 28: T3.6) OLED
   #define HC12SetPin 15       // (15: T3.2/T4.0, 17: T3.6) This pin remains HIGH until setting the HC-12 
 
@@ -80,26 +80,13 @@ byte noWhistles = false;      // set to false unless dev.
   #error Unsupported board selection. 
 #endif
 
-//#define BAUD 2400             // sets baudrate for HC12 TRANSPARENT mode
-//#define commandBAUD 9600      // ditto for COMMAND mode
-
-#define __NAME__ (strrchr(__FILE__,'\\') ? strrchr(__FILE__,'\\')+1 : __FILE__)
+#define   __NAME__ (strrchr(__FILE__,'\\') ? strrchr(__FILE__,'\\')+1 : __FILE__)
                               // setup part of DEBUG string, so TAB can be reported
-#define see(variableName) \
-        Serial.print( F( #variableName" = ") ); \
-        Serial.println(variableName); 
+#define   see(variableName) \
+          Serial.print( F( #variableName" = ") ); \
+          Serial.println(variableName); 
 
-/*
-#define line(lineNo, FileName, variableName) \
-        Serial.print( F( #lineNo" = ") ); \
-        Serial.print(lineNo); \
-        Serial.print( F( ", "#fileName" = ") ); \
-        Serial.print(fileName); \
-        Serial.print( F( ", "#variableName" = ") ); \
-        Serial.println(variableName);
-*/
-uint16_t BAUD         = 2400;
-uint16_t commandBAUD  = 9600;
+const uint16_t BAUD         = 2400;
 
 //#ifdef U8X8_HAVE_HW_SPI
 //#endif
@@ -206,7 +193,6 @@ uint8_t     lnNumber;                             // y pos formatter
 uint8_t     colNumber;                            // x pos
 uint8_t     txtColour;
 uint8_t     t_ShootOff    = 0;
-bool        currBaud      = false;                // 0 for 2400, 1 for 9600
 enum        Colours:  
     int     { red = 1, green = 2, orange = 3};
 bool        continueOn    = false;
@@ -216,7 +202,7 @@ bool        intervalOn    = false;
 bool        started       = false;                // referencing the countdown timer status
 bool        reStartEnd    = false;
 bool        scrWait_Enable= false;                // status of waiting graphic scroll
-bool        demoMode      = false;
+bool        demoMode      = true;
 uint16_t    lapsed        = 0;
 uint16_t    tempOffset    = 0;                    // used to hold the last format value in Clock
 long long   intervalTimer = 0;
@@ -278,22 +264,22 @@ void setup() {
   u8g2.begin();
   u8x8.begin();
   u8g2.setPowerSave(0);
-  u8x8.setFont(u8x8_font_chroma48medium8_r);      // u8g2.setFont(u8x8_font_amstrad_cpc_extended_f);
-  wipeOLED();                                     // Clear the OLED, write header
+  u8x8.setFont(u8x8_font_chroma48medium8_r);        // u8g2.setFont(u8x8_font_amstrad_cpc_extended_f);
+  wipeOLED();                                       // Clear the OLED, write header
   u8g2.setContrast(255);
   u8x8.draw2x2String(0, 2, " SYSTEM ");
   u8x8.draw2x2String(0, 6, "STARTING");
 
-  currBaud = commandBaudRate(false);               // set SoftwareSerial port: true == COMMAND mode 9600 
-#ifdef DEBUG
-  Serial.begin(115200);
-#else
-  Serial.end();
-#endif
+  HC12.begin(BAUD);                                 // set SoftwareSerial Serial1 port: 2400
+  #ifdef DEBUG
+    Serial.begin(115200);
+  #else
+    Serial.end();
+  #endif
 //for (byte i = 0; i <= 29; i++) EEPROM.put(i, 0);  // clean the EEPROM  (dev only)
   pinMode(offControlPin,      OUTPUT);              // Output High for Power Off / Keep low for continued operation 
   pinMode(HC12SetPin,         OUTPUT);              // Output High for Transparent / Low for Command
-  digitalWrite(HC12SetPin,    HIGH);                // Enter TRANSPARENT mode
+  command_ON(false);                                // Enter HC12 TRANSPARENT mode
   digitalWrite(offControlPin, LOW);                 // ensure Power Off not selected  
   pauseMe(tick);  
   if (EEPROM.read(18) != 1) {
@@ -325,15 +311,13 @@ void setup() {
   pauseMe(tick);
 
   mfrc522.PCD_Init();                             // Init MFRC522 card
+  pauseMe(5);
   mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
   }
   goReboot();                                     // Reboot the screen unit
   pauseMe(2*tick);
-  // HC12.print("^1");                               // writes the Splash (Matrix native)
-  // pauseMe(5 * tick);
-  //clearMatrix(false);
   clearFromLine(6);
   u8x8.setCursor(0, 6);
   u8x8.inverse();
@@ -368,7 +352,7 @@ void setup() {
   HC12.print("title\r");
   pauseMe(3000);
   #endif
-  writeSplash(true);
+  writeSplash(true);                              // full splashscreen with animation
   if (p_Store.teamPlay)  
   p_Store.teamPlay = 0;
   p_Store.isFlint  = 0;
@@ -381,7 +365,7 @@ void setup() {
   clearFromLine(0);
   displayParamsOnOLED();                          // show current (default) setting
   u8x8.draw2x2String(0, 6, "..WAIT..");
-  writeSplash(false); 
+  writeSplash(false);                             // splash without animation
   shootDetail = 0;                                // bool for Detail odd/even, counters
   sE_iter = 0; sEcount = 1;
   countPractice = p_Store.maxPrac; 

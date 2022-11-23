@@ -23,12 +23,12 @@ void writeSplash(bool scrolling){                                          // to
   pauseMe(pMe);
   if (scrolling){
     pauseMe(pMe);
-    sendScrollW(  /*speed=*/  5,                                           // 3 - 15
+    sendScrollW(  /*speed=*/  6, //5                                          // 3 - 15
                   /*loop=*/   0,
                   /*wiggle=*/ 3,
                   /*colour=*/ orange,
                   /*column=*/ 4, 
-                  /*line=*/   30,
+                  /*line=*/   31, //30
                   /*window=*/ 63, 
                             scrollChar );                                   // animate of JUDGE
   } else {

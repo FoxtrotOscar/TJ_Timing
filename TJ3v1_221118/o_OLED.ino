@@ -88,7 +88,7 @@ void writeOLED_Data(uint8_t archerIndex, byte nID){
     if (!p_Store.isFinals  ){
       switch (sE_iter%4){
         case 0:
-          countPractice ? u8x8.print("CD") : u8x8.print("AB");      // Running AB/CD condition
+          /*countPractice ? u8x8.print("CD") :*/ u8x8.print("AB");      // Running AB/CD condition
           break;
         case 1:
           u8x8.print("AB");
@@ -97,7 +97,7 @@ void writeOLED_Data(uint8_t archerIndex, byte nID){
           u8x8.print("CD");
           break;
         case 3:
-          countPractice ? u8x8.print("AB") : u8x8.print("CD");
+          /*countPractice ? u8x8.print("AB") :*/ u8x8.print("CD");
           break;
         default:
           u8x8.print("");

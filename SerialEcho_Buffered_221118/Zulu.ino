@@ -6,7 +6,7 @@
 //   delay(2*tock);                                  
 //   clearMatrix(false);
 //   sendSerialS(2, 3, 20,(newParam ?  "CHANNEL: " : "BAUD"));
-//   commandBaudRate(true);
+//   command_ON(true);
 //   //while(Serial.available()) Serial.read();        // empty  out possible garbage
 //   colNumber = 46;
 //   byte pMe = 2;

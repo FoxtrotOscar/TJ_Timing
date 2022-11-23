@@ -13,7 +13,7 @@
 
 /*
  19   goTeamPlay   
- 173  writeSet_sizeType
+ 171  writeSet_sizeType
 */
 
 void goTeamPlay(byte teamType){                                                     // teamType is p_Store.teamPlay val 0 - 4  Zero is Off
@@ -47,13 +47,10 @@ void goTeamPlay(byte teamType){                                                 
   * check for button1 press to start
   */
   while (continueOn && !startOver ) {
-    printDebugLine(false, __LINE__, __NAME__);
     while (sEcount < p_Store.maxEnds || shootOff) {
-      printDebugLine(false, __LINE__, __NAME__);
       n_Count_[1] = n_Count_[2] = (shootOff ? 20*set_size  :  startCounts[p_Store.startCountsIndex]);
       if (!sEcount) clearAB(nID, false);                                                          // clear both screens
       nID = !shootOff ? goChooseArcher() : firstToShoot ;                           // The team that shot first in the match shall start shooting
-      //printDebugLine(false, __LINE__, __NAME__);
       if (sEcount) clearAB(nID, false); 
       nID == 1 ? set_A(1) : set_B(2) ;                                              // set nID to match first team up, and send info to screens
       pauseMe(20);
@@ -112,7 +109,6 @@ void goTeamPlay(byte teamType){                                                 
             nID = (nID == 1? set_B(1) : set_A(2));                                  // Hold the curr count in red and change screen
             pauseMe(50);
           }
-          //printDebugLine(false, __LINE__, __NAME__);
           flipFlag = handleCount(secCount, nID);                                    // if flipFlag is false then the count didn't run out
         } else if (reStartEnd || startOver) {  //<<<<<<<<<<<<<<<<<<<  check for either restart or startover                             
           for (;;) {

@@ -98,8 +98,6 @@ void getRFID(struct PARAMSTORE *p_S){
     }
     buffChk(buffer2, 0, len);
     
-    
-    
     if (buffer2[15] == 1) {
       EEPROM.update(27, 180);                                   // Set flag for loaded banner
       pauseMe(160);

@@ -30,7 +30,7 @@ const byte    numChars      =   64;               // counter for buffer to hold 
 bool          newData       =   false;
 const int     rebootPin     =   PB0;              // the reboot pulse output
 const int     whistlePin    =   PB1;              // the number of the LED pin
-const int     screenBright  =   255;              // (max) brightness of the matrix screen
+uint8_t       screenBright  =   255;              // (max) brightness of the matrix screen
 uint8_t       numWhistles   =   0;                // how many whistles
 uint8_t       channNum      =   0;
 uint16_t      tick          =   1000;             // timing aids
@@ -69,8 +69,6 @@ void setup() {
   digitalWrite    (setupPin,    HIGH);            // PC11: active low - to read/control channel, high for Serial pass-through
   pauseMe(800);
   // Serial.print("AT+B2400\n");                      // making sure the Serial channel is at the correct baud rate
-  // pauseMe(800);
-
   configMatrix(sWidth, sHeight, sType, sBPP, sInv, sEnabA, sBright);
   pauseMe(100);
   showParam();                                 // Write the parameter details to the screen

@@ -1,6 +1,6 @@
 /*
 6   goFinals_Op
-171 continueOrEnd
+152 continueOrEnd
 */
 
 void goFinals_Op(byte nID){
@@ -14,25 +14,20 @@ void goFinals_Op(byte nID){
   * check for button1 press to start
   */
   while (continueOn && !startOver) { 
-    printDebugLine(false, __LINE__, __NAME__); 
     see(offSet);
     see(menu0[3]);
     arrowCount = shootOff ? 1 : 3;                      // if a shootoff then 1 arrow per player unless teamplay
     tempCount  = 0;
     while (arrowCount > 0 ) {
-      printDebugLine(false, __LINE__, __NAME__);
       clearMatrix(false);
       if ((countPractice && sEcount == 1) ){                                  // our end count == 1 and Prac is ON
         displayParamsOnOLED();
         writeOLED_Data(0, nID);
-        //doBarCount(0, nID);                                                   // no archer A or B here
         doBarCount( archerIndex, nID);
         startCounts[p_Store.startCountsIndex] == 20 ? 
               n_Count_[nID] = 3*startCounts[p_Store.startCountsIndex] :       // allow 3 arrows @20s for prac
               n_Count_[nID] = startCounts[p_Store.startCountsIndex];
-              //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       }else{
-        printDebugLine(false, __LINE__, __NAME__);
         writeOLED_Data(p_Store.isAlternating ? archerIndex : 0, nID); 
         if (sEcount == 1 && !tempCount && !startOver){
           doBarCount(archerIndex, nID);  
@@ -68,7 +63,6 @@ void goFinals_Op(byte nID){
       *  signal for "Scoring", followed by "Ready" on green button
       *  Green Button re-commences.
       */
-      printDebugLine(false, __LINE__, __NAME__);
       writeOLED_Data( ((countPractice || !p_Store.isAlternating) ? 0 : archerIndex), nID );
       uint8_t tempArrowCount[] = {arrowCount, arrowCount, arrowCount};
       while (n_Count_[nID] >= 0){                                               // repeat until n_Count[current] < 0
@@ -98,12 +92,10 @@ void goFinals_Op(byte nID){
         tempCount ++;
         if (p_Store.isAlternating || !nID){ //<<<<<<  query "!""
           if (!nID){
-            printDebugLine(false, __LINE__, __NAME__);
             archerIndex = archerIndex == 1 ? 2 : 1;
             if (wFlag) wFlag = false;
             else goWhistle(1);
           }else{
-            printDebugLine(false, __LINE__, __NAME__);
             nID = (nID == 1 ? set_B(nID) : set_A(nID));                         // if nID is 1 or 2 then flip 
           }
           if (!nID && !(tempCount % 2)) {                                       // when all arrows shot by both archers
@@ -111,24 +103,20 @@ void goFinals_Op(byte nID){
             n_Count_[nID] = startCounts[p_Store.startCountsIndex];
           }
         } else {                                                                // Matchplay round non-alternating
-          arrowCount = 0; printDebugLine(false, __LINE__, __NAME__);
-        // arrowCount --;
+          arrowCount = 0; 
         }
       } else {                                                                  // for a practice round 
       countPractice --; 
       continueOn = false;
-      printDebugLine(false, __LINE__, __NAME__); 
       writeHalt();
       return; 
       }
     }                                                                           // where arrowCount runs out, change ends?
     sEcount ++;
     if (sEcount > p_Store.maxEnds){
-      printDebugLine(false, __LINE__, __NAME__); 
       goWhistle(3);
       clearFromLine(1);
       score_Collect(true);
-      //clearMatrix(false);
       shootOff = checkForShootoff();
       if (shootOff) {
         writeShootOff(nID, false);
@@ -141,29 +129,22 @@ void goFinals_Op(byte nID){
     } 
     
     if (sEcount >= 1 && sEcount <= p_Store.maxEnds ) {
-      printDebugLine(false, __LINE__, __NAME__); 
       goWhistle(3);
       score_Collect(false);
     }
     clearFromLine(shootOff ? 6 : 1);
     arrowCount = shootOff ? 1 : 3;
     if (p_Store.isAlternating && continueOrEnd(nID)) {
-      printDebugLine(false, __LINE__, __NAME__);
       clearFromLine(5);
       shootOff ? clearMatrix(false) : writeReadySet();
       archerIndex = goChooseArcher();
-      //archerIndex = p_Store.whichArcher;
-    // } else if (!shootOff && continueOrEnd(nID)) {
-    //   archerIndex = 0;
-    //   shootOff ? writeShootOff() : writeReadySet();
     } else {
-      if (!shootOff) //writeHalt();//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< if (shootOff???)
+      if (!shootOff) 
       return;
     }
     displayParamsOnOLED();
     writeOLED_Data(0, nID);
     clearMatrix(false);
-    printDebugLine(false, __LINE__, __NAME__);
     if (!shootOff) doBarCount(archerIndex, nID);
   }
 }

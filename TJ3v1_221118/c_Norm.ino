@@ -35,11 +35,10 @@ void goNormal_Op(void){
   while (continueOn && !startOver) {
     if (countPractice) {                                            // Check, if Practice, then 
       n_Count_[nID] = startCounts[p_Store.startCountsIndex]; 
-    } else {                      
-
-    n_Count_[nID] = ((p_Store.isFlint) && (sEcount > 6)) ?          // make n_Count_[nID] (the count duration index), if Flint and 6 ends passed, 
-        startCounts[p_Store.startCountsIndex +1]:                   // advance to 30s for the closing Walkup section  
-        startCounts[p_Store.startCountsIndex];                      // otherwise remains as set.
+    } else {
+      n_Count_[nID] = ((p_Store.isFlint) && (sEcount > 6)) ?          // make n_Count_[nID] (the count duration index), if Flint and 6 ends passed, 
+                  startCounts[p_Store.startCountsIndex +1]:                   // advance to 30s for the closing Walkup section  
+                  startCounts[p_Store.startCountsIndex];                      // otherwise remains as set.
     }                            
 
     sE_iter += 1 ;                                                  // iterate each time the clock cycles  
@@ -97,13 +96,14 @@ void goNormal_Op(void){
         lnNumber = 15;         
         HC12.print(F("font 9\r"));
         sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 2, /*line=*/ lnNumber, "NEXT:"); 
-          lnNumber = 15; 
+        //lnNumber = 15; 
         if (p_Store.Details == 2){                                  // Double detail?
+          // sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 44, /*line=*/ lnNumber, 
+          //             !countPractice ? (sE_iter%4 == 1 ? "C D" : "A B") : 
+          //             (sE_iter%2 == 0 ? "A B" : "C D")) ;           // if practice seq. then details do not flip, otherwise flip
           sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 44, /*line=*/ lnNumber, 
-                      !countPractice ? (sE_iter%4 == 1 ? "C D" : "A B") : 
-                      (sE_iter%2 == 0 ? "A B" : "C D")) ;           // if practice seq. then details do not flip, otherwise flip
+                      (sE_iter%4 == 1 ? "C D" : "A B")) ;           // if practice seq. then details do not flip, otherwise flip                      
         }
-        //printDebugLine(false, __LINE__, __NAME__);
         doCountdownBar();
       } else if(p_Store.isFlint && sEcount > 6){
         if (sEcount > 9) continueOn = false;
@@ -113,19 +113,19 @@ void goNormal_Op(void){
         writeHalt();
       }
       if (p_Store.Details == 2){                                    // If double detail 
-        if (sE_iter %2 == 0){                                       // and an even number of iterations
-          if (countPractice == 0){
-            sEcount ++;                                             // Add  to the End count
-          }else { 
-            countPractice --;                                            
-          }
+        if (sE_iter %2 == 0){  !countPractice ? sEcount ++ : countPractice --;                                     // and an even number of iterations
+          // if (countPractice == 0){
+          //   sEcount ++;                                             // Add  to the End count
+          // }else { 
+          //   countPractice --;                                            
+          // }
         }
-      } else {
-        if (countPractice == 0){
-          sEcount ++;                                               // otherwise just iterate  ***********
-        }else{
-          countPractice --;
-        }
+      } else { !countPractice ? sEcount ++ : countPractice --;
+        // if (countPractice == 0){
+        //   sEcount ++;                                               // otherwise just iterate  ***********
+        // }else{
+        //   countPractice --;
+        // }
       }
     }
   }
@@ -133,9 +133,5 @@ void goNormal_Op(void){
     clearFromLine(1);
     u8x8.setCursor(1, 3);
     u8x8.print("Proceed: BTN[1]");
-    // for (;;) {
-    //   byte btn = readButtons();
-    //   if (btn == BUTTON1)  break;                                    // move on
-    // }
   }
 }

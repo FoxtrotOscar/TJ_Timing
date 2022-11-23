@@ -14,68 +14,68 @@
  * Clock functions that handles the screen formatting etc:
   33  goClock
   80  goBlanking
-  89  sendNumber
+  88  sendNumber
   99  handleCount
   114 sendSerialS  x3
-  139 writeHalt
-  182 writeReady
-  203 writeReadySet
-  210 score_Collect
-  225 doBarCount
-  270 doCountdownBar
-  333 goGreenZero
-  352 sendDetail
-  371 writeA_B
-  380 writeC_D
-  389 writeArcher
+  140 writeHalt
+  181 writeReady
+  198 writeReadySet
+  205 score_Collect
+  214 doBarCount
+  258 doCountdownBar
+  321 goGreenZero
+  338 sendDetail
+  357 writeA_B
+  366 writeC_D
+  375 writeArcher
  */
 
 void goClock(uint8_t offSet, byte nID){                             // Setup for formatting the main count numbers
-
-switch(n_Count_[nID] ){
-  case 0 ... 5:
-    if (n_Count_[nID] == 9) goBlanking(tempOffset, nID);            // tempOffset is used to format the screen for different number widths
-    txtColour = orange;
-    colNumber = (p_Store.isFinals  ? 11 : 15) + offSet; 
-    lnNumber = 30;                                                  //Orange, 1 digit
-    break;
-  case 6 ... 9:
-    if (n_Count_[nID] == 9) goBlanking(tempOffset, nID);            // tempOffset is used to format the screen for different number widths
-    txtColour = p_Store.teamPlay > 10 ||
-                p_Store.startCountsIndex == 4 ? green : orange;
-    colNumber = (p_Store.isFinals  ? 11 : 15) + offSet; 
-    lnNumber = 30;                                                  //Orange, 1 digit
-    break;
-  case 10 ... 19:
-    if (n_Count_[nID] == 19) goBlanking(tempOffset, nID);
-    txtColour = p_Store.teamPlay > 10 ||
-                p_Store.startCountsIndex == 4 ? green : orange;
-    colNumber = (p_Store.isFinals  ? 2 : 4) + offSet;
-    lnNumber = 30;                                                  //Orange, 2 digits
-    tempOffset = (p_Store.isFinals  ? 2 : 4) + offSet;
-    break;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-  case 20 ... 29:
-    txtColour = p_Store.teamPlay > 10 ||
-                p_Store.startCountsIndex == 4 ? green : orange;
-    colNumber = (p_Store.isFinals  ? 4 : 6) + offSet;
-    lnNumber = 30;                                                  //Green, 2 digits
-    tempOffset = (p_Store.isFinals  ? 4 : 6) + offSet;
-    break;
-  case 30 ... 99:
-    if (n_Count_[nID] == 99) goBlanking(tempOffset, nID);
-    txtColour = green; colNumber = 6 + offSet; lnNumber = 30;       //Green, 3 digits
-    break;
-  case 100 ... 199:
-    if (n_Count_[nID] == 199) goBlanking(tempOffset, nID);
-    txtColour = green; colNumber = -4 + offSet; lnNumber = 30;      //Green, 3 digits
-    tempOffset = -4 + offSet;
-    break;
-  default:
-    txtColour = green; colNumber = -2 + offSet; lnNumber = 30;      //Green, 3digits
-    tempOffset = -2 + offSet;
+  switch(n_Count_[nID] ){
+    case 0 ... 5:
+      if (n_Count_[nID] == 9) goBlanking(tempOffset, nID);            // tempOffset is used to format the screen for different number widths
+      txtColour = orange;
+      colNumber = (p_Store.isFinals  ? 11 : 15) + offSet; 
+      lnNumber = 30;                                                  //Orange, 1 digit
+      break;
+    case 6 ... 9:
+      if (n_Count_[nID] == 9) goBlanking(tempOffset, nID);            // tempOffset is used to format the screen for different number widths
+      txtColour = p_Store.teamPlay > 10 ||
+                  p_Store.startCountsIndex == 4 ? green : orange;
+      colNumber = (p_Store.isFinals  ? 11 : 15) + offSet; 
+      lnNumber = 30;                                                  //Orange, 1 digit
+      break;
+    case 10 ... 19:
+      if (n_Count_[nID] == 19) goBlanking(tempOffset, nID);
+      txtColour = p_Store.teamPlay > 10 ||
+                  p_Store.startCountsIndex == 4 ? green : orange;
+      colNumber = (p_Store.isFinals  ? 2 : 4) + offSet;
+      lnNumber = 30;                                                  //Orange, 2 digits
+      tempOffset = (p_Store.isFinals  ? 2 : 4) + offSet;
+      break;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+    case 20 ... 29:
+      txtColour = p_Store.teamPlay > 10 ||
+                  p_Store.startCountsIndex == 4 ? green : orange;
+      colNumber = (p_Store.isFinals  ? 4 : 6) + offSet;
+      lnNumber = 30;                                                  //Green, 2 digits
+      tempOffset = (p_Store.isFinals  ? 4 : 6) + offSet;
+      break;
+    case 30 ... 99:
+      if (n_Count_[nID] == 99) goBlanking(tempOffset, nID);
+      txtColour = green; colNumber = 6 + offSet; lnNumber = 30;       //Green, 3 digits
+      break;
+    case 100 ... 199:
+      if (n_Count_[nID] == 199) goBlanking(tempOffset, nID);
+      txtColour = green; colNumber = -4 + offSet; lnNumber = 30;      //Green, 3 digits
+      tempOffset = -4 + offSet;
+      break;
+    default:
+      txtColour = green; colNumber = -2 + offSet; lnNumber = 30;      //Green, 3digits
+      tempOffset = -2 + offSet;
     break;     
   }
 }
+
 
 void goBlanking(uint8_t tOffset, byte nID){                         // writes a blanking frame on switch from 
   txtColour = 0; colNumber = tOffset; lnNumber = 30;                // 3 digits to 2 digits etc; No colour (0)         
@@ -112,7 +112,6 @@ byte handleCount(unsigned long secCount, byte nID){
 
 
 void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0, const char* i1, const char* i2){
-  
   HC12.printf(
       F("text %u %u %u \"%s%s%s\"\rpaint\r"), 
       txtColour1, colNumber1, lnNumber1, 
@@ -133,6 +132,7 @@ void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, cons
 void sendSerialS(uint8_t txtColour1, uint8_t colNumber1, uint8_t lnNumber1, const char* i0) {
   return sendSerialS(txtColour1, colNumber1, lnNumber1, i0, nullptr, nullptr); 
 }
+
 
 /*
  * When the Detail(s) have finished, for arrow collection
@@ -162,14 +162,14 @@ void writeHalt(void){
         sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 8, /*line=*/ lnNumber, "FINALS");
         delay(tick);
       }else{
+        // sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 24, /*line=*/ lnNumber, 
+        //             !countPractice ? (sE_iter%4 == 2 ? "C D" : "A B") : 
+        //                              (sE_iter%2 == 0 ? "A B" : "C D"));
         sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 24, /*line=*/ lnNumber, 
-                    !countPractice ? (sE_iter%4 == 2 ? "C D" : "A B") : 
-                                     (sE_iter%2 == 0 ? "A B" : "C D"));
-        printDebugLine(false, __LINE__, __NAME__);           
+                    (sE_iter%4 == 2 ? "C D" : "A B"));                                     
       }
     }
   }else {
-    printDebugLine(false, __LINE__, __NAME__);
     see(continueOn);
     if (continueOn) writeReadySet();
     else if (!(sEcount > p_Store.maxEnds)) writeReady() ;
@@ -182,7 +182,6 @@ void writeHalt(void){
  */
 void writeReady(void){ 
   clearMatrix(false);
-  
   HC12.print(F("font 9\r"));    HC12.flush();
   sendSerialS( /*colour=*/ 2, /*column=*/ 0, /*line=*/ 15, 
               (!p_Store.isFlint || sEcount < 1) ? "   READY" :
@@ -190,14 +189,11 @@ void writeReady(void){
   const char* i0; const char* i1;
   i0 = (!p_Store.isFlint)? " " : 
        sEcount < 7 && countPractice == 0 ? "--> " :  "";
-
   if((p_Store.isFlint) && sEcount <= 5  && countPractice == 0 ){
     i1 = flint[sEcount];
-    
   }else if((p_Store.isFlint) && sEcount > 5  && countPractice == 0 ){
     i1 = sEcount > 6 ? "" : flintWalk[sEcount-6];
-  }
-  else i1 = "";
+  } else i1 = "";
   sendSerialS( /*colour=*/ orange, /*column=*/ 1, /*line=*/ 30, i0,i1);
 }
 
@@ -250,7 +246,6 @@ void doBarCount(uint8_t archerIndex, byte nID){                     // set to p_
       sendNumber(orange, colNumber, lnNumber, sEcount);             //If not (flint && count >7)
     }
   } else if (!p_Store.B_ScrCh && !countPractice && p_Store.isAlternating ){
-    printDebugLine(false, __LINE__, __NAME__);
     HC12.print(F("font 9\r")); 
     i0 = "ARCHER: ";
     i1 = (archerIndex == 1 ? "A" : "B");                            // Write Archer:
@@ -337,8 +332,6 @@ void goGreenZero(void){
   delay(800);
 }
 
-
-
 /*
    These four functions are for writing the
    Detail identifier during the count process
@@ -354,9 +347,9 @@ void sendDetail(bool cdHigh) {
         writeC_D(false);                                            // |
       } else {                                                      // |
         if (!shootDetail && (sE_iter % 4 == 3)) {                   // |detail identifier on the screen
-          countPractice ? writeA_B(false) : writeC_D(cdHigh);       // |
+          /*countPractice ? writeA_B(false) :*/ writeC_D(cdHigh);       // |
         } else {                                                    // |
-          countPractice ? writeC_D(false) : writeA_B(false);        // |
+          /*countPractice ? writeC_D(false) :*/ writeA_B(false);        // |
         }
       }
     }
@@ -399,23 +392,23 @@ void writeArcher(uint8_t which, byte archerColour) {
 
 
 /*
- * Font ID Description 
-1   5 pixel high narrow
-2   5 pixel high normal
-3   7 pixel high normal 
-4   8 pixel high fixed pitch 
-5   8 pixel high normal 
-6  10 pixel high narrow 
-7  10 pixel high normal 
-8  10 pixel high double
-9  12 pixel high double 
-10 16 pixel high double
-11 16 pixel high triple 
-12 24 pixel high triple 
-13 Bignum font* 
-14 32 pixel high Tahoma** 
-15 Reserved 
-16 32 pixel high Segoe
-17 10 pixel high Arial
-18 5x7 fixed
+ * Font   ID    Description 
+          1     5 pixel high narrow
+          2     5 pixel high normal
+          3     7 pixel high normal 
+          4     8 pixel high fixed pitch 
+          5     8 pixel high normal 
+          6    10 pixel high narrow 
+          7    10 pixel high normal 
+          8    10 pixel high double
+          9    12 pixel high double 
+          10   16 pixel high double
+          11   16 pixel high triple 
+          12   24 pixel high triple 
+          13      Bignum font* 
+          14   32 pixel high Tahoma** 
+          15      Reserved 
+          16   32 pixel high Segoe
+          17   10 pixel high Arial
+          18      5x7   fixed
  */
