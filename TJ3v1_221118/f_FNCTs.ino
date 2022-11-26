@@ -430,7 +430,7 @@ uint8_t waitButton() {
     checkIntervalTimer();
     getRFID(&p_Store);
     uint8_t ret = readButtons();                            // read all button states
-    if (ret != 0) {                                         // start of power-off routine
+    if (ret != 0) {                                          // start of power-off routine
       long long goTurnOff = millis();
       while (readButtons() != 0) {
         delay(1);                                           // and now wait for button release as millis() clocks
@@ -560,10 +560,9 @@ void goPowerOff(void){
   wipeOLED();
   u8x8.draw2x2String(0, 2, "POWERING");
   u8x8.draw2x2String(0, 6, "  DOWN  ");
-  clearMatrix(false);
-  bright = 25;
+  HC12.print(F("^8L"));                                 // dim the logo after the period above
   writeSplash(false);                                 // write a dimmed splash - as a reminder to turn off...
-  bright = 255;
+
   HC12.flush();
   delay(tick);
   digitalWrite(offControlPin, HIGH);  
@@ -730,6 +729,7 @@ void printDebugLine(bool dets, uint16_t lineNo, const char* FileName){
 //      Serial.print(F("Key15 :\t"));
 //      Serial.println(Key15);
     }
+    Serial.flush();
 }
 
 // void see(const char* peek,  uint8_t seeMe){
@@ -756,8 +756,8 @@ void goDemoLoop() {
   
   const char demoChar3[] = "Welcome to";
   //const char demoChar4[] = "a  W.R.S.";
-  const char demoChar4[] = "a  Wintery";
-  const char demoChar5[] = "  W.R.S. ";
+  const char demoChar4[] = "a Wintery";
+  //const char demoChar5[] = "  W.R.S. ";
   const char demoChar6[] = " WA18 X 2";
   const char demoChar7[] = "Aim  for the";
   const char demoChar8[] = "GOLD";
@@ -772,7 +772,7 @@ void goDemoLoop() {
   u8x8.print("TO EXIT:  BTN[4]");
   for (;;) {
     clearMatrix(true);    
-    writeSplash(false);
+    writeSplash(true);
     timeOut(2000); if (!demoMode) break;
     clearMatrix(true);
     timeOut(2000); if (!demoMode) break;    
@@ -782,15 +782,15 @@ void goDemoLoop() {
     clearMatrix(false);    
     HC12.print(F("font 4\r"));    HC12.flush();
     sendSerialS( green, /*column=*/ 4, /*line=*/ 10, demoChar3);
-    timeOut(800); if (!demoMode) break;
+    timeOut(1200); if (!demoMode) break;
     HC12.print(F("font 10\r"));    HC12.flush();
-    sendSerialS( orange, /*column=*/ 5 , /*line=*/ 30, demoChar4);
+    sendSerialS( orange, /*column=*/ 0 , /*line=*/ 30, demoChar4);
     timeOut(2000); if (!demoMode) break;
     clearMatrix(false);
     timeOut(500); if (!demoMode) break;
     HC12.print(F("font 14\r"));    HC12.flush();
     for (byte i = 4; i<=45; i+=28){
-      sendSerialS( orange, /*column=*/ i, /*line=*/ 25, demoChar9);
+      sendSerialS( orange, /*column=*/ i, /*line=*/ 25, demoChar9);        // | CúCú
       sendChar( orange, /*column=*/ i + 15, /*line=*/ 25, demoChar10);
     }
 //    HC12.print(F("font 4\r"));    HC12.flush();

@@ -119,9 +119,10 @@ void wipeOLED(void){
   clearFromLine(0);
   u8x8.setCursor(0,0);
   u8x8.inverse();
-  if (p_Store.curChan == 0 || !p_Store.B_ScrCh ) u8x8.print(" Time Controller"); 
-  else {u8x8.print("TimeControl Ch"); 
-        p_Store.which_Scr_1st == 2 ? u8x8.print(p_Store.B_ScrCh) : u8x8.print(p_Store.curChan); 
+  //if (p_Store.curChan == 0 || !p_Store.B_ScrCh ) u8x8.print(" Time Controller");
+  if (!p_Store.B_ScrCh) u8x8.print(" Time Controller"); 
+  else {  u8x8.print("TimeControl Ch"); 
+          p_Store.which_Scr_1st == 2 ? u8x8.print(p_Store.B_ScrCh) : u8x8.print(p_Store.curChan); 
         }
   u8x8.noInverse();  
 }

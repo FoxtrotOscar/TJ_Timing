@@ -269,19 +269,21 @@ void setup() {
   u8g2.setContrast(255);
   u8x8.draw2x2String(0, 2, " SYSTEM ");
   u8x8.draw2x2String(0, 6, "STARTING");
-
+  
   HC12.begin(BAUD);                                 // set SoftwareSerial Serial1 port: 2400
-  #ifdef DEBUG
-    Serial.begin(115200);
-  #else
-    Serial.end();
-  #endif
-//for (byte i = 0; i <= 29; i++) EEPROM.put(i, 0);  // clean the EEPROM  (dev only)
+  // #ifdef DEBUG
+  //   Serial.begin(115200);
+  // #else
+  //   Serial.end();
+  // #endif
+  //for (byte i = 0; i <= 29; i++) EEPROM.put(i, 0);  // clean the EEPROM  (dev only)
   pinMode(offControlPin,      OUTPUT);              // Output High for Power Off / Keep low for continued operation 
   pinMode(HC12SetPin,         OUTPUT);              // Output High for Transparent / Low for Command
+  
   command_ON(false);                                // Enter HC12 TRANSPARENT mode
   digitalWrite(offControlPin, LOW);                 // ensure Power Off not selected  
-  pauseMe(tick);  
+  pauseMe(tick);
+  
   if (EEPROM.read(18) != 1) {
     EEPROM.update(18, 0);                           
     pauseMe(120);
@@ -289,11 +291,13 @@ void setup() {
     pauseMe(10);
     
   }
+   
   if (EEPROM.read(20) == 111) {                   // is flag for stored parameters set?
     EEPROM.get(0, p_Store);                       // Copies most recent parameters back in
     pauseMe(10);
-    setControlChannel(p_Store.curChan);           // ensure saved base-channel is set on the controller
+    setControlChannel(p_Store.curChan == 0? 1 : p_Store.curChan);           // ensure saved base-channel is set on the controller
     zeroSettings();
+    printDebugLine(false, __LINE__, __NAME__); 
   }
   pauseMe(tick);
   if (EEPROM.read(27) == 180) demoMode = true;
@@ -307,6 +311,7 @@ void setup() {
   u8x8.draw2x2String(0, 2, " SYSTEM ");
   u8x8.draw2x2String(0, 4, "CHAN:");
   readChannel();                                  // fetch the current channel and display
+   printDebugLine(false, __LINE__, __NAME__); 
   SPI.begin();                                    // Init SPI bus
   pauseMe(tick);
 
@@ -340,6 +345,7 @@ void setup() {
       goPowerOff();                               // check timer - if 1 mins passes, start 1 min countdown to shutoff
     }
   }
+  HC12.print(F("^8H"));
   if (demoMode) goDemoLoop();
   HC12.print(F("font 13\r"));                     //  Bignum font
   

@@ -229,20 +229,27 @@ byte setControlChannel(byte newChan){                       // Write to the cont
   command_ON(true);                                         // Now enter COMMAND mode locally
   pauseMe(80);                                              // allow catch-up
   do{     
-    bool HC12End = false; 
+    bool HC12End = false;
+    see(tmp_str);
+    see(HC12ReadBuffer);  
     HC12.println(tmp_str);                                  // Send Channel command to local HC12
     do {} while (!HC12.available());                        // . . .await the reply
     while (HC12.available() && !HC12End) {                  // While Arduino's HC12 soft serial rx buffer has data
       HC12ByteIn = HC12.read();                             // Store each character from rx buffer in byteIn
       pauseMe(10);
       HC12ReadBuffer += char(HC12ByteIn);                   // Write each character of byteIn to HC12ReadBuffer
-      if (HC12ByteIn == '\n') HC12End = true;               // Set HC12End flag to exit WHILE loop
+      if (HC12ByteIn == '\n') {
+        printDebugLine(false, __LINE__, __NAME__);
+        see(HC12ReadBuffer); 
+        HC12End = true;               // Set HC12End flag to exit WHILE loop
+      }
     }
     isOK = HC12ReadBuffer.startsWith("OK") ? true : false;      
-    command_ON(false);                                      // Exit command & enter transparent mode
     HC12ReadBuffer = "";
   } while (isOK == false);
+  command_ON(false);                                        // Exit command & enter transparent mode
   u8x8.setCursor(14,0);                                     //  |
+  printDebugLine(false, __LINE__, __NAME__); 
   u8x8.inverse();                                           //  |
   p_Store.which_Scr_1st == 2 ?                              //  | 
       u8x8.print(p_Store.B_ScrCh) :                         //  | write the current channel info on the controller
