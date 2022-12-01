@@ -86,6 +86,10 @@ void goFinals_Op(byte nID){
           }
           flipFlag = handleCount(secCount, nID);                                // if flipFlag is false then the count didn't run out
           if (n_Count_[nID] >= 0) n_Count_[nID]--;
+        } else {
+          if (p_Store.isAlternating && !nID) offSet = (archerIndex == 1 ? 26 : 0);     // Set offset to lhs or rhs, else centre (13)                                          // returning from an emergency halt
+          if (!nID) writeArcher(archerIndex, 2);
+          do {} while ((millis() - secCount) % tick > 0);                       // re-initialise timer to a 000 start-point
         }
       }
       if (!countPractice) {

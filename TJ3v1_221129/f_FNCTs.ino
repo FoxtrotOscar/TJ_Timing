@@ -450,6 +450,7 @@ uint8_t waitButton() {
 bool goEmergencyButton(uint8_t AIndex, byte nID){
   bool ret = false;
   if (readButtons() == BUTTON4) {                           // Handle Red-button push
+    ret = true;
     goWhistle(5);
     stopSign();
     clearFromLine(1);
@@ -464,11 +465,13 @@ bool goEmergencyButton(uint8_t AIndex, byte nID){
       if (n_Count_[nID] == startCounts[p_Store.startCountsIndex]) {
         doBarCount(AIndex, nID);
         writeOLED_Data(1, nID);
-      } else if (n_Count_[nID] != 0) writeOLED_Data(1, nID);
-    } else if (AIndex == 3){                                // for in-barCount !STOP!
+      } else if (n_Count_[nID] != 0) {
+        goWhistle(1);
+        writeOLED_Data(1, nID);
+      }
+    } else if (AIndex == 3){                                        // for in-barCount !STOP!
       displayParamsOnOLED();
       writeOLED_Data(1, nID);
-      ret = true;
     } else if (AIndex == 4){
       //saved for future use <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     }
@@ -519,15 +522,15 @@ int16_t handleEmergencyRestart(byte nID){
     break;
     
     case BUTTON2:
-      reStartEnd = true;                                                  // reset, restart and continue with competition
-      for (byte reset = 0; reset < 2 ; reset ++) n_Count_[reset] = startCounts[p_Store.startCountsIndex]; 
-      clearMatrix(false); 
+      reStartEnd = true;                                                  // reset all counts, restart and continue with competition
+      for (byte reset = 0; reset <= 2 ; reset ++) n_Count_[reset] = startCounts[p_Store.startCountsIndex];
+      clearMatrix(false);
     break;
 
     case BUTTON3:
       clearMatrix(false);         
       startOver = true;                                                   // reset and start it all again
-      n_Count_[nID] = 0;
+      memset(n_Count_, 0, sizeof(n_Count_));                               //n_Count_[nID] = 0;  ##########################################################<<<<<<<<<
     break;
   }
   return n_Count_[nID] ;

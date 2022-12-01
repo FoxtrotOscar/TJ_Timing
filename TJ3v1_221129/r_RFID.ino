@@ -81,7 +81,7 @@ void getRFID(struct PARAMSTORE *p_S){
 
     
     
-    //memset(buffer, 0, size);                                // DEBUG only: wipe for next op
+    //memset(buffer, 0, len);                                // DEBUG only: wipe for next op
     byte buffer2[18];
     len = sizeof(buffer2);
     blockAddr      = 4;                                       // Go to BLOCK 4 to read for DATA

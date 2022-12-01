@@ -28,9 +28,9 @@ void goNormal_Op(void){
   uint8_t offSet      = 13;
   uint8_t archerIndex = 1;
   byte    nID         = 0;                                          // ID if the clock in use
-/*
-* check for button1 press to start
-*/
+  /*
+  * check for button1 press to start
+  */
   next = false;
   while (continueOn && !startOver) {
     if (countPractice) {                                            // Check, if Practice, then 
@@ -59,7 +59,10 @@ void goNormal_Op(void){
     
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++        
     while(n_Count_[nID] >= 0 && !startOver){                        // Handle the count-down
-      goEmergencyButton(archerIndex, nID);
+      if (goEmergencyButton(archerIndex, nID)) {
+        sendDetail(false);                                          // returning from an emergency halt
+        do {} while ((millis() - secCount) % tick > 0);             // re-// initialise timer to a 000 start-point
+      }
       HC12.print(F("font 13\r"));                                   // large numbers font
       HC12.flush(); 
 
@@ -98,10 +101,7 @@ void goNormal_Op(void){
         sendSerialS( /*colour(R1G2O3)=*/ 2, /*column=*/ 2, /*line=*/ lnNumber, "NEXT:"); 
         //lnNumber = 15; 
         if (p_Store.Details == 2){                                  // Double detail?
-          // sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 44, /*line=*/ lnNumber, 
-          //             !countPractice ? (sE_iter%4 == 1 ? "C D" : "A B") : 
-          //             (sE_iter%2 == 0 ? "A B" : "C D")) ;           // if practice seq. then details do not flip, otherwise flip
-          sendSerialS( /*colour(R1G2O3)=*/ 3, /*column=*/ 44, /*line=*/ lnNumber, 
+          sendSerialS(3,44,lnNumber,                                // colour(R1G2O3),  column, line
                       (sE_iter%4 == 1 ? "C D" : "A B")) ;           // if practice seq. then details do not flip, otherwise flip                      
         }
         doCountdownBar();
@@ -113,20 +113,9 @@ void goNormal_Op(void){
         writeHalt();
       }
       if (p_Store.Details == 2){                                    // If double detail 
-        if (sE_iter %2 == 0){  !countPractice ? sEcount ++ : countPractice --;                                     // and an even number of iterations
-          // if (countPractice == 0){
-          //   sEcount ++;                                             // Add  to the End count
-          // }else { 
-          //   countPractice --;                                            
-          // }
-        }
-      } else { !countPractice ? sEcount ++ : countPractice --;
-        // if (countPractice == 0){
-        //   sEcount ++;                                               // otherwise just iterate  ***********
-        // }else{
-        //   countPractice --;
-        // }
-      }
+        if (sE_iter %2 == 0) !countPractice ? sEcount ++ : countPractice --;                                     // and an even number of iterations
+        
+      } else  !countPractice ? sEcount ++ : countPractice --;
     }
   }
   if (startOver) {

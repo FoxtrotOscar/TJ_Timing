@@ -249,11 +249,12 @@ byte setControlChannel(byte newChan){                       // Write to the cont
   } while (isOK == false);
   command_ON(false);                                        // Exit command & enter transparent mode
   u8x8.setCursor(14,0);                                     //  |
-  printDebugLine(false, __LINE__, __NAME__); 
   u8x8.inverse();                                           //  |
-  p_Store.which_Scr_1st == 2 ?                              //  | 
+  if (p_Store.B_ScrCh) {                                    //  | only if there is a 2nd channel in use
+    (p_Store.which_Scr_1st == 2) ?                          //  | 
       u8x8.print(p_Store.B_ScrCh) :                         //  | write the current channel info on the controller
       u8x8.print(p_Store.curChan);                          //  |
+  }                                                         //  |
   u8x8.noInverse();                                         //  |
   return newChan;
 }
@@ -261,7 +262,7 @@ byte setControlChannel(byte newChan){                       // Write to the cont
 
 void setB_Chan(void){                                       // in TEAMPLAY we use 2 x screens showing independently
   byte B_Chan = p_Store.curChan;
-  if (EEPROM.read(18) == 1) {                              // If this screen channel selection is already done:
+  if (EEPROM.read(18) == 1) {                               // If this screen channel selection is already done:
     clearFromLine(1);  
     u8x8.setCursor(0, 4);
     u8x8.print("A&B screens SET");

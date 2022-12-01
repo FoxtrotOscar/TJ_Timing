@@ -134,7 +134,7 @@ struct PARAMSTORE {
   uint8_t   maxEnds             = 10;             // (2)  Total number of Ends for competition
   uint8_t   Details             =  2;             // (3)  Single (1) or Double detail (2)
 
-  uint8_t   maxPrac             =  2;             // (4)  Initially set as 2x practice ends
+  uint8_t   maxPrac             =  0;             // (4)  Initially set as 2x practice ends
   uint8_t   isFinals            =  0;             // (5)  For alternating A & B session
   uint8_t   breakPeriod         = 10;             // (6)  Between sessions break times, max 240min, default 10
   uint8_t   isAlternating       =  0;             // (7)  1 / 2 == Recurve / Compound A/B; 0 == Simultaneous
@@ -202,7 +202,7 @@ bool        intervalOn    = false;
 bool        started       = false;                // referencing the countdown timer status
 bool        reStartEnd    = false;
 bool        scrWait_Enable= false;                // status of waiting graphic scroll
-bool        demoMode      = true;
+bool        demoMode      = false;
 uint16_t    lapsed        = 0;
 uint16_t    tempOffset    = 0;                    // used to hold the last format value in Clock
 long long   intervalTimer = 0;
@@ -313,14 +313,16 @@ void setup() {
   readChannel();                                  // fetch the current channel and display
    printDebugLine(false, __LINE__, __NAME__); 
   SPI.begin();                                    // Init SPI bus
-  pauseMe(tick);
+  pauseMe(800);
 
   mfrc522.PCD_Init();                             // Init MFRC522 card
-  pauseMe(5);
+  pauseMe(10);
   mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
+  pauseMe(5);
   for (byte i = 0; i < 6; i++) {
     key.keyByte[i] = 0xFF;
   }
+  pauseMe(10);
   goReboot();                                     // Reboot the screen unit
   pauseMe(2*tick);
   clearFromLine(6);
