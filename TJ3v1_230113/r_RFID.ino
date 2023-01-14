@@ -41,20 +41,22 @@
  * A successful read generates a validation message on the OLED.
  */
  
-void getRFID(struct PARAMSTORE *p_S){
-  //bool goodFlag   = true;
+//void getRFID(struct PARAMSTORE *p_S){
+bool getRFID(struct PARAMSTORE *p_S){
+  //printDebugLine(false, __LINE__, __NAME__);
+  bool goodResult = false;
   byte currentCh  = p_Store.curChan;
   byte B_Ch       = p_Store.B_ScrCh;
   if ( ! mfrc522.PICC_IsNewCardPresent())
-      return;
+      return false;
   if ( ! mfrc522.PICC_ReadCardSerial())                 // Select one of the cards
-      return;
+      return false;
 
   MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
   if (    piccType != MFRC522::PICC_TYPE_MIFARE_MINI
       &&  piccType != MFRC522::PICC_TYPE_MIFARE_1K
       &&  piccType != MFRC522::PICC_TYPE_MIFARE_4K) {
-    return;
+    return false;
   }
   byte blockAddr      = 5;                                  // Go to BLOCK 5 to read for KEY
   //byte trailerBlock   = 7;
@@ -63,14 +65,19 @@ void getRFID(struct PARAMSTORE *p_S){
   byte len = sizeof(buffer1);
   status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, blockAddr, &key, &(mfrc522.uid));
   if (status != MFRC522::STATUS_OK) {
+    
+    //printDebugLine(false, __LINE__, __NAME__);
     see(status);
-    return;
+    
+    return false;
   }
 
   status = mfrc522.MIFARE_Read(blockAddr, buffer1, &len);
   if (status != MFRC522::STATUS_OK) {
+    //printDebugLine(false, __LINE__, __NAME__);
     see(status);
-    return;
+    mfrc522.PCD_Init();
+    return false;
   }  
 
   /*  ****** Read last four bytes of block to compare with Key (127,212,42,198): if fail, no valid read *******/
@@ -82,21 +89,24 @@ void getRFID(struct PARAMSTORE *p_S){
     
     
     //memset(buffer, 0, len);                                // DEBUG only: wipe for next op
+   //printDebugLine(false, __LINE__, __NAME__);
     byte buffer2[18];
     len = sizeof(buffer2);
     blockAddr      = 4;                                       // Go to BLOCK 4 to read for DATA
     status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, blockAddr, &key, &(mfrc522.uid));
     if (status != MFRC522::STATUS_OK) {
+      //printDebugLine(false, __LINE__, __NAME__);
       see(status);
-      return;
+      return false;
     }
   
     status = mfrc522.MIFARE_Read(blockAddr, buffer2, &len);
     if (status != MFRC522::STATUS_OK) {
-        see(status);
-      return;
+      //printDebugLine(false, __LINE__, __NAME__);
+      see(status);
+      return false;
     }
-    buffChk(buffer2, 0, len);
+    //buffChk(buffer2, 0, len);
     
     if (buffer2[15] == 1) {
       EEPROM.update(27, 180);                                   // Set flag for loaded banner
@@ -110,7 +120,7 @@ void getRFID(struct PARAMSTORE *p_S){
       pauseMe(120);
     }
         
-    if (buffer2[11] != 177) {                                   // 0xB1: Supervisor mode for re-programming the HC12 freq.
+    if (buffer2[11] != 177) {                                   // 0xB1: ? Supervisor mode for re-programming the HC12 freq.
       memcpy( &p_Store, buffer2, sizeof(p_Store) );
       pauseMe(180);
       bool goodFlag = (p_Store.startCountsIndex >= (sizeof(startCounts)/4) || p_Store.Details> 2) ? false : true;
@@ -118,21 +128,22 @@ void getRFID(struct PARAMSTORE *p_S){
         EEPROM.put(0, p_Store);                                   // Here the p_Store data is copied into EEPROM 
         pauseMe(200);
         p_Store.curChan = currentCh;                              // write the channel(s) back in to the parameters
-        p_Store.B_ScrCh = B_Ch;
+        p_Store.B_ScrCh = p_Store.teamPlay ?  B_Ch : 0;
         EEPROM.put(20, 111);                                      // set flag for stored parameters
         pauseMe(200);
         displayParamsOnOLED();
         clearFromLine(5) ;
         u8x8.inverse(); 
         u8x8.draw2x2String(0, 6, "TIME-TAP");
+        zeroSettings();                                       // reset the count to beginning as new params set
+        goodResult = true;
       } else {
         clearFromLine(1) ;
         u8x8.inverse();
         u8x8.draw2x2String(0, 6, "ERR-redo");
+        goodResult = false;
       }
       u8x8.noInverse();
-      zeroSettings();                                       // reset the count to beginning as new params set
-    
       if (p_Store.teamPlay) {
         clearFromLine(1);
         u8x8.draw2x2String(0, 2, "Teamplay");
@@ -142,14 +153,18 @@ void getRFID(struct PARAMSTORE *p_S){
         if (11 <= p_Store.teamPlay && p_Store.teamPlay <= 14) setB_Chan();             // setup the B screen; freq separation & channels
         
       } else writeInfoBigscreen();
-    } else if (alterChannelWarning())   new_Channel(true);    // Supervisor: test intent & proceed with GLOBAL channel change
-    else {                                                  // otherwise discard the command and return to top menu.
+    } else if (alterChannelWarning())   {
+      new_Channel(true);    // Supervisor: test intent & proceed with GLOBAL channel change
+      goodResult = true;
+            
+    } else {                                                  // otherwise discard the command and return to top menu.
       displayParamsOnOLED(); 
       clearFromLine(5);
       u8x8.inverse(); 
       u8x8.draw2x2String(0, 6, "-DISCARD");
       u8x8.noInverse(); 
       zeroSettings();
+      goodResult = false;
       pauseMe(tick);
     }
   } else {                                                  // ...otherwise, bad card proffered                               
@@ -157,13 +172,16 @@ void getRFID(struct PARAMSTORE *p_S){
   clearFromLine(5);
   u8x8.inverse(); 
   u8x8.draw2x2String(0, 6, "NO MATCH");
-  u8x8.noInverse(); 
+  u8x8.noInverse();
+  goodResult = false; 
   }
   pauseMe(2*tick);
   mfrc522.PICC_HaltA();
   mfrc522.PCD_StopCrypto1();
   displayParamsOnOLED();
   writeMenuCommands();
+  //printDebugLine(false, __LINE__, __NAME__);
+  return goodResult;
 }
 
 void buffChk( byte buff[18], byte lowBuff, byte hiBuff){                   // serial print the BUFFER

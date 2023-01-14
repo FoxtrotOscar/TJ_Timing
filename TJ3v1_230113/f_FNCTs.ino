@@ -67,7 +67,7 @@ void writeInfoBigscreen(void){
   }
 
   else if (p_Store.isFinals && p_Store.isAlternating) {
-    sendSerialS( green, /*column=*/ 0, /*line=*/ lnNumber, "FINALS");
+    sendSerialS( red, /*column=*/ 0, /*line=*/ lnNumber, "FINALS");
   }
 
   else if (p_Store.teamPlay) {
@@ -152,6 +152,7 @@ byte goChooseArcher(void){
   
       case BUTTON4:
         menuArcher = p_Store.whichArcher;
+        
         setFlag = true;
         break;
     }
@@ -428,7 +429,7 @@ uint8_t waitButton() {
       flag = true;
     }
     checkIntervalTimer();
-    getRFID(&p_Store);
+    if (getRFID(&p_Store)) continueOn = false;
     uint8_t ret = readButtons();                            // read all button states
     if (ret != 0) {                                          // start of power-off routine
       long long goTurnOff = millis();
@@ -463,6 +464,7 @@ bool goEmergencyButton(uint8_t AIndex, byte nID){
     if (AIndex < 3){    
       displayParamsOnOLED();
       if (n_Count_[nID] == startCounts[p_Store.startCountsIndex]) {
+        //printDebugLine(false, __LINE__, __NAME__); 
         doBarCount(AIndex, nID);
         writeOLED_Data(1, nID);
       } else if (n_Count_[nID] != 0) {

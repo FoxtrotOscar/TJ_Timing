@@ -60,11 +60,11 @@ byte noWhistles = false;      // set to false unless dev.
 #include <SPI.h>
 #include <MFRC522.h>
 
-#define   HC12 Serial1          // HC12 transmitter serial port
-#define   __CS0 10              // SSD1325 CS   OLED
-#define   __DC  9               // SSD1325 DC   OLED
-#define   SS_PIN  19            // RFID  SDA/SS/SPI
-#define   offControlPin 6       // used to kill power with long-press RED button via Digital Power Switch
+#define   HC12 Serial1        // HC12 transmitter serial port
+#define   __CS0 10            // SSD1325 CS   OLED
+#define   __DC  9             // SSD1325 DC   OLED
+#define   SS_PIN  19          // RFID  SDA/SS/SPI
+#define   offControlPin 6     // used to kill power with long-press RED button via Digital Power Switch
 
 #ifdef    Teensy32
   #define RESET_DIO 23        // (23: T3.2/T4.0, 28: T3.6) OLED
@@ -128,12 +128,12 @@ const char* flint[6]      = {"25 YD", "20 FT", "30 YD", "15 YD", "20 YD", "10 YD
 
 struct PARAMSTORE {
 
-  uint8_t   startCountsIndex    =  1;             // (0)  Number from 0 to 8 indentifying startCounts[] used, default 1 (120)
+  uint8_t   startCountsIndex    =  6;             // (0)  Number from 0 to 8 indentifying startCounts[] used, default 1 (90)
   uint8_t   walkUp              = 10;             // (1)
   uint8_t   maxEnds             = 10;             // (2)  Total number of Ends for competition
   uint8_t   Details             =  2;             // (3)  Single (1) or Double detail (2)
 
-  uint8_t   maxPrac             =  0;             // (4)  Initially set as 2x practice ends
+  uint8_t   maxPrac             =  2;             // (4)  Initially set as 2x practice ends
   uint8_t   isFinals            =  0;             // (5)  For alternating A & B session
   uint8_t   breakPeriod         = 10;             // (6)  Between sessions break times, max 240min, default 10
   uint8_t   isAlternating       =  0;             // (7)  1 / 2 == Recurve / Compound A/B; 0 == Simultaneous
@@ -264,11 +264,12 @@ void setup() {
   u8x8.begin();
   u8g2.setPowerSave(0);
   u8x8.setFont(u8x8_font_chroma48medium8_r);        // u8g2.setFont(u8x8_font_amstrad_cpc_extended_f);
+  see(p_Store.teamPlay);
   wipeOLED();                                       // Clear the OLED, write header
   u8g2.setContrast(255);
   u8x8.draw2x2String(0, 2, " SYSTEM ");
   u8x8.draw2x2String(0, 6, "STARTING");
-  
+  see(p_Store.B_ScrCh);
   HC12.begin(BAUD);                                 // set SoftwareSerial Serial1 port: 2400
   //for (byte i = 0; i <=29; i++) EEPROM.put(i, 0); // clean the EEPROM  (dev only)
   pinMode(offControlPin,      OUTPUT);              // Output High for Power Off / Keep low for continued operation 
@@ -277,9 +278,8 @@ void setup() {
   command_ON(false);                                // Enter HC12 TRANSPARENT mode
   digitalWrite(offControlPin, LOW);                 // ensure Power Off not selected  
   pauseMe(tick);
-  
-  if (EEPROM.read(18) != 1) {
-    EEPROM.update(18, 0);                           
+  if (EEPROM.read(18) != 1) {                       // if not second screen freq. selected
+    EEPROM.update(18, 0); 
     pauseMe(120);
     goWhistle(1);
     pauseMe(10);
@@ -289,8 +289,10 @@ void setup() {
     EEPROM.get(0, p_Store);                       // Copies most recent parameters back in
     pauseMe(10);
     setControlChannel(p_Store.curChan == 0? 1 : p_Store.curChan);           // ensure saved base-channel is set on the controller
+    //printDebugLine(true, __LINE__, __NAME__);    
+    if (!p_Store.teamPlay) p_Store.B_ScrCh = 0;
     zeroSettings();
-    printDebugLine(false, __LINE__, __NAME__); 
+    //printDebugLine(false, __LINE__, __NAME__); 
   }
   pauseMe(tick);
   if (EEPROM.read(27) == 180) demoMode = true;
@@ -299,12 +301,12 @@ void setup() {
   pinMode(button2Pin, INPUT_PULLUP);              // Button2 for RESTART / MENU / UP /
   pinMode(button3Pin, INPUT_PULLUP);              // Button3 for DOWN
   pinMode(button4Pin, INPUT_PULLUP);              // Button4 for EMERGENCY STOP / menu EXIT, no change
-  
+  see(p_Store.B_ScrCh);
   wipeOLED();
   u8x8.draw2x2String(0, 2, " SYSTEM ");
   u8x8.draw2x2String(0, 4, "CHAN:");
   readChannel();                                  // fetch the current channel and display
-  printDebugLine(false, __LINE__, __NAME__); 
+  //printDebugLine(false, __LINE__, __NAME__); 
   SPI.begin();                                    // Init SPI bus
   pauseMe(800);
 

@@ -48,14 +48,16 @@ void goClock(uint8_t offSet, byte nID){                             // Setup for
     case 10 ... 19:
       if (n_Count_[nID] == 19) goBlanking(tempOffset, nID);
       txtColour = p_Store.teamPlay > 10 ||
-                  p_Store.startCountsIndex == 4 ? green : orange;
+                  p_Store.startCountsIndex == 4 ||
+                  (p_Store.isFlint && sEcount >= 7) ? green : orange;
       colNumber = (p_Store.isFinals  ? 2 : 4) + offSet;
       lnNumber = 30;                                                  //Orange, 2 digits
       tempOffset = (p_Store.isFinals  ? 2 : 4) + offSet;
       break;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
     case 20 ... 29:
       txtColour = p_Store.teamPlay > 10 ||
-                  p_Store.startCountsIndex == 4 ? green : orange;
+                  p_Store.startCountsIndex == 4 ||
+                  (p_Store.isFlint && sEcount >= 7) ? green : orange;
       colNumber = (p_Store.isFinals  ? 4 : 6) + offSet;
       lnNumber = 30;                                                  //Green, 2 digits
       tempOffset = (p_Store.isFinals  ? 4 : 6) + offSet;
@@ -183,9 +185,9 @@ void writeHalt(void){
 void writeReady(void){ 
   clearMatrix(false);
   HC12.print(F("font 9\r"));    HC12.flush();
-  sendSerialS( green, /*column=*/ 0, /*line=*/ 15, 
+  sendSerialS( green, /*column=*/ 2, /*line=*/ 15, 
               (!p_Store.isFlint || sEcount < 1) ? "   READY" :
-                sEcount < 7  ? " COLLECT " : " ");
+                sEcount < 7  ? "NEXT END" : " ");
   const char* i0; const char* i1;
   i0 = (!p_Store.isFlint)? " " : 
        sEcount < 7 && countPractice == 0 ? "--> " :  "";
@@ -214,16 +216,20 @@ void score_Collect(bool redScreen){                                 // remote lo
  * Handle the bargraph count on the screen, for "walkup" secs countdown
  */
 void doBarCount(uint8_t archerIndex, byte nID){                     // set to p_Store.whichArcher
+//printDebugLine(false, __LINE__, __NAME__);
   const char* i0; const char* i1;
-  clearFromLine(5); 
-  u8x8.draw2x2String(0, 6, ".WALKUP.");
+  // clearFromLine(5); 
+  // u8x8.draw2x2String(0, 6, ".WALKUP.");
   byte loc_Count = (p_Store.isFlint) && (sEcount > 7) ?             // If a Flint and also a Flint walkup round, 
                     20 :  p_Store.walkUp;                           // then 20s walkup, else 10 sec
   barWidth = 5; 
   rectWide = 49;
   lnNumber = 15;
   goWhistle(2);
-  writeOLED_Data(archerIndex, nID);
+  // writeOLED_Data(archerIndex, nID);
+  clearFromLine(5); 
+  u8x8.draw2x2String(0, 6, ".WALKUP.");
+  //printDebugLine(true, __LINE__, __NAME__);
   if (!p_Store.isFinals && 
       !p_Store.B_ScrCh  && 
       !countPractice    /*&& 
@@ -231,7 +237,7 @@ void doBarCount(uint8_t archerIndex, byte nID){                     // set to p_
     HC12.print(F("font "));
     HC12.print((!p_Store.isFlint && !p_Store.isAlternating) ? 7 : 9 );   // if not a flint && not alternating
     HC12.print(F("\r"));
-    printDebugLine(true, __LINE__, __NAME__);
+    //printDebugLine(true, __LINE__, __NAME__);
     i0 = ((p_Store.isFlint) && sEcount > 7) ?                       // if Flint && >7
           loc_Count > 17 ? "ADVANCE ": "==>> "                      // "advance" for 3 sec, then arrows from 17sec
           : "END";                                                  // else END
@@ -252,8 +258,11 @@ void doBarCount(uint8_t archerIndex, byte nID){                     // set to p_
     sendSerialS( green, /*column=*/ 0, /*line=*/ lnNumber, i0, i1);
     HC12.flush();
   } // else  run the screen selector to single screen after sending the holding time to the other);
+  writeOLED_Data(archerIndex, nID);   
   HC12.print(F("font 9\r"));
+  //printDebugLine(false, __LINE__, __NAME__);
   doCountdownBar();
+  //                                  
   clearMatrix(false);
 }
 

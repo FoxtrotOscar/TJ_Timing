@@ -49,7 +49,7 @@ void goTeamPlay(byte teamType){                                                 
   while (continueOn && !startOver ) {
     while (sEcount < p_Store.maxEnds || shootOff) {
       n_Count_[1] = n_Count_[2] = (shootOff ? 20*set_size  :  startCounts[p_Store.startCountsIndex]);
-      if (!sEcount) clearAB(nID, false);                                                          // clear both screens
+      if (!sEcount) clearAB(nID, false);                                            // clear both screens
       nID = !shootOff ? goChooseArcher() : firstToShoot ;                           // The team that shot first in the match shall start shooting
       if (sEcount) clearAB(nID, false); 
       nID == 1 ? set_A(1) : set_B(2) ;                                              // set nID to match first team up, and send info to screens
@@ -67,6 +67,10 @@ void goTeamPlay(byte teamType){                                                 
       goMenu(true); 
                                                                       // wait for proceed
       clearMatrix(false);
+      clearFromLine(1);
+      printDebugLine(false, __LINE__, __NAME__);
+      writeOLED_Data(nID, nID );
+      printDebugLine(false, __LINE__, __NAME__);
       doBarCount(nID, nID); 
       unsigned long secCount = millis();
       
@@ -75,13 +79,16 @@ void goTeamPlay(byte teamType){                                                 
       clearMatrix(false);
       
       HC12.print(F("font 13\r"));
+      //clearFromLine(1);
       u8x8.setCursor(0, 6);
+      u8x8.inverse();
       u8x8.print("Flip Detail: [1]");
+      u8x8.noInverse();
       u8x8.setCursor(0, 7);
       u8x8.print(" !!!STOP!!!: [4]");
     
       /*  Now that barCount has been completed and first whistle sounded we 
-      *  start the first set (three arrows each), with NO whistle in between each arrow
+      *  start the first set (three arrows each), [with NO whistle in between each arrow]
       *  except where time is over-run for an archer - then whistle x1.  
       *  As usual, whistle x3 at the end of each set. 
       *  Judge progresses the play with the green button, and if he does not and zero reached then there is a whistle. 
@@ -89,6 +96,7 @@ void goTeamPlay(byte teamType){                                                 
       *  signal for "Scoring", followed by "Ready" on green button
       *  Green Button re-commences.
       */
+      
       writeOLED_Data(nID, nID );                                                    // set up for 5 ends of 4 or 6 arrows in 
       uint8_t tempArrowCount[] = {0, arrowCount, arrowCount};
       if (shootOff) tempArrowCount[1] = tempArrowCount[2] = set_size;
@@ -103,14 +111,19 @@ void goTeamPlay(byte teamType){                                                 
           if(flipFlag){                                                             // if alternative screens and detail change is invoked
             if (whistleCount++ <= set_size) goWhistle(1);                           // skip 1 x whistle when about to hit 3 x whistle.
             shootOff ?
-                tempArrowCount[nID] -- :                                            // as shootoff reduce arrowcount in flip-flop 
-                tempArrowCount[nID] -= set_size;                                    // reduce by the qty of arrows per set of 2 or 3  
+                tempArrowCount[nID] -- :                                            // either (as shootoff) reduce arrowcount in flip-flop 
+                tempArrowCount[nID] -= set_size;                                    // or reduce by the qty of arrows per set of 2 or 3  
             tempArrowCount[nID] == 0 ? n_Count_[nID] = 0 : n_Count_[nID] += 1;      // Unless at zero, keep the screen count right for holding
             nID = (nID == 1? set_B(1) : set_A(2));                                  // Hold the curr count in red and change screen
             pauseMe(50);
+            //wipeOLED(); /////////////////////////////////////////////////////
+            setHeader();                                                            // write TimeController or Ch no.                                                                                                                        
+            writeOLED_Data(nID, nID );
           }
           flipFlag = handleCount(secCount, nID);                                    // if flipFlag is false then the count didn't run out
         } else if (reStartEnd || startOver) {  //<<<<<<<<<<<<<<<<<<<  check for either restart or startover                             
+          
+
           for (;;) {
             byte btn = readButtons();
             if (btn == BUTTON1)  break;                                             // move on

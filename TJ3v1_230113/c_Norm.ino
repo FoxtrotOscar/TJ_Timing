@@ -29,7 +29,7 @@ void goNormal_Op(void){
   uint8_t archerIndex = 1;
   byte    nID         = 0;                                          // ID if the clock in use
   next = false;
-  
+  //printDebugLine(false, __LINE__, __NAME__); 
   while (continueOn && !startOver) {
     if (countPractice) {                                            // Check, if Practice, then 
       n_Count_[nID] = startCounts[p_Store.startCountsIndex]; 
@@ -48,6 +48,7 @@ void goNormal_Op(void){
       writeOLED_Data(1, nID);
       if (!next) {
         sendDetail(true);                                           // true/false = CD in upper/lower position
+        //printDebugLine(false, __LINE__, __NAME__); 
         doBarCount(archerIndex, nID);                               // Countdown
       }
       sendDetail(false);                                            // true/false = CD in upper/lower position
@@ -55,7 +56,10 @@ void goNormal_Op(void){
     unsigned long secCount = millis(); 
     do {} while ((millis() - secCount) % tick > 0);                 // initialise timer to a 000 start-point (slightly offset?)
     
-    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++        
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+    //printDebugLine(false, __LINE__, __NAME__); 
+    see(n_Count_[nID]) ;
+    see(startOver) ;       
     while(n_Count_[nID] >= 0 && !startOver){                        // Handle the count-down
       if (goEmergencyButton(archerIndex, nID)) {
         sendDetail(false);                                          // returning from an emergency halt
@@ -91,6 +95,7 @@ void goNormal_Op(void){
         rectWide = 49; //int rectWide = 50;
         barWidth = 5; 
         clearMatrix(false);
+        HC12.flush();
         ++ sE_iter;                                                 // |
         writeOLED_Data(1, nID);                                     // | Correct for data on LCD
         -- sE_iter;                                                 // |
@@ -101,6 +106,7 @@ void goNormal_Op(void){
           sendSerialS(orange, 44, lnNumber,                         // colour(R1G2O3),  column, line
                       (sE_iter%4 == 1 ? "C D" : "A B")) ;           // if practice seq. (then details do not flip, otherwise) flip                      
         }
+        //printDebugLine(false, __LINE__, __NAME__); 
         doCountdownBar();
       } else if(p_Store.isFlint && sEcount > 6){
         if (sEcount > 9) continueOn = false;

@@ -14,15 +14,14 @@ void goFinals_Op(byte nID){
   * check for button1 press to start
   */
   while (continueOn && !startOver) { 
-    see(offSet);
-    see(menu0[3]);
     arrowCount = shootOff ? 1 : 3;                      // if a shootoff then 1 arrow per player unless teamplay
     tempCount  = 0;
     while (arrowCount > 0 ) {
       clearMatrix(false);
       if ((countPractice && sEcount == 1) ){                                  // our end count == 1 and Prac is ON
-        displayParamsOnOLED();
+        //displayParamsOnOLED(); ///////////////////////////////
         writeOLED_Data(0, nID);
+        //printDebugLine(false, __LINE__, __NAME__);
         doBarCount( archerIndex, nID);
         startCounts[p_Store.startCountsIndex] == 20 ? 
               n_Count_[nID] = 3*startCounts[p_Store.startCountsIndex] :       // allow 3 arrows @20s for prac
@@ -30,9 +29,11 @@ void goFinals_Op(byte nID){
       }else{
         writeOLED_Data(p_Store.isAlternating ? archerIndex : 0, nID); 
         if (sEcount == 1 && !tempCount && !startOver){
+          //printDebugLine(false, __LINE__, __NAME__);
           doBarCount(archerIndex, nID);  
         }
         if (shootOff){
+          //printDebugLine(false, __LINE__, __NAME__);
           doBarCount(archerIndex, nID);
           shootOff = false;
         }
@@ -120,7 +121,7 @@ void goFinals_Op(byte nID){
     if (sEcount > p_Store.maxEnds){
       goWhistle(3);
       clearFromLine(1);
-      writeRectangle( 1, 0, 31, 64, 32);                                  // fill screen with red
+      writeRectangle( 1, 0, 31, 64, 32);                                        // fill screen with red
       pauseMe(3*tick);
       score_Collect(false);
       shootOff = checkForShootoff();
@@ -128,7 +129,7 @@ void goFinals_Op(byte nID){
         writeShootOff(nID, false);
         continueOn = true;
         sEcount = p_Store.maxEnds +1;
-      }else{                                                               // Accept a winner and exit to DONE
+      }else{                                                                    // Accept a winner and exit to DONE
         clearFromLine(1);
         return;
       }
@@ -136,7 +137,7 @@ void goFinals_Op(byte nID){
     
     if (sEcount >= 1 && sEcount <= p_Store.maxEnds ) {
       goWhistle(3);
-      writeRectangle( 1, 0, 31, 64, 32);                                  // fill screen with red
+      writeRectangle( 1, 0, 31, 64, 32);                                        // fill screen with red
       pauseMe(3*tick);
       score_Collect(false);
     }
@@ -146,18 +147,19 @@ void goFinals_Op(byte nID){
       clearFromLine(5);
       shootOff ? clearMatrix(false) : writeReadySet();
       archerIndex = goChooseArcher();
+      if (!continueOn) return;
     } else {
       if (!shootOff) 
       return;
     }
-    displayParamsOnOLED();
-    writeOLED_Data(0, nID);
     clearMatrix(false);
+    //printDebugLine(false, __LINE__, __NAME__);
     if (!shootOff) doBarCount(archerIndex, nID);
+    
   }
 }
 
-bool continueOrEnd(uint8_t nID){
+bool continueOrEnd(uint8_t nID){                                                // decide on exiting if there is already a result.
   u8x8.setCursor(0, 6);
   u8x8.inverse();
   u8x8.print("Proceed:  BTN[1]");

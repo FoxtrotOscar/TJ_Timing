@@ -230,8 +230,6 @@ byte setControlChannel(byte newChan){                       // Write to the cont
   pauseMe(80);                                              // allow catch-up
   do{     
     bool HC12End = false;
-    see(tmp_str);
-    see(HC12ReadBuffer);  
     HC12.println(tmp_str);                                  // Send Channel command to local HC12
     do {} while (!HC12.available());                        // . . .await the reply
     while (HC12.available() && !HC12End) {                  // While Arduino's HC12 soft serial rx buffer has data
@@ -239,7 +237,7 @@ byte setControlChannel(byte newChan){                       // Write to the cont
       pauseMe(10);
       HC12ReadBuffer += char(HC12ByteIn);                   // Write each character of byteIn to HC12ReadBuffer
       if (HC12ByteIn == '\n') {
-        printDebugLine(false, __LINE__, __NAME__);
+        //printDebugLine(false, __LINE__, __NAME__);
         see(HC12ReadBuffer); 
         HC12End = true;               // Set HC12End flag to exit WHILE loop
       }
@@ -248,14 +246,19 @@ byte setControlChannel(byte newChan){                       // Write to the cont
     HC12ReadBuffer = "";
   } while (isOK == false);
   command_ON(false);                                        // Exit command & enter transparent mode
-  u8x8.setCursor(14,0);                                     //  |
-  u8x8.inverse();                                           //  |
-  if (p_Store.B_ScrCh) {                                    //  | only if there is a 2nd channel in use
-    (p_Store.which_Scr_1st == 2) ?                          //  | 
-      u8x8.print(p_Store.B_ScrCh) :                         //  | write the current channel info on the controller
-      u8x8.print(p_Store.curChan);                          //  |
-  }                                                         //  |
-  u8x8.noInverse();                                         //  |
+  op_Chan = newChan;                                        //  |
+  // u8x8.inverse();                                           //  |
+  // if (p_Store.teamPlay && p_Store.B_ScrCh) {                //  | only if there is a 2nd channel in use
+  //   // (p_Store.which_Scr_1st == 2) ?                          //  | 
+  //   //   u8x8.print(p_Store.B_ScrCh) :                         //  | write the current channel info on the controller
+  //   //   u8x8.print(p_Store.curChan);                          //  |
+  //   //u8x8.setCursor(14,0);
+  //   //newChan <= 9 ? u8x8.print("0" + newChan) : u8x8.print(newChan);
+  //   //u8x8.print(newChan);
+  //   //pauseMe(tick);
+  //   wipeOLED();
+  // }                                                         //  |
+  // u8x8.noInverse();                                         //  |
   return newChan;
 }
   
@@ -341,9 +344,9 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
       u8x8.setCursor(0, 4);
       u8x8.print("All B units: ON");
       u8x8.setCursor(0, 6);
-      u8x8.print("READY?  >BTN[2]");
+      toggleFlag ? u8x8.print("READY?  >BTN [2]") :u8x8.print("READY?  >BTN [ ]") ;
       u8x8.setCursor(0, 7);
-      u8x8.print("Go Back >BTN[4]");
+      u8x8.print("Go Back >BTN [4]");
       if (readButtons() == BUTTON2) break;                // exit the infinite loop here
       if (readButtons() == BUTTON4) {                     // Leave the process
         clearFromLine(0);
@@ -400,6 +403,7 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
     for (;;) {    // now switch all screens back on and confirm
       switch (waitButton()) {
         case BUTTON1:
+          //wipeOLED();
           clearFromLine(3);
           u8x8.inverse();
           u8x8.setCursor(0, 4);
@@ -411,6 +415,7 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
           u8x8.setCursor(0, 7);
           u8x8.print("Proceed:  BTN[1]");
           readyAB();
+          wipeOLED();
           flag = true;
           break;
             

@@ -25,7 +25,8 @@ FUNCTIONS:
  *  Function to list the current setup on the OLED
  */
 void displayParamsOnOLED() {
-  wipeOLED();               
+  //wipeOLED();
+  clearFromLine(1);               
   u8x8.setCursor(0, 1);                        
   u8x8.print("Dur.:  ");
   u8x8.setCursor(0, 2);
@@ -70,7 +71,15 @@ void writeStopwatch(int n ){
  * Writes the current live data to OLED when not in Stopwatch
  */
 void writeOLED_Data(uint8_t archerIndex, byte nID){
+  //clearFromLine(1);
   u8x8.setFont(u8x8_font_chroma48medium8_r);
+  if ((p_Store.isFinals && !countPractice && p_Store.isAlternating) || p_Store.teamPlay > 10){
+  //clearFromLine(1);
+  u8x8.setCursor(1,2);//0,4
+  u8x8.print(p_Store.teamPlay > 10 ? " Team:" : "Archer:");
+  u8x8.draw2x2String(3,3,archerIndex == 1 ? "A": "B");
+  }
+  //if (p_Store.B_ScrCh) wipeOLED(); 
   u8x8.setCursor(11,1);
   u8x8.print("     ");
   u8x8.setCursor(11,1);
@@ -88,16 +97,12 @@ void writeOLED_Data(uint8_t archerIndex, byte nID){
     if (!p_Store.isFinals  ){
       switch (sE_iter%4){
         case 0:
-          /*countPractice ? u8x8.print("CD") :*/ u8x8.print("AB");      // Running AB/CD condition
-          break;
         case 1:
           u8x8.print("AB");
           break;
         case 2:
-          u8x8.print("CD");
-          break;
         case 3:
-          /*countPractice ? u8x8.print("AB") :*/ u8x8.print("CD");
+          u8x8.print("CD");
           break;
         default:
           u8x8.print("");
@@ -105,26 +110,14 @@ void writeOLED_Data(uint8_t archerIndex, byte nID){
       }
     }
   }
-  if ((p_Store.isFinals && !countPractice && p_Store.isAlternating) || p_Store.teamPlay > 10){
-    u8x8.setCursor(0,4);
-    u8x8.print(p_Store.teamPlay >10 ? "1st Team:  " : "Archer:    ");
-    u8x8.print(archerIndex == 1 ? "A": "B");  //??? Print the archer letter
-  }
-  u8x8.print(" ");         
 }
 
 
 
 void wipeOLED(void){
   clearFromLine(0);
-  u8x8.setCursor(0,0);
-  u8x8.inverse();
-  //if (p_Store.curChan == 0 || !p_Store.B_ScrCh ) u8x8.print(" Time Controller");
-  if (!p_Store.B_ScrCh) u8x8.print(" Time Controller"); 
-  else {  u8x8.print("TimeControl Ch"); 
-          p_Store.which_Scr_1st == 2 ? u8x8.print(p_Store.B_ScrCh) : u8x8.print(p_Store.curChan); 
-        }
-  u8x8.noInverse();  
+  setHeader();
+   
 }
 
 
@@ -171,4 +164,17 @@ void writeMenuCommands(void){
   u8x8.inverse();
   u8x8.print("or TIME-TAP now ");
   u8x8.noInverse();
+}
+
+void setHeader(void){
+  u8x8.setCursor(0,0);
+  u8x8.inverse();
+  if (!p_Store.teamPlay || !op_Chan) u8x8.print(" Time Controller"); 
+  else {  
+    char buf[4];
+    u8x8.print("TimeControl Ch"); 
+    sprintf (buf, "%2d" , op_Chan);
+    u8x8.drawString (14, 0, buf);
+  }
+  u8x8.noInverse(); 
 }
