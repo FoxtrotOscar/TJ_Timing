@@ -86,8 +86,10 @@ void writeInfoBigscreen(void){
     
   }
   else {  
-    if (p_Store.isFlint ){
+    if (p_Store.isFlint){
       sendSerialS( red, /*column=*/ 0, /*line=*/ lnNumber, "FLINT Round"); 
+    }else if (p_Store.ifaaIndoor){
+      sendSerialS( red, /*column=*/ 0, /*line=*/ lnNumber, "IFAA Indoor");
     }else{
       sendSerialS( red, /*column=*/ 0, /*line=*/ lnNumber, 
       (p_Store.Details == 1 ? "Single " : "Double "), "Detail");               // either 1 OR 2
@@ -266,9 +268,10 @@ void sendScrollW( uint16_t      scrollSpeed,
 
 
 void goWhistle(uint8_t whistles){
-  if (noWhistles) return;
+  #ifndef DEBUG
   HC12.print("~");                                                            //uncomment for whistles
-  HC12.print(whistles);  
+  HC12.print(whistles);
+  #endif  
 }
 
 
@@ -429,19 +432,26 @@ uint8_t waitButton() {
       flag = true;
     }
     checkIntervalTimer();
-    if (getRFID(&p_Store)) {
+    //#ifndef DEBUG
+    if (getRFID()) { //if (getRFID(&p_Store)) {
       continueOn = false;
       printDebugLine(true, __LINE__, __NAME__);
     }
+    //#endif
     uint8_t ret = readButtons();                            // read all button states
     if (ret != 0) {                                          // start of power-off routine
       long long goTurnOff = millis();
       while (readButtons() != 0) {
         delay(1);                                           // and now wait for button release as millis() clocks
-      }                              
+        if (millis() - goTurnOff < 5000) {
+          u8x8.clearLine(((millis() - goTurnOff)/500)-1);   // clear down the screen line by line to indicate shutdown intent progress
+        }
+      }
+                                        
       if (millis() - goTurnOff > 4000                       // if release made after 4 secs then power off selected
           && ret == BUTTON4 ) {                             
         goPowerOff();                                       // turn controller Power OFF via the digital power switch
+      } else { setHeader();
       }
       HC12.print(F("^8H"));                                 // brightness back to high
       return ret;                                           // finally return value of the button he pressed moments ago
@@ -693,14 +703,18 @@ void printDebugLine(bool dets, uint16_t lineNo, const char* FileName){
       Serial.print(F("pS.curChan :\t"));
       Serial.println(p_Store.curChan);
 
+      Serial.print(F("pS.ifaaIndoor :\t"));
+      Serial.println(p_Store.ifaaIndoor);
+      Serial.print(F("pS.Banner :\t"));
+      Serial.println(p_Store.Banner);
       Serial.print(F("pS.B_ScrCh :\t"));
       Serial.println(p_Store.B_ScrCh);
       Serial.print(F("pS.which_Scr_1st :\t"));
       Serial.println(p_Store.which_Scr_1st);
-      Serial.print(F("pS.PS14 :\t"));
-      Serial.println(p_Store.PS14);
-      Serial.print(F("pS.PS15 :\t"));
-      Serial.println(p_Store.PS15);
+      Serial.print(F("pS.PS16 :\t"));
+      Serial.println(p_Store.PS16);
+      Serial.print(F("pS.PS17 :\t"));
+      Serial.println(p_Store.PS17);
       
       
       Serial.print(F("shootDetail :\t"));

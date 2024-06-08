@@ -28,6 +28,7 @@ uint8_t pickParam(byte ct){
 
 void showAllParams(byte index){
   byte ct = 0;
+  //u8x8.setCursor(0, 1);
   do{
     index == ct ? u8x8.inverse() : u8x8.noInverse();    // if the index == ct then hightlight
     showOneParam(ct++, index);                          // show and increment the count

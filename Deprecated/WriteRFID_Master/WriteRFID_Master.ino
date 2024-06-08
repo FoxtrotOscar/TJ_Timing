@@ -40,7 +40,7 @@
 #include <Wire.h>
 #endif
 
-//#define DEBUG
+#define DEBUG
 
 #define RESET_PIN 8
  

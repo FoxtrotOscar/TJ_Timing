@@ -1,9 +1,14 @@
 /*
     Teensy3.2, 3.6 or 4.0 setup
+    Client :NIFAA / CCAC / DEMO / 
 */
 #define Teensy32  
 //#define Teensy36
 //#define Teensy40
+
+//#define DEMO
+//#define NIFAA
+#define CCAC  // 08 06 2024
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
     FOR ARCHERY, BUT EASILY CONFIGURABLE FOR MANY OTHER SPORTS
@@ -51,9 +56,8 @@
 
 */
 
-#define DEBUG               // Kills splashscreen, whistles etc
+//#define DEBUG               // Kills splashscreen, whistles etc
 //#define DEBUG_t             // makes seconds shorter
-byte noWhistles = false;      // set to false unless dev.
 
 #include <EEPROM.h>
 #include <U8g2lib.h>
@@ -130,10 +134,10 @@ struct PARAMSTORE {
 
   uint8_t   startCountsIndex    =  6;             // (0)  Number from 0 to 8 indentifying startCounts[] used, default 1 (90)
   uint8_t   walkUp              = 10;             // (1)
-  uint8_t   maxEnds             = 10;             // (2)  Total number of Ends for competition
+  uint8_t   maxEnds             = 12;             // (2)  Total number of Ends for competition
   uint8_t   Details             =  2;             // (3)  Single (1) or Double detail (2)
 
-  uint8_t   maxPrac             =  2;             // (4)  Initially set as 2x practice ends
+  uint8_t   maxPrac             =  0;             // (4)  Initially set as 2x practice ends
   uint8_t   isFinals            =  0;             // (5)  For alternating A & B session
   uint8_t   breakPeriod         = 10;             // (6)  Between sessions break times, max 240min, default 10
   uint8_t   isAlternating       =  0;             // (7)  1 / 2 == Recurve / Compound A/B; 0 == Simultaneous
@@ -141,22 +145,34 @@ struct PARAMSTORE {
   uint8_t   teamPlay            =  0;             // (8)  Teams: 1: mixed Recurve, 2 mixed Comp; 3 = Recurve, 4 Comp; 11 - 14 Teamplay ditto
   uint8_t   whichArcher         =  0;             // (9)  0 = ""; 1 = "A"; 2 = "B"
   uint8_t   isFlint             =  0;             //(10)  if True this is a flint round
-  uint8_t   curChan             =  1;             //(11)
+  uint8_t   curChan             =  1;             //(11)  channel in current use // also for Supervisor mode (naturally overwritten)
 
-  uint8_t   B_ScrCh             =  0;             //(12)  shows chann no. if dual screens are set up
-  uint8_t   which_Scr_1st       =  0;             //(13)  false until screen-flip in progress, then 1 or 2 for A or B
-  uint8_t   PS14                =  0;             //(14)|___  Spares
-  uint8_t   PS15                =  1;             //(15)| Banner loaded ?
+
+  uint8_t   ifaaIndoor          =  0;             //(12)  is this an Int. Field Archery Assoc. tournament?
+  uint8_t   Banner              =  0;             //(13)  Banner loaded ?
+  uint8_t   B_ScrCh             =  0;             //(14)  shows chann no. if dual screens are set up
+  uint8_t   which_Scr_1st       =  0;             //(15)  false until screen-flip in progress, then 1 or 2 for A or B
+
   uint8_t   PS16                =  0;             //(16)|___  Spares
   uint8_t   PS17                =  0;             //(17)|
 }  __attribute__ ((packed));
 struct    PARAMSTORE p_Store;
 
+/*
+Keycard validity check mask
+*/
+#ifdef CCAC
+  const uint8_t   Key12 = 155;
+  const uint8_t   Key13 = 136;
+  const uint8_t   Key14 = 220;
+  const uint8_t   Key15 = 28;
 
-const uint8_t   Key12 = 127;                      //    |
-const uint8_t   Key13 = 212;                      //    |___  Mask to test for valid card
-const uint8_t   Key14 = 42;                       //    |
-const uint8_t   Key15 = 198;                      //    |
+#elif defined  NIFAA || defined DEMO
+  const uint8_t   Key12 = 127;
+  const uint8_t   Key13 = 212;
+  const uint8_t   Key14 = 42;
+  const uint8_t   Key15 = 198;
+#endif
 
 
 
@@ -233,7 +249,7 @@ const char* menu0[] =   {
 };
 
 
-#if defined Teensy32
+#if defined Teensy32  || defined Teensy40
   const int button1Pin = 2;                       // the number of the pushbutton pin T3.2
   const int button2Pin = 3;
   const int button3Pin = 4;
@@ -243,11 +259,11 @@ const char* menu0[] =   {
   const int button2Pin = 31;
   const int button3Pin = 30;
   const int button4Pin = 29;
-#elif defined Teensy40
-  const int button1Pin = 2;                       // the number of the pushbutton pin T4.0
-  const int button2Pin = 3;
-  const int button3Pin = 4;
-  const int button4Pin = 5; 
+// #elif defined Teensy40
+//   const int button1Pin = 2;                       // the number of the pushbutton pin T4.0
+//   const int button2Pin = 3;
+//   const int button3Pin = 4;
+//   const int button4Pin = 5; 
 #else
   #error    Unsupported board selection.
 #endif
@@ -311,11 +327,11 @@ void setup() {
   pauseMe(800);
 
   mfrc522.PCD_Init();                             // Init MFRC522 card
-  pauseMe(10);
+  pauseMe(50);
   mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
-  pauseMe(5);
+  pauseMe(50);
   for (byte i = 0; i < 6; i++) key.keyByte[i] = 0xFF;
-  pauseMe(10);
+  pauseMe(20);
   goReboot();                                     // Reboot the screen unit
   pauseMe(2*tick);
   clearFromLine(6);
@@ -346,9 +362,14 @@ void setup() {
   wipeOLED();
   dispSrcFileDetails(__NAME__);                   // Show *this* file name on OLED
   pauseMe(tick);
-  u8x8.draw2x2String(0, 6, "..WAIT..");
+  #ifdef CCAC 
+    u8x8.draw2x2String(0, 3, "  CORK  ");
+    u8x8.draw2x2String(0, 6, "  CITY  ");
+  #else
+    u8x8.draw2x2String(0, 6, "..WAIT..");
+  #endif
   #ifdef DEBUG 
-  HC12.print("title\r");
+  HC12.print("title\r"); 
   pauseMe(3000);
   #endif
   writeSplash(true);                              // full splashscreen with animation
