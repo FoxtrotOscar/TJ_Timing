@@ -35,6 +35,10 @@ bool recvWithEndMarker() {
             score_Collect(true);
             break;
 
+          case '4':
+            writeRedscreen();
+            break;
+
           case '8':                                 // dim the screen to val Low/Med/Bright given
             while (!_RADIO.available()) {}          // hang around until a char is received
             pauseMe(pMe);

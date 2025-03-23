@@ -154,7 +154,7 @@ void writeHalt(void){
   if (p_Store.Details == 2){
     if (sEcount < p_Store.maxEnds) {                                // ???
       writeReady();
-      txtColour = orange; lnNumber = 31;                            //if (p_Store.Details == 2){                                // ???  Double detail?
+      txtColour = orange; lnNumber = 30;                            //if (p_Store.Details == 2){                                // ???  Double detail?
       if (p_Store.isFinals 
           && sE_iter == 1){                                         // First end of FINALS
         writeArcher(p_Store.whichArcher, txtColour);
@@ -207,10 +207,12 @@ void writeReadySet(void){
 
 void score_Collect(bool redScreen){                                 // remote located function
 //#ifndef DEBUG
-  HC12.print(redScreen ? "^3" : "^2");                              // 3 == true, 2 == false 
-  HC12.flush();
-//#endif  
-  pauseMe(30);
+  if (!countPractice){
+    HC12.print(redScreen ? "^3" : "^2");                              // 3 == true, 2 == false 
+    HC12.flush();
+  //#endif  
+    pauseMe(30);
+  }
 }
 
 /*

@@ -145,9 +145,9 @@ void writeLine(byte lCol, byte lX1, byte lY1, byte lX2, byte lY2) {
 void redBorder(bool borderOn){
   if (borderOn == true) {
     clearMatrix(false);
-    writeRectangle(1, 0, 31, 64, 32);
-    writeRectangle(0, 1, 30, 62, 30);                               // blank centre
-    MATRIXSER.print(F("font 13\r"));                                     // large numbers font
+    writeRedscreen();                                 // Fill screen with red
+    writeRectangle(0, 1, 30, 62, 30);                 // blank centre
+    MATRIXSER.print(F("font 13\r"));                  // large numbers font
     MATRIXSER.flush();
   } else {
     writeRectangle(2, 0, 31, 64, 32);
@@ -156,11 +156,15 @@ void redBorder(bool borderOn){
   }
 }
 
+void writeRedscreen(void){
+   writeRectangle( 1, 0, 31, 64, 32);                 // fill screen with red
+}
+
 void score_Collect(bool redScreen){
   if (redScreen) {
-    writeRectangle( 1, 0, 31, 64, 32);                                  // fill screen with red
+    writeRedscreen();                                  // fill screen with red
     pauseMe(2*tick);
-  } 
+  }
   clearMatrix(false);
   MATRIXSER.print(F("font 9\r"));   
   sendSerialS(2, 10, 15, "SCORE +");

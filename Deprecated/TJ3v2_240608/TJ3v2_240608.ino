@@ -6,9 +6,9 @@
 //#define Teensy36
 //#define Teensy40
 
-//#define DEMO
-//#define NIFAA
-#define CCAC  // 08 06 2024
+#define DEMO
+//#define NIFAA`++++++++++++++++++++++++++++
+//#define CCAC  // 08 06 2024
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
     FOR ARCHERY, BUT EASILY CONFIGURABLE FOR MANY OTHER SPORTS
@@ -126,7 +126,7 @@ MFRC522::MIFARE_Key key;
    These are the main variables which will be addressable by the user
    via RFID card and, as a backup, via a button menu (OLED)
 */
-const int   startCounts[] = {240, 120, 80, 40, 20, 180, 90, 180, 30};
+const int   startCounts[] = {240, 120, 80, 40, 20, 180, 90, 180, 45}; //{240, 120, 80, 40, 20, 180, 90, 180, 30} changed 30 to 45 for flint walkup
 const char* flintWalk[5]  = {"30 YD", "25 YD", "20 YD", "15 YD", ""};
 const char* flint[6]      = {"25 YD", "20 FT", "30 YD", "15 YD", "20 YD", "10 YD"};
 
