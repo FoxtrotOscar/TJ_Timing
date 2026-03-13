@@ -130,7 +130,7 @@ Serial.print(F("uid.size: "));      Serial.println(mfrc522.uid.size);
 
   byte dataBlock[16];
   for (byte i=0;i<16;i++) dataBlock[i] = dataStore[i];
-  dataBlock[13] = bannerIsReady() ? 1 : 0;
+  dataBlock[13] = (bannerIsReady() && dataStore[13]) ? 1 : 0;
   status = mfrc522.MIFARE_Write(block4, dataBlock, 16);
   Serial.print("WP: write4=");
   Serial.println(mfrc522.GetStatusCodeName(status));
@@ -148,20 +148,19 @@ Serial.print(F("uid.size: "));      Serial.println(mfrc522.uid.size);
   if (status != MFRC522::STATUS_OK) { endCardSession(); return false; }
 
   bool bannerOk = true;
-  if (bannerIsReady()) {      // OLED banner-specific feedback before generic result
-
-    //if (bannerIsReady() || bannerOk) {     // we attempted a banner write
-    wipeOLED(true);
-    u8x8.draw2x2String(0, 2, bannerOk ? "BANNER  " : "BANNER  ");
-    u8x8.draw2x2String(0, 5, bannerOk ? "  OK    " : " FAIL   ");
-    pauseMe(800);
-  }
+    if (bannerIsReady() && dataStore[13]) {  // only show banner feedback if user chose to write it
+        wipeOLED(true);
+        u8x8.draw2x2String(0, 2, "BANNER  ");
+        u8x8.draw2x2String(0, 5, "  OK    ");
+        pauseMe(800);
+    }
   //   bannerOk = writeBannerToCard(mfrc522, key);
   //   Serial.println(bannerOk ? F("Banner written OK") : F("Banner write FAILED"));
   //   if (bannerOk) bannerReset();  // optional: make END one-shot
   
 
-  if (bannerIsReady()) {
+
+  if (bannerIsReady() && dataStore[13]) {  // only write banner if user chose to include it
     bannerOk = writeBannerToCard(mfrc522, key);
     Serial.println(bannerOk ? F("Banner written OK") : F("Banner write FAILED"));
 

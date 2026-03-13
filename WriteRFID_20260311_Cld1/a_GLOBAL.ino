@@ -1,4 +1,31 @@
+// // Number of cursor stops on the main param screen (circular nav)
+// const uint8_t CURSOR_COUNT = 8;
 
+// // Maps each cursor stop (0-7) to its dataStore[] index.
+// // 255 = special: stop 0 is the Round launcher, not a direct param.
+// static const uint8_t cursorToParam[CURSOR_COUNT] = {
+//     255,   // 0: Round row — opens sub-menu, no direct dataStore entry
+//       0,   // 1: Time    → dataStore[0]
+//       2,   // 2: Ends    → dataStore[2]
+//       4,   // 3: Prac    → dataStore[4]
+//      13,   // 4: Bann    → dataStore[13]
+//       1,   // 5: Walk    → dataStore[1]
+//       3,   // 6: Dets    → dataStore[3]
+//       6    // 7: BrkT    → dataStore[6]
+// };
+
+// // Number of items in the Round sub-menu
+// const uint8_t SUB_COUNT = 6;
+
+// // Maps each sub-menu row (0-5) to its dataStore[] index
+// static const uint8_t subToParam[SUB_COUNT] = {
+//      5,    // 0: Fnls → dataStore[5]
+//      7,    // 1: Altr → dataStore[7]
+//      8,    // 2: Team → dataStore[8]
+//      9,    // 3: A/B  → dataStore[9]
+//     10,    // 4: Flnt → dataStore[10]
+//     12     // 5: IFAA → dataStore[12]
+// };
 
 void introScreen(void){
     //firstTime = false;
@@ -125,7 +152,7 @@ uint8_t setCustomer(void) {
     PressAction p4 = pollButtonDebounced(button4Pin, b4, 25, 0, 0);  // cancel/exit
 
     #ifdef DEBUG
-    static uint32_t last = 0;
+    //static uint32_t last = 0;
     // if (millis() - last > 200) {
     //   last = millis();
     //   Serial.printf("RAW B1=%d B2=%d B3=%d B4=%d  p2=%d p3=%d\n",

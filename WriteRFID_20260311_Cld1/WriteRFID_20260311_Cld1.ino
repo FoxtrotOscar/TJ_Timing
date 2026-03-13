@@ -212,7 +212,8 @@ const int button2Pin  = 28;//27;
 const int button3Pin  = 27;//28;         
 const int button4Pin  = 26;//29;
 
-const int paramShow   = 13;        
+//const int paramShow   = 13;
+const int paramShow   =  7;         
 
 int currState1 = HIGH;
 int prevState1 = HIGH;
@@ -228,21 +229,35 @@ bool bannerAccepted = false;
 // Minimal state machine for IDLE / WRITE_MODE / PARAM_MENU
 // ---------------------------
 
-enum AppState { ST_IDLE, ST_WRITE_MODE, ST_READ_MODE, ST_PARAM_MENU, ST_BANNER_INGEST };
+//enum AppState { ST_IDLE, ST_WRITE_MODE, ST_READ_MODE, ST_PARAM_MENU, ST_BANNER_INGEST };
+enum AppState { ST_IDLE, ST_WRITE_MODE, ST_READ_MODE, ST_PARAM_MENU, ST_BANNER_INGEST, ST_SUB_MENU };
 static AppState gState = ST_IDLE;                               // current mode
 static byte     paramIndex = 0;                                 // menu cursor / selection
+static byte     subCursorIdx = 0;
+static uint32_t blinkLastMs  = 0;     // millis() timestamp of last blink toggle
+static bool     blinkState   = true;  // true = highlighted (inverse), false = normal
 
-
+// void enterIdleScreen() {
+//   #ifdef DEBUG
+//   Serial.println(" IN IDLE ");
+//   #endif
+//   clearFromLine(1);                                             // clear lower screen area
+//   showAllParams(paramShow + 1);                                 // show full parameter list in idle format
+//   #ifdef DEBUG
+//   printParamVals();                              // show current parameter values
+//   #endif
+//   showInstr();                                                  // show "BTN1 write / BTN2 menu / ..." instructions
+// }
 void enterIdleScreen() {
-  #ifdef DEBUG
-  Serial.println(" IN IDLE ");
-  #endif
-  clearFromLine(1);                                             // clear lower screen area
-  showAllParams(paramShow + 1);                                 // show full parameter list in idle format
-  #ifdef DEBUG
-  printParamVals();                              // show current parameter values
-  #endif
-  showInstr();                                                  // show "BTN1 write / BTN2 menu / ..." instructions
+    #ifdef DEBUG
+    Serial.println(" IN IDLE ");
+    #endif
+    wipeOLED(false);                   // clear all rows (no programmer header)
+    drawParamScreen(255);              // 255 = no cursor highlight
+    #ifdef DEBUG
+    printParamVals();
+    #endif
+    showInstr();
 }
 
 void enterWriteModeScreen() {
@@ -377,6 +392,7 @@ void showWriteResult(bool ok){
     return;
 }
 
+
 void runAppStateMachine(PressAction a1,
                         PressAction a2,
                         PressAction a3,
@@ -384,6 +400,7 @@ void runAppStateMachine(PressAction a1,
 
     switch (gState) {
 
+        // ── IDLE ──────────────────────────────────────────
         case ST_IDLE:
 
             if (a1 == ACT_SHORT) {
@@ -400,28 +417,23 @@ void runAppStateMachine(PressAction a1,
 
             if (a2 == ACT_SHORT) {
                 gState = ST_PARAM_MENU;
-                clearFromLine(1);
-                //showAllParams(paramIndex);
-                showAllParamsNoWipe(paramIndex);
-                showPick();                
+                wipeOLED(false);
+                drawParamScreen(paramIndex);
+                showPick();
                 break;
             }
 
             if (a3 == ACT_LONG) {
-                while (Serial.available()) Serial.read();  // flush
+                while (Serial.available()) Serial.read();
                 bannerReset();
                 Serial.println(F("Banner ingest: READY (type HELP)"));
                 gState = ST_BANNER_INGEST;
-                // wipeOLED(true);
-                // u8x8.draw2x2String(0, 2, "  BuNNER");
-                // u8x8.draw2x2String(0, 5, "  READY");
-                // u8x8.drawString(0, 7, "BTN4=exit");
                 enterBannerIngestScreen();
                 break;
             }
-            
             break;
 
+        // ── WRITE MODE ────────────────────────────────────
         case ST_WRITE_MODE:
 
             if (a4 == ACT_SHORT) {
@@ -433,54 +445,196 @@ void runAppStateMachine(PressAction a1,
             if (requireRemove) {
                 if (cardIsGoneStable(5)) {
                     requireRemove = false;
-                    enterWriteModeScreen();            // shows READY TO WRITE
+                    enterWriteModeScreen();
                 }
                 break;
             }
 
             if (mfrc522.PICC_IsNewCardPresent() &&
                 mfrc522.PICC_ReadCardSerial()) {
-              bool ok = writePresentedCardOnce();
-              showWriteResult(ok);
+                bool ok = writePresentedCardOnce();
+                showWriteResult(ok);
             }
-
             break;
 
-
+        // ── PARAM MENU ────────────────────────────────────
         case ST_PARAM_MENU: {
 
-          if (a4 == ACT_SHORT) {
-            gState = ST_IDLE;
-            enterIdleScreen();
+            if (a4 == ACT_SHORT) {
+                gState = ST_IDLE;
+                enterIdleScreen();
+                break;
+            }
+
+            byte oldIndex = paramIndex;
+
+            // Circular nav: BTN3 = down (next), BTN2 = up (prev)
+            if (a3 == ACT_SHORT)
+                paramIndex = (paramIndex + 1) % CURSOR_COUNT;
+            if (a2 == ACT_SHORT)
+                paramIndex = (paramIndex == 0) ? CURSOR_COUNT - 1 : paramIndex - 1;
+            
+                // Blink tick — only fires when cursor is sitting on the Round row (stop 0).
+            // 0.75Hz = ~1333ms period, so toggle every 667ms.
+            if (paramIndex == 0) {
+                if ((uint32_t)(millis() - blinkLastMs) >= 667) { // cast prevents rollover glitch
+                    blinkLastMs = millis();                       // reset the timer
+                    blinkState  = !blinkState;                    // flip highlight on/off
+                    drawRoundBanner(blinkState);                  // redraw with current blink state
+                }
+            }
+
+            if (paramIndex != oldIndex) {
+                // Un-highlight old field
+                if (oldIndex == 0) {
+                    blinkState  = true;           // reset so it starts highlighted next visit
+                    blinkLastMs = 0;              // reset timer so blink kicks in immediately
+                    drawRoundBanner(false);       // draw un-highlighted as cursor leaves
+                }
+                else if (oldIndex == 4) drawBannField(false);
+                else                    drawField(oldIndex, false);
+
+                // Highlight new field
+                if (paramIndex == 0) {
+                    blinkState  = true;           // start with banner lit when cursor arrives
+                    blinkLastMs = millis();       // start the blink timer from now
+                    drawRoundBanner(blinkState);  // draw immediately highlighted
+                }
+                else if (paramIndex == 4) drawBannField(true);
+                else                      drawField(paramIndex, true);
+            }
+
+            if (a1 == ACT_SHORT) {
+                if (paramIndex == 0) {
+                    // Round → open sub-menu
+                    gState = ST_SUB_MENU;
+                    subCursorIdx = 0;
+                    wipeOLED(false);
+                    drawSubMenu(subCursorIdx);
+                    showPick();
+
+                } else if (paramIndex == 4) {
+                    // Bann toggle — handled entirely inline.
+                    // Never calls alterParam() — that wipes screen and sets
+                    // large font (showTempVal) which then bleeds into menu redraws.
+                    if (!bannerIsReady()) {
+                        // No banner ingested yet — flash warning on row 5,
+                        // leave everything else untouched
+                        u8x8.setFont(u8x8_font_chroma48medium8_r); // ensure small font
+                        u8x8.setCursor(0, 5);
+                        u8x8.print("No banner yet   ");  // 16 chars fills the row cleanly
+                        pauseMe(1200);                    // 1.2s visible
+                        u8x8.clearLine(5);                // tidy up
+                    } else {
+                        // Banner present — simple toggle 0↔1
+                        dataStore[13] = dataStore[13] ? 0 : 1;
+                    }
+                    u8x8.setFont(u8x8_font_chroma48medium8_r); // ensure font reset before redraw
+                    drawBannField(true);                        // redraw Bann row with cursor highlight
+                } else {
+                    // Normal param — edit, then redraw whole screen cleanly
+                    alterParam(cursorToParam[paramIndex]);
+                    wipeOLED(false);
+                    drawParamScreen(paramIndex);
+                    showPick();
+                }
+            }
             break;
-          }
+        }
 
-          byte oldIndex = paramIndex;
+        // ── SUB MENU ──────────────────────────────────────
+        // ── SUB MENU ──────────────────────────────────────
+        case ST_SUB_MENU: {
 
-          if (a3 == ACT_SHORT && paramIndex < paramShow) paramIndex++;
-          if (a2 == ACT_SHORT && paramIndex > 0)         paramIndex--;
+            if (a4 == ACT_SHORT) {                        // BTN4 = exit sub, back to param menu
+                gState     = ST_PARAM_MENU;               // return to top menu
+                paramIndex = 0;                           // cursor on Round row
+                wipeOLED(false);
+                drawParamScreen(paramIndex);
+                showPick();
+                break;
+            }
 
-          if (paramIndex != oldIndex) {
-            // redraw old (not highlighted)
-            u8x8.noInverse();
-            showOneParam(oldIndex, paramIndex);   // index arg only used for highlight compare
+            byte oldSub = subCursorIdx;                   // remember where cursor was
 
-            // redraw new (highlighted)
-            u8x8.inverse();
-            showOneParam(paramIndex, paramIndex);
-            u8x8.noInverse();
-          }
+            if (a3 == ACT_SHORT)                          // BTN3 = down
+                subCursorIdx = (subCursorIdx + 1) % SUB_COUNT;
+            if (a2 == ACT_SHORT)                          // BTN2 = up
+                subCursorIdx = (subCursorIdx == 0) ? SUB_COUNT - 1 : subCursorIdx - 1;
 
-          // Select to edit
-          if (a1 == ACT_SHORT) {
-            alterParam(paramIndex);             // your existing editor
-            showAllParamsNoWipe(paramIndex);    // redraw list with current highlight
-            showPick();
-          }
-          break;
+            if (subCursorIdx != oldSub) {                 // cursor moved — redraw changed rows only
+                drawSubField(oldSub,      false);         // un-highlight old row
+                drawSubField(subCursorIdx, true);         // highlight new row
+            }
+
+            if (a1 == ACT_SHORT) {                        // BTN1 = select current row
+
+                uint8_t pIdx = subToParam[subCursorIdx];  // which dataStore[] param this row controls
+
+                if (pIdx == 10) {
+                    // ── FLINT toggle ──────────────────────────────────
+                    if (dataStore[10]) {
+                        // Already ON → flip off, no side-effect rollback
+                        dataStore[10] = 0;
+                    } else {
+                        // Was OFF → turn on and apply full side effects
+                        dataStore[10] = 1;         // Flint ON
+                        dataStore[0]  = 7;         // Time 180
+                        dataStore[2]  = 7;         // Ends
+                        dataStore[3]  = 1;         // Dets
+                        dataStore[4]  = 1;         // Prac
+                        dataStore[5]  = 0;         // Finals off
+                        dataStore[6]  = 15;        // BrkT
+                        dataStore[7]  = 0;         // Alternating off
+                        dataStore[8]  = 0;         // Team off
+                        dataStore[9]  = 0;         // A/B off
+                        dataStore[12] = 0;         // IFAA off
+                    }
+                    gState     = ST_PARAM_MENU;    // return to top menu immediately
+                    paramIndex = 0;                // cursor stays on Round row
+                    wipeOLED(false);
+                    drawParamScreen(paramIndex);   // Round banner reflects new state
+                    showPick();
+
+                } else if (pIdx == 12) {
+                    // ── IFAA toggle ───────────────────────────────────
+                    if (dataStore[12]) {
+                        // Already ON → flip off, no side-effect rollback
+                        dataStore[12] = 0;
+                    } else {
+                        // Was OFF → turn on and apply full side effects
+                        dataStore[12] = 1;         // IFAA ON
+                        dataStore[0]  = 0;         // Time 240
+                        dataStore[2]  = 12;        // Ends
+                        dataStore[3]  = 2;         // Dets
+                        dataStore[4]  = 1;         // Prac
+                        dataStore[5]  = 0;         // Finals off
+                        dataStore[6]  = 15;        // BrkT
+                        dataStore[7]  = 0;         // Alternating off
+                        dataStore[8]  = 0;         // Team off
+                        dataStore[9]  = 0;         // A/B off
+                        dataStore[10] = 0;         // Flint off
+                    }
+                    gState     = ST_PARAM_MENU;    // return to top menu immediately
+                    paramIndex = 0;                // cursor stays on Round row
+                    wipeOLED(false);
+                    drawParamScreen(paramIndex);   // Round banner reflects new state
+                    showPick();
+
+                } else {
+                    // ── Everything else (Fnls, Altr, Team, A/B) ──────
+                    // Normal alterParam() confirm screen, stay in sub-menu after
+                    alterParam(pIdx);
+                    wipeOLED(false);
+                    drawSubMenu(subCursorIdx);     // redraw sub after edit
+                    showPick();
+                }
+            }
+            break;
         }
 
 
+        // ── READ MODE ─────────────────────────────────────
         case ST_READ_MODE:
 
             if (a4 == ACT_SHORT) {
@@ -505,7 +659,6 @@ void runAppStateMachine(PressAction a1,
                 if (ok) {
                     showLoadedBannerStatus(dataStore[13]);
                     delay(1200);
-                    //showParamVal(13);
                     gState = ST_IDLE;
                     enterIdleScreen();
                     requireRemove = true;
@@ -517,33 +670,33 @@ void runAppStateMachine(PressAction a1,
                     requireRemove = true;
                 }
             }
-
             break;
 
-
+        // ── BANNER INGEST ─────────────────────────────────
         case ST_BANNER_INGEST:
             if (a4 == ACT_SHORT) {
-              gState = ST_IDLE;
-              enterIdleScreen();
-              break;
+                gState = ST_IDLE;
+                enterIdleScreen();
+                break;
             }
-            bannerAccepted = bannerSerialIngest();   // must be non-blocking (one step per loop)
-            if (bannerIsReady() && bannerAccepted) {          // END was just processed
-                bannerAccepted = false;
+            bannerAccepted = bannerSerialIngest();
+            if (bannerIsReady() && bannerAccepted) {
+                bannerAccepted  = false;
+                dataStore[13]   = 1;          // default to write-with-banner on ingest
                 wipeOLED(true);
                 u8x8.draw2x2String(2, 2, "BANNER");
                 u8x8.draw2x2String(0, 4, "ACCEPTED");
                 u8x8.drawString(0, 7, "EXIT       [4]");
             }
             break;
-        
 
         default:
             gState = ST_IDLE;
             break;
     }
 }
-  
+
+
 void showOfferCardToRead(){
   wipeOLED(true);
   u8x8.draw2x2String(0, 2, " READ A ");
@@ -558,3 +711,4 @@ void showLoadedBannerStatus(bool bannerYes) {
   u8x8.drawString(0, 7, bannerYes ? "BNR:Y" : "BNR:N");
   pauseMe(600);
 }
+
