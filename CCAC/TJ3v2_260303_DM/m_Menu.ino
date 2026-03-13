@@ -1,0 +1,641 @@
+/*
+
+ uint8_t startCountsIndex = 1;         // (1)Number from 0 to 4 indentifying which of startCounts is used in this round, default 120 
+ uint8_t walkUp = 10;                  // (2)
+ uint8_t maxEnds = 4;                  // (3)Total number of Ends for competition
+ uint8_t Details = 2;                  // (4)Single (1) or Double detail (2)
+ uint8_t maxPrac = 2;                  // (5)Initially set as 2x practice ends
+ uint8_t isFinals = 0;                 // (6)For alternating A & B session
+ uint8_t isAlternating = 0;            // (8)1 == Archer A, Archer B; 0 == Simultaneous
+ uint8_t teamPlay = 0;                 // (9)
+ uint8_t whichArcher = 1;              //(10)
+
+ FUNCTIONS:
+   displayMenuPage
+   goMenu
+     awaiting_confirmation_1
+     awaiting_confirmation_2
+     menu_root
+     start_INTERVALS_menu
+     start_duration_menu
+     start_ends_menu
+     start_practice_menu
+     start_details_menu
+     start_walkup_menu
+     start_finals_menu
+     start_alternating_menu
+     confirmed
+   doButtonMenu
+   writeMenuCommands
+   handleEmergencyRestart
+   readButton
+   readButtonNoDelay
+   readButtons
+   waitButton
+   goEmergencyButton
+*/
+// **************************************************************************************
+//                    Sergey Parshin          Menu2
+// **************************************************************************************
+
+// defines the type of the menu state
+
+struct MenuContext
+{
+  enum class MenuState {
+    start, 
+    awaiting_confirmation_1, 
+    awaiting_confirmation_2, 
+    menu_root,
+    start_INTERVALS_menu, 
+    start_duration_menu,
+    start_ends_menu,
+    start_practice_menu,
+    start_details_menu,
+    start_walkup_menu,
+    start_finals_menu,
+    confirmed,
+  };
+
+  enum {
+    MENU_INDEX_DURATION   = 0, 
+    MENU_INDEX_ENDS       = 1, 
+    MENU_INDEX_PRACTICE   = 2, 
+    MENU_INDEX_DETAILS    = 3,
+    MENU_INDEX_WALKUP     = 4,
+    MENU_INDEX_FINALS     = 5,
+    MENU_INDEX_INTERVAL   = 6,                  // redundant really - change to another function? Teamplay perhaps,
+                                                // or keep teamplay for RFID and just clear the option
+  };
+
+  // Context variables 
+  bool      displayParams     = false;
+  uint8_t   rootMenuIndex         = 0;          // currently selected menu item at root level menu
+  uint8_t   menuStartCountsIndex  = 0;          // currently selected item in the "duration" submenu
+  uint8_t   menuWalkup            = 0;          // same as above
+  uint8_t   menuMaxEnds           = 0;          // currently selected value for 'maxEnds' - unconfirmed one
+  uint8_t   menuPractice          = 0;          // same as above
+  uint8_t   menuDetails           = 0;          // same as above
+  uint8_t   menuFinals            = 0;
+  uint8_t   menuAlternating       = 0;
+  uint16_t  menuInterval          = 0;  
+
+
+  // each of the following functions handles particular state, and returns what must be the next state 
+  
+  MenuState handle_start()
+  {
+      disp.setFont(u8x8_font_chroma48medium8_r);
+      wipeOLED(); 
+      if (displayParams){
+          EEPROM.put(0, p_Store);                 // Here the p_Store data is copied into EEPROM
+          pauseMe(120); 
+          EEPROM.put(20, 111);                    // set flag for stored parameters
+          pauseMe(120);
+          displayParamsOnOLED();
+      } else 
+          displayParams = true;                   // we skip displayParamsOnOLED only for the first time, 
+                                                  // so if some code below jumps back to start, 
+                                                  // we would display the whole current params again
+      disp.clearLine(5);
+  
+      
+      writeMenuCommands();                        // Initial state - display confirmation request
+      
+      
+      return MenuState::awaiting_confirmation_1;  // return what must be the next state of the State Machine 
+  }
+  
+  MenuState handle_awaiting_confirmation_1()      // Actually wait for user confirmation
+                                                  // Pressing BTN1 would proceed with requesting it to be pressed 2nd time
+                                                  // Pressing any other button will open the menu
+  {
+    switch (waitButton()) 
+      {
+      case BUTTON1:
+        disp.setCursor(0, 5); 
+        disp.print("B1 Pressed      ");
+        disp.setCursor(0, 6);
+        disp.print("Confirm:  BTN[1]");
+        disp.setCursor(0, 7);
+        disp.print("Change:   BTN[2]");
+        return continueOn == false ? MenuState::confirmed : MenuState::awaiting_confirmation_2;
+        
+      case BUTTON2: 
+        disp.fillDisplay();
+        pauseMe(30);
+        clearFromLine(1);
+        
+        disp.draw2x2String(6, 2, "OK");
+        disp.draw2x2String(4, 5, "MENU:");
+        zeroSettings();
+        pauseMe(700);
+        wipeOLED();
+        
+        return MenuState::menu_root;                // go to menu_root label to display the root level of the menu
+  
+      case BUTTON3:
+          
+        for (;;)                                    // the only exits from this loop are two return statements 
+                                                    //for cases where user did press BTN1 or BTN4 
+        {
+          wipeOLED();
+          pauseMe(30);
+          clearFromLine(1);
+          if (p_Store.breakPeriod > 240) p_Store.breakPeriod = 240;  // catch spurious high numbers
+          disp.setCursor(3, 2);
+          disp.setFont (u8x8_font_amstrad_cpc_extended_f);
+          disp.print("RUN ");
+          disp.print(p_Store.breakPeriod);
+          disp.print(" min");
+          disp.draw2x2String(2, 4, "TIMER?");
+          disp.setCursor(1, 7);
+          disp.print("[1]Yes / No[4]");
+                
+          switch (waitButton()) {
+          case BUTTON1:
+            intervalOn  = true;
+            started     = false;
+            return MenuState::start;
+          
+          case BUTTON2:
+            p_Store.breakPeriod > 231 ?  p_Store.breakPeriod = 5 : p_Store.breakPeriod++;
+            if (p_Store.breakPeriod != 5) {
+              do { p_Store.breakPeriod ++; } while (p_Store.breakPeriod % 10) ;
+            }
+            break; 
+            
+            
+          case BUTTON3:
+            p_Store.breakPeriod <= 2 ?  p_Store.breakPeriod = 240 : p_Store.breakPeriod --;
+            break;
+            
+          case BUTTON4:
+            intervalOn = false;
+            return MenuState::start;
+          }
+        }       
+        break;
+        
+      case BUTTON4:
+        displayParamsOnOLED(); //+++++++++++++++++++++++++++++++++++++++++++++++++
+        disp.draw2x2String(0, 6, "..WAIT..");
+        writeSplash(false);
+        pauseMe(2 * tick);
+        intervalOn  = false;
+        started     = false;
+        writeInfoBigscreen();
+        writeMenuCommands();
+        // state - unchanged  -- any other button - go and read button state again
+        break;
+    }
+    
+    // unless we have returned another state somewhere above - return the current state again, as we want to iterate here more 
+    return MenuState::awaiting_confirmation_1;
+  }
+  
+  MenuState handle_awaiting_confirmation_2()
+  {
+      
+      switch (waitButton()) {                           // Now - awaiting 2nd confirmation
+      case BUTTON1:
+        //HCuOLED.clear();
+        disp.setCursor(0, 7); 
+        disp.print("     Confirmed");
+        return MenuState::confirmed;
+      
+      case BUTTON2:
+        disp.fillDisplay();
+        clearFromLine(1); 
+        disp.draw2x2String(6, 2, "OK");
+        disp.draw2x2String(4, 5, "MENU:");
+        pauseMe(700);
+        return MenuState::menu_root;
+      }
+      
+    return MenuState::awaiting_confirmation_2; // by default always return the current state 
+  }
+  
+  MenuState handle_menu_root()
+  {
+      ///////////////////////////////////////////
+      ////////////// Main Menu //////////////////
+      ///////////////////////////////////////////
+      
+      // Display the root page of the menu, 0 - page index, rootSelectionIdx - current selection 
+      wipeOLED();
+      displayMenuPage(0, rootMenuIndex);
+    
+      switch (waitButton()) {      
+      case BUTTON1:
+          if (rootMenuIndex == MENU_INDEX_DURATION) {
+              // selected time duration 
+            menuStartCountsIndex = p_Store.startCountsIndex;
+            return MenuState::start_duration_menu;
+          }
+          else if (rootMenuIndex == MENU_INDEX_ENDS) {
+            menuMaxEnds = p_Store.maxEnds;
+            return MenuState::start_ends_menu;
+          }
+          else if (rootMenuIndex == MENU_INDEX_PRACTICE) {
+            menuPractice = p_Store.maxPrac ;
+            return MenuState::start_practice_menu;
+          }
+          else if (rootMenuIndex == MENU_INDEX_DETAILS) {
+            menuDetails = p_Store.Details;
+            return MenuState::start_details_menu;
+          }
+          else if (rootMenuIndex == MENU_INDEX_WALKUP) {
+            menuWalkup = p_Store.walkUp;
+            return MenuState::start_walkup_menu;
+          }
+          else if (rootMenuIndex == MENU_INDEX_FINALS) {
+            menuFinals = p_Store.isFinals;
+            menuAlternating = p_Store.isAlternating;
+            return MenuState::start_finals_menu;
+          }
+          else if (rootMenuIndex == MENU_INDEX_INTERVAL) {
+            menuInterval = (p_Store.breakPeriod > 240 ? 10 : p_Store.breakPeriod);  // catch spurious numbers
+            return MenuState::start_INTERVALS_menu;
+          }
+          break;
+    
+      case BUTTON3: 
+          // state unchanged - menu_root 
+          rootMenuIndex = (rootMenuIndex + 1) % 7; // this will increment rootMenuIndex, but if it was 6 before - it would jump back to 0
+          return MenuState::menu_root;
+    
+      case BUTTON2: 
+        // state unchanged - menu_root 
+        rootMenuIndex = (rootMenuIndex -1 + 7) % 7; // same as above but for decrement, and if it was 0 - it would jump to 6
+        return MenuState::menu_root;
+    
+      case BUTTON4:
+        return MenuState::start;
+      }
+      
+      return MenuState::menu_root; // by default always return the current state 
+  }
+  
+  MenuState handle_start_INTERVALS_menu()
+  {
+      ////////////////////////////////////////////
+      ////////////// Intervals Menu //////////////
+      ////////////////////////////////////////////
+      wipeOLED();
+      disp.setCursor(0, 2);
+      disp.print("Timer Dur: ");
+      disp.print(menuInterval);
+      doButtonMenu();
+      
+      switch (waitButton())
+      {
+      case BUTTON1: 
+        p_Store.breakPeriod = menuInterval;                          // save the new val
+        return MenuState::menu_root;
+        
+      case BUTTON2: 
+        menuInterval > 231 ? menuInterval = 5 : menuInterval +=1;       // UP in 10s and not past 240
+        do { menuInterval ++; } while (menuInterval % 10);        
+        break;
+        
+      case BUTTON3: 
+        (menuInterval <= 2) ? menuInterval = 240 : menuInterval --;     // DOWN in single digits, not lower than 2
+        break;
+    
+      case BUTTON4:
+        menuInterval = p_Store.breakPeriod;                          // no change, exit
+        return MenuState::menu_root;
+      }
+      
+      return MenuState::start_INTERVALS_menu; // by default always return the current state 
+  }
+  
+  MenuState handle_start_duration_menu()
+  {
+      ///////////////////////////////////////////
+      ////////////// Duration Menu //////////////
+      ///////////////////////////////////////////
+      wipeOLED();
+      disp.setCursor(0, 2);
+      disp.print("Start Dur: "); 
+      disp.print(startCounts[menuStartCountsIndex]);
+      doButtonMenu();
+      switch (waitButton())
+      {
+      case BUTTON1: 
+        p_Store.startCountsIndex = menuStartCountsIndex;
+        p_Store.isFlint = false;
+        return MenuState::menu_root;
+    
+      case BUTTON2: 
+        menuStartCountsIndex = (menuStartCountsIndex -1 + 9) % 9;   // cycle through 8 options <<------------------------
+        break; // state unchanged 
+    
+      case BUTTON3: 
+        menuStartCountsIndex = (menuStartCountsIndex +1) % 9;       // ditto <<------------------------
+        break;
+    
+      case BUTTON4:
+        menuStartCountsIndex = p_Store.startCountsIndex; 
+        return MenuState::menu_root;
+      }
+  
+      return MenuState::start_duration_menu; // by default always return the current state 
+  }
+  
+  MenuState handle_start_ends_menu()
+  {
+      ///////////////////////////////////////////
+      ////////////// Ends Menu //////////////////
+      ///////////////////////////////////////////
+      wipeOLED();
+      disp.setCursor(0, 2);
+      disp.print("Ends: "); disp.print(menuMaxEnds);
+      doButtonMenu();
+    
+      switch (waitButton())
+      {
+      case BUTTON1: 
+        p_Store.maxEnds = menuMaxEnds;
+        p_Store.isFlint = false;
+        sEcount = 1;
+        return MenuState::menu_root;
+    
+      case BUTTON3: 
+        if (menuMaxEnds > 1)
+          -- menuMaxEnds;
+        break;
+    
+      case BUTTON2: 
+        if (menuMaxEnds < 100)
+          ++ menuMaxEnds;
+        break;
+    
+      case BUTTON4:
+        menuMaxEnds = p_Store.maxEnds;
+        return MenuState::menu_root;
+      }
+    
+      return MenuState::start_ends_menu; // by default always return the current state 
+  
+  }
+  
+  MenuState handle_start_practice_menu()
+  {
+      ///////////////////////////////////////////
+      ////////////// Practice Menu //////////////////
+      ///////////////////////////////////////////
+      wipeOLED();
+      disp.setCursor(0, 2);
+      disp.print("Practice: "); disp.print(menuPractice);
+      doButtonMenu();
+    
+      switch (waitButton())
+      {
+      case BUTTON1: 
+        p_Store.maxPrac = countPractice = menuPractice;
+        return MenuState::menu_root;
+    
+      case BUTTON3: 
+        if (menuPractice > 0)
+          -- menuPractice;
+        break;
+    
+      case BUTTON2: 
+        if (menuPractice < 4)
+          ++ menuPractice;
+        break;
+    
+      case BUTTON4:
+        menuPractice = countPractice = p_Store.maxPrac;
+        return MenuState::menu_root;
+      }
+    
+      return MenuState::start_practice_menu; // by default always return the current state 
+  }
+  
+  MenuState handle_start_details_menu()
+  {
+      ///////////////////////////////////////////
+      ////////////// Details Menu ///////////////
+      ///////////////////////////////////////////
+  
+      wipeOLED();
+      disp.setCursor(0, 2);
+      disp.print("Details: "); 
+      disp.print(menuDetails == 2 ? "Double " : "Single ");
+      doButtonMenu();
+    
+      switch (waitButton())
+      {
+      case BUTTON1: 
+        p_Store.Details = menuDetails;
+        p_Store.isFlint = false;
+        return MenuState::menu_root;
+    
+      case BUTTON2: 
+        menuDetails = menuDetails == 2 ? 1 : 2; 
+        break;
+    
+      case BUTTON3: 
+        menuDetails = menuDetails == 2 ? 1 : 2; 
+        break;
+    
+      case BUTTON4:
+        menuDetails = p_Store.Details;
+        return MenuState::menu_root;
+      }
+    
+      return MenuState::start_details_menu; // by default always return the current state     
+  }
+  
+  MenuState handle_start_walkup_menu()
+  {
+      ///////////////////////////////////////////
+      ////////////// Walkup Menu ///////////////
+      ///////////////////////////////////////////
+      wipeOLED();
+      disp.setCursor(0, 2);
+      disp.print("Walkup Dur: "); 
+      disp.print(menuWalkup == 10 ? 10 : 5);  
+      doButtonMenu();
+      
+      switch (waitButton())
+      {
+        case BUTTON1: 
+        p_Store.walkUp = menuWalkup;
+        return MenuState::menu_root;
+    
+      case BUTTON2: 
+        menuWalkup = menuWalkup == 10 ? 5 : 10;
+        break;
+    
+      case BUTTON3: 
+        menuWalkup = menuWalkup == 10 ? 5 : 10;
+        break;
+    
+      case BUTTON4:
+        menuWalkup = p_Store.walkUp;
+        return MenuState::menu_root;
+  
+      }
+    
+      return MenuState::start_walkup_menu; // by default always return the current state    
+  }
+  
+  MenuState handle_start_finals_menu()
+  {
+    ///////////////////////////////////////////
+      ////////////// Finals Menu ////////////////
+      ///////////////////////////////////////////
+  
+      wipeOLED();
+  
+      // loop on "Finals" selection 
+      for (bool selected = false; !selected; )
+      {
+        disp.setCursor(0, 2);
+        disp.print("Finals: "); 
+        disp.print(menuFinals == 0 ? "No " : "Yes");   
+      
+        switch (waitButton())
+        {
+        case BUTTON1: 
+          p_Store.isFinals = menuFinals;
+          p_Store.isFlint = false;
+          selected = true;
+          break;        
+        
+        case BUTTON2: 
+        case BUTTON3: 
+          menuFinals = menuFinals == 0 ? 1 : 0;
+          break;
+        
+        case BUTTON4:
+          menuFinals = p_Store.isFinals;
+          if (menuFinals == 0)
+          {         
+            return MenuState::menu_root;
+          }
+          selected = true;
+          break;
+        }
+      }
+      
+      disp.setCursor(0, 2);
+      disp.print("Finals: "); 
+      disp.print(menuFinals == 0 ? "No " : "Yes");
+      
+      if (menuFinals)
+      {
+        p_Store.isFlint = false;
+        p_Store.Details = 1;                                          //  Single detail by default
+        p_Store.startCountsIndex = p_Store.isAlternating ? 4 : 6;     //  set to 20 or 90 sec ##############################
+        p_Store.maxPrac = 0;                                          //  no practice
+        p_Store.maxEnds = 5;                                          //  5 ends
+        
+        for (;;)
+        {
+          disp.setCursor(0, 4);
+          disp.print("Alternating: ");
+          disp.print(menuAlternating == 0 ? "No " : "Yes" );
+          disp.setCursor(2, 5);
+          disp.print(menuAlternating == 0 ?  "          " : (menuAlternating == 1? "- Recurve" : "- Compound"));
+          doButtonMenu();
+          
+          switch (waitButton())
+          {
+          case BUTTON1: 
+            p_Store.isAlternating = menuAlternating;
+            return MenuState::start;
+          
+          case BUTTON2: 
+            //menuAlternating = menuAlternating == 0 ? 1 : 0;
+            menuAlternating < 2 ? menuAlternating ++ : menuAlternating = 0; 
+            break;
+          
+          case BUTTON3: 
+            //menuAlternating = menuAlternating == 0 ? 1 : 0;
+            menuAlternating == 0 ? menuAlternating = 2 : menuAlternating --; 
+            break;
+          
+          case BUTTON4:
+            menuAlternating = p_Store.isAlternating;
+            return MenuState::menu_root;     
+          }
+        }
+      } else {
+        p_Store.isAlternating = 0;
+        disp.setCursor(0, 4);
+        disp.print("Alternating: ");
+        disp.print("Off");
+      }
+      
+      doButtonMenu();
+      
+      switch (waitButton())
+      {
+      case BUTTON1: 
+        p_Store.isFinals = menuFinals;
+        p_Store.isFlint = false;
+        return MenuState::start;
+  
+      case BUTTON2: 
+      case BUTTON3: 
+        menuFinals = menuFinals == 0 ? 1 : 0;
+        break;
+  
+      case BUTTON4:
+        menuFinals = p_Store.isFinals;
+        return MenuState::menu_root;
+      }
+      
+      return MenuState::start_finals_menu; // by default always return the current state    
+  }
+  
+  int go(bool displayParamsArg)
+  {
+    // handler functions will only have the context, so copy the argument value into it
+    displayParams = displayParamsArg; 
+    
+    for (
+      MenuState state = MenuState::start;  // Creates a particular instance of the state, default state is "started"
+      state != MenuState::confirmed;  // keep looping until state reaches "confirmed" 
+    )
+    {
+      switch (state)
+      {
+      case MenuState::start:                    state = handle_start(); break;
+      case MenuState::awaiting_confirmation_1:  state = handle_awaiting_confirmation_1(); break;
+      case MenuState::awaiting_confirmation_2:  state = handle_awaiting_confirmation_2(); break;
+      case MenuState::menu_root:                state = handle_menu_root(); break;
+      case MenuState::start_INTERVALS_menu:     state = handle_start_INTERVALS_menu(); break;
+      case MenuState::start_duration_menu:      state = handle_start_duration_menu(); break;
+      case MenuState::start_ends_menu:          state = handle_start_ends_menu(); break;
+      case MenuState::start_practice_menu:      state = handle_start_practice_menu(); break;
+      case MenuState::start_details_menu:       state = handle_start_details_menu(); break;
+      case MenuState::start_walkup_menu:        state = handle_start_walkup_menu(); break;
+      case MenuState::start_finals_menu:        state = handle_start_finals_menu(); break;
+      
+      case MenuState::confirmed:          break; // only handling to avoid the compiler warning (that one of the enum values is not handled)
+      }
+    }
+    
+    
+    // we are out of the loop as we've reached 'confirmed' state 
+    clearFromLine(5); 
+    disp.draw2x2String(0, 6, "..WAIT..");
+    intervalOn = false;
+    started = false;
+    pauseMe(250);
+    
+    return 1;
+  }
+};
+
+int goMenu(bool displayParams)
+{
+  MenuContext menu;
+  return menu.go(displayParams);
+}
