@@ -72,10 +72,10 @@ void writeRFID(void){
                         0x00, 0x00, 0x00, 0x00,             //  
                         0x00, 0x00, 0x00, 0x00,             //  
                         0x00, 0x00, 0x00, 0x00,             //  
-                        mfrc522.uid.uidByte[0] ^ Key12,      //|   0x7f, 0xd4, 0x2a, 0xc6 :  KEY in HEX12-15
-                        mfrc522.uid.uidByte[1] ^ Key13,      //|_  positions 12-15
-                        mfrc522.uid.uidByte[2] ^ Key14,      //|   XOR  card UID with this KEY to generate GUARD bytes
-                        mfrc522.uid.uidByte[3] ^ Key15       //| 
+                        mfrc522.uid.uidByte[0] ^ customerName[customerCode].values[0],      //|   0x7f, 0xd4, 0x2a, 0xc6 :  KEY in HEX12-15
+                        mfrc522.uid.uidByte[1] ^ customerName[customerCode].values[1],      //|_  positions 12-15
+                        mfrc522.uid.uidByte[2] ^ customerName[customerCode].values[2],      //|   XOR  card UID with this KEY to generate GUARD bytes
+                        mfrc522.uid.uidByte[3] ^ customerName[customerCode].values[3]       //| 
   };
   
   byte trailerBlock   = 7;

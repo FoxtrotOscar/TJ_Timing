@@ -46,6 +46,8 @@ void displayParamsOnOLED() {
   disp.print(flintRunning ? 0 : (p_Store.maxPrac !=0 && p_Store.isFlint) ? 1 : p_Store.maxPrac);   // if flint is already Running, then no practice, else only one.
   disp.setCursor(6, 4);
   if (p_Store.isFlint) disp.print("Flint"); else  disp.print(p_Store.Details);
+  disp.setCursor(6, 4);
+  if (p_Store.ifaaIndoor) disp.print("IFAA"); else  disp.print(p_Store.Details);
   disp.setCursor(12, 4); 
   if (p_Store.isFlint) disp.print(flintRunning ? " #2" : " #1");
 
@@ -113,8 +115,11 @@ void writeOLED_Data(uint8_t archerIndex, byte nID){
           break;
       }
     } if (p_Store.ifaaIndoor){
+      disp.setCursor(8,4);
+      disp.print("IFAA");
+      disp.setCursor(13,4);
       disp.print(sEcount <= 6 ?   (sE_iter%2 == 1 ? "AB" : "CD"):     // if 1st first half of IFAA round
-                                  (sE_iter%2 == 0 ? "AB" : "CD"));    // 2nd half of IFAA round
+                                  (sE_iter%2 == 0 ? "BA" : "DC"));    // 2nd half of IFAA round, reverses
     }
   }
 }

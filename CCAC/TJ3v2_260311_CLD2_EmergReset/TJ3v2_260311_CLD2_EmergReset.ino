@@ -381,6 +381,7 @@ void setup() {
   if (p_Store.teamPlay)                           // as multi-screen is via card ONLY these vars are reset on startup  
   p_Store.teamPlay = 0;
   p_Store.isFlint  = 0;
+  p_Store.ifaaIndoor = 0;
   //pauseMe(2 * tick);
   writeInfoBigscreen();                           // Now info regarding setup on bigscreen
   clearFromLine(0);

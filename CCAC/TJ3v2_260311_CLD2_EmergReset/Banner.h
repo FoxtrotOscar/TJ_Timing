@@ -48,6 +48,11 @@ static const int      EE_BNR_PAYLOAD =  38;   // payload bytes start here
 
 static const uint16_t BNR_MAX_PAYLOAD = 500;  // 38+500 = 538, well within 2048
 
+static inline void bnr_clear() {
+    EEPROM.update(EE_BNR_FLAG, 0);
+    EEPROM.update(EE_BNR_RUN,  0);
+}
+
 // ---------- CRC16-CCITT ----------
 static inline uint16_t bnr_crc16(const uint8_t* data, uint16_t len, uint16_t crc = 0xFFFF) {
   while (len--) {

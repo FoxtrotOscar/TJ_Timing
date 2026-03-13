@@ -11,10 +11,15 @@ void introScreen(void){
     //firstTime = false;
     wipeOLED(firstTime);
     pauseMe(100);
+    customerCode = setCustomer();
+    u8x8.setFont(u8x8_font_chroma48medium8_r);
+    wipeOLED(firstTime);
     u8x8.draw2x2String(0, 2, "  READ ");
     u8x8.draw2x2String(0, 5, "SETTINGS");
     pauseMe(tick);
     wipeOLED(firstTime);
+    //if (firstTime) customerCode = setCustomer();
+    //u8x8.setFont(u8x8_font_chroma48medium8_r);
   
     u8x8.draw2x2String(0, 2, "DATA TO");
     u8x8.draw2x2String(0, 6, " WRITE:");
@@ -73,4 +78,44 @@ void printDebugLine(uint16_t lineNo, const char* FileName ){
       Serial.print(F(" in TAB: "));
       Serial.println(FileName);
   #endif      
+}
+
+uint8_t setCustomer(void){
+  
+  byte customerCode = 1;
+  uint8_t tempVal = 1;
+  showCustVal(tempVal);
+  for (bool valid = false; !valid; ) {
+    switch (waitButton()) {
+      case BUTTON1:
+        customerCode = tempVal-1;
+        valid = true;
+        break;  
+  
+      case BUTTON2: 
+        tempVal == 10 ? tempVal = 1 : tempVal ++ ;
+        showCustVal(tempVal); //, customerName[tempVal-1].name);
+        break;
+  
+      case BUTTON3: 
+        tempVal == 1 ? tempVal = 10 : tempVal -- ;
+        showCustVal(tempVal); //, customerName[tempVal-1].name);
+        break;
+  
+      case BUTTON4:
+        valid = true;
+        break;
+      }
+    }
+    return customerCode;
+}
+
+void showCustVal (byte ct){  //, char Customer) {
+  u8x8.setFont (u8x8_font_profont29_2x3_r);
+    u8x8.setCursor(2, 4);
+    u8x8.print("       ");
+    u8x8.setCursor(2, 4);
+    u8x8.print(ct);
+    u8x8.print(":");
+    u8x8.print(customerName[ct-1].name);
 }

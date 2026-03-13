@@ -1214,11 +1214,13 @@ void bannerPrompt() {
   bool defaultRun = (EEPROM.read(EE_BNR_RUN) == 1);  // only 1 means play
 
   wipeOLED();
-  disp.draw2x2String(2, 2, "BANNER");
+  disp.draw2x2String(2, 1, "BANNER");
+  disp.setCursor(0, 3);
+  disp.print("Play:    BTN[1] ");
   disp.setCursor(0, 4);
-  disp.print("Play:     BTN[1]");
+  disp.print("WIPE:    BTN[3L]");
   disp.setCursor(0, 5);
-  disp.print("Skip:     BTN[4]");
+  disp.print("Skip:    BTN[4] ");
   disp.setCursor(0, 6);
   disp.inverse();
   disp.print(defaultRun ? "Auto:      PLAY " : "Auto:      SKIP ");
@@ -1239,6 +1241,28 @@ void bannerPrompt() {
 
       return;
     }
+    if (btn & BUTTON3) {  // Must hold BTN3 for 2 seconds to confirm clear      
+      disp.setCursor(0, 7);
+      disp.print("Hold to clear...");
+      uint32_t holdStart = millis();
+      bool cancelled = false;
+      while ((uint32_t)(millis() - holdStart) < 2000) {
+          if (!(digitalRead(button3Pin) == LOW)) {
+              cancelled = true;
+              break;
+          }
+      }
+      if (!cancelled) {
+          bnr_clear();
+          disp.setCursor(0, 7);
+          disp.print("CLEARED         ");
+          delay(1000);
+          return;
+      } else {
+          disp.setCursor(0, 7);   // clean up if they let go early
+          disp.print("                ");
+      }
+    }
     if (btn & BUTTON4) {
       bnr_setRun(false);
       disp.setCursor(0, 7);
@@ -1256,35 +1280,3 @@ void bannerPrompt() {
   // else do nothing — skip
 }
 
-
-// // Returns the correct sE_iter value to place us at the START of a given end's first sub-phase
-// int8_t deriveIterForEnd(int8_t endNum) {
-//   if (p_Store.ifaaIndoor) {
-//     // IFAA: sE_iter%2 must be 1 for first sub-phase of any end
-//     // We want the smallest value >= current sE_iter base that gives %2 == 1
-//     // Simplest: derive a clean value that gives correct parity
-//     // For ends 1-6:  first sub-phase needs sE_iter%2 == 1  → writeA_B
-//     // For ends 7-12: first sub-phase needs sE_iter%2 == 1  → writeC_D (mirror handled in sendDetail)
-//     // So in both halves, first sub-phase is always sE_iter%2 == 1
-//     // Make sE_iter = (endNum * 2) - 1  → always odd, always correct for this end
-//     return (int8_t)((endNum * 2) - 1);
-//   }
-//   // WA: sE_iter%4 drives the sub-phase
-//   // End 1 first sub-phase: sE_iter%4 == 1
-//   // Each end consumes 2 iterations, so end N starts at sE_iter = (endNum*2) - 1
-//   return (int8_t)((endNum * 2) - 1);
-// }
-
-// // ----------------------------------------------------------------
-// //  deriveIterForEnd()
-// //  Returns the correct sE_iter value for the FIRST sub-phase of
-// //  a given end, for use on emergency end-restart.
-// //  goNormal_Op does sE_iter += 1 at the top of its loop, so we
-// //  subtract 1 here — it will be corrected on re-entry.
-// // ----------------------------------------------------------------
-// int8_t deriveIterForEnd(int8_t endNum) {
-//   // Both WA and IFAA: each end consumes 2 iterations,
-//   // first sub-phase of end N is always at sE_iter = (endNum * 2) - 1
-//   // We return one less, as goNormal_Op increments before use.
-//   return (int8_t)((endNum * 2) - 2);
-// }
