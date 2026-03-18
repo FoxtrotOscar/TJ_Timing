@@ -348,26 +348,7 @@ void goGreenZero(void){
    Detail identifier during the count process
 */
 
-// void sendDetail(bool pos_High) {
-//   clearMatrix(false);
-  
-//   if (p_Store.Details == 2) {                                       // |Double detail, alternating?
-//     if (!shootDetail && (sE_iter % 4 == 1)) {                       // |shootDetail 0 == AB, 1 == CD
-//       writeA_B(false);                                              // |
-//     } else {                                                        // |
-//       if (shootDetail  && (sE_iter % 4 == 2) 
-//           && !p_Store.ifaaIndoor) {                                 // |If not IFAA round and double detail
-//         writeC_D(false);                                            // |
-//       } else {                                                      // |if so, set the correct
-//         if (!shootDetail && (sE_iter % 4 == 3)) {                   // |detail identifier on the screen
-//           /*countPractice ? writeA_B(false) :*/ writeC_D(pos_High);       // |
-//         } else {                                                    // |
-//           /*countPractice ? writeC_D(false) :*/ writeA_B(false);        // |
-//         }
-//       }
-//     }
-//   } HC12.flush();
-// }
+
 void sendDetail(bool pos_High) {
   clearMatrix(false);
   
