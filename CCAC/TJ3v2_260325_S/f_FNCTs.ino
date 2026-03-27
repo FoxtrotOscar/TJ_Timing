@@ -435,6 +435,8 @@ uint8_t waitButton() {
     if (!intervalOn && !flag && (millis() - timeOut > (tick*60*15))) {
       clearMatrix(false);
       HC12.print(F("^8L"));                                 // dim the logo after the period above
+      Serial.println("SPLASH");
+      printDebugLine(false, __LINE__, __NAME__);
       writeSplash(true); 
       flag = true;
     }
@@ -471,12 +473,14 @@ uint8_t waitButton() {
 
 // ── helper — print label + number, pad remainder to exactly 16 ──
 void printPadded16(const char* label, int value) {
-  char buf[17];                          // 16 chars + null terminator
-  snprintf(buf, sizeof(buf), "%s%d", label, value);  // e.g. "End 3" or "Flint end 10"
+  const char* det = currentDetail();         // now derives fresh from sE_iter
+  char left[17];
+  snprintf(left, sizeof(left), "%s%d", label, value);  // e.g. "Prac 1" or "End 3"
+
+  char buf[17];
+  int detLen = strlen(det);                  // 0 or 2
+  snprintf(buf, sizeof(buf), "%-*s%s", 16 - detLen, left, det);
   disp.print(buf);
-  // pad remaining chars to 16
-  int len = strlen(buf);
-  for (int i = len; i < 16; i++) disp.print(" ");
 }
 
 // ================================================================
@@ -513,6 +517,17 @@ uint8_t currentEndMax(void) {
     return startCounts[p_Store.startCountsIndex + 1]; // walkup duration (30s)
   }
   return startCounts[p_Store.startCountsIndex];       // standard end duration
+}
+
+const char* currentDetail(void) {
+  if (p_Store.isFlint)      return "";
+  if (p_Store.Details == 1) return "";
+  if (p_Store.ifaaIndoor) {
+    return (sEcount <= 6)
+      ? (sE_iter % 2 == 1 ? "AB" : "CD")
+      : (sE_iter % 2 == 1 ? "DC" : "BA");
+  }
+  return (sE_iter % 2 == 1 ? "AB" : "CD");  // WA: derive fresh, don't trust shootDetail
 }
 
 // ----------------------------------------------------------------
@@ -558,29 +573,19 @@ void activeSubPhaseLabel(void) {
 
 
 
-// ----------------------------------------------------------------
+// ================================================================
+//  EMERGENCY RESTART SCREENS
+//  - All commented-out dead code removed
+//  - printPadded16() / currentDetail() applied throughout
+//  - All bespoke padding replaced — no hardcoded space strings
+//  - Flint walkup context uses printPadded16 with flintWalk string
+//  - Screen 2 row 1 context consistent with Screen 1
+//  - 16 char hard limit enforced on every row
+// ================================================================
+
+
+// ================================================================
 //  handleEmergencyRestart_Screen2()
-//  Called from handleEmergencyRestart() when BTN2 is pressed.
-//  Offers full-end restart vs resume from active sub-phase.
-//
-//  Returns:
-//    >= 0  valid count — decision made, proceed
-//    -1    BTN3 pressed — go back to screen 1
-//    -2    BTN4 pressed — reconsider, restore snapshot
-//  CHANGES:
-//    - Uses currentEndMax() instead of raw startCounts[] lookup
-//    - Flint: suppresses sub-phase label row, shows "Single detail"
-//    - BTN1/BTN2 text adjusted for Flint (no group language)
-//    - BTN1 = Resume (least disruptive) — was BTN2
-//    - BTN2 = Restart (more disruptive) — was BTN1
-//    - BTN3 = silent back to Screen 1 (unlabelled)
-//    - BTN4 = reconsider / oops
-//    - Flint ends 1-6: no distance language, no 30m option
-//    - Flint end 7: restart = restart this end (already at 30m)
-//    - Flint ends 8-10: BTN2 restart offers two sub-options:
-//     restart current distance OR restart from 30m (sEcount=7)
-//    - All count resets use currentEndMax()
-//    - Includes 10s walkup bar on all Flint walkup restarts
 // ================================================================
 int16_t handleEmergencyRestart_Screen2(byte nID) {
   int8_t  savedIter = sE_iter;           // snapshot sub-phase for resume
@@ -594,30 +599,34 @@ int16_t handleEmergencyRestart_Screen2(byte nID) {
     disp.setFont(u8x8_font_5x7_f);
 
     if (p_Store.isFlint && sEcount > 6) {
-      // Walkup end — show distance
-      disp.print("End ");
-      disp.print(sEcount);
-      disp.print(" ");
-      disp.print(flintWalk[sEcount - 7]);  // e.g. "30 YD"
+      // Flint walkup end — label + distance, padded to 16
+      char buf[17];
+      snprintf(buf, sizeof(buf), "Flint %s", flintWalk[sEcount - 7]);
+      disp.print(buf);
+      for (int i = strlen(buf); i < 16; i++) disp.print(" ");
+
     } else if (p_Store.isFlint) {
       // Standard Flint end
-      disp.print("Flint end ");
-      disp.print(sEcount);
-      disp.print("      ");
-    // } else {
-    //   // WA / IFAA
-    //   disp.setCursor(0, 2);
-    //   activeSubPhaseLabel();             // sub-phase indicator (IFAA/WA only)
-    // }
+      printPadded16("Flint end ", sEcount);
+
+    } else if (p_Store.ifaaIndoor) {
+      // IFAA — hardcoded, exactly 16 chars
+      disp.print(sEcount <= 6 ? "IFAA E1-6  AB>CD"
+                              : "IFAA E7-12 DC>BA");
+
     } else {
-      // WA / IFAA — show end number on row 1, sub-phase on row 2
-      disp.print("End ");
-      disp.print(sEcount);
-      disp.print("            ");        // pad to 16, stays on row 1
-      disp.setFont(u8x8_font_chroma48medium8_r); // restore standard font
+      // WA — practice or competition end, detail right-justified
+      if (countPractice) {
+        printPadded16("Prac #", (p_Store.maxPrac - countPractice + 1));
+      } else {
+        printPadded16("End #", sEcount);
+      }
+      // Sub-phase on row 2 for WA
+      disp.setFont(u8x8_font_chroma48medium8_r);
       disp.setCursor(0, 2);
-      activeSubPhaseLabel();             // sub-phase indicator
+      activeSubPhaseLabel();
     }
+
     disp.setFont(u8x8_font_chroma48medium8_r);
 
     // ── BTN1: Resume — least disruptive ─────────────────────────
@@ -628,12 +637,14 @@ int16_t handleEmergencyRestart_Screen2(byte nID) {
     disp.setFont(u8x8_font_5x7_f);
     disp.noInverse();
     if (p_Store.isFlint && sEcount > 6) {
-      disp.print("(resume @");
-      disp.print(flintWalk[sEcount - 7]);  // current distance
-      disp.print(")  ");
+      // Walkup — show current distance in resume label
+      char buf[17];
+      snprintf(buf, sizeof(buf), "(resume@%s)", flintWalk[sEcount - 7]);
+      disp.print(buf);
+      for (int i = strlen(buf); i < 16; i++) disp.print(" ");
     } else {
-      disp.print(p_Store.isFlint ? "(resume this end)" :
-                                   "(from active grp)");
+      disp.print(p_Store.isFlint ? "(resume end)    "
+                                : "(from activegrp)");
     }
 
     // ── BTN2: Restart — more disruptive ─────────────────────────
@@ -645,82 +656,66 @@ int16_t handleEmergencyRestart_Screen2(byte nID) {
     disp.setFont(u8x8_font_5x7_f);
     disp.noInverse();
     if (p_Store.isFlint && sEcount >= 8) {
-      // Ends 8-10: offer restart from 30m
-      disp.print("(restart @30 YD)");
+      disp.print("(restart@30 YD) ");  // offer rewind to 30m
     } else if (p_Store.isFlint) {
-      // End 7 or standard Flint ends
-      disp.print("(restart end)   ");
+      disp.print("(restart end)   ");  // end 7 or standard Flint
     } else {
-      disp.print(p_Store.ifaaIndoor ?
-                (sEcount <= 6 ? "(restart AB>CD )" :
-                                "(restart DC>BA )") :
-                                "(from first grp)");
+      disp.print(p_Store.ifaaIndoor
+                ? (sEcount <= 6 ? "(restart AB>CD) "
+                                : "(restart DC>BA) ")
+                :                  "(from firstgrp) ");
     }
 
-    // BTN4 hint
+    // ── BTN4 hint (row 7) ────────────────────────────────────────
+    disp.setFont(u8x8_font_chroma48medium8_r);
     disp.setCursor(0, 7);
-    disp.setFont(u8x8_font_5x7_f);
+    disp.inverse();
+    disp.print("Reconsider:  [4]");  
     disp.noInverse();
-    disp.print("Reconsider:BTN[4]");
     disp.setFont(u8x8_font_chroma48medium8_r);
 
     switch (waitButton()) {
 
       case BUTTON1: {
         // ── Resume from active position ────────────────────────
-        reStartEnd = true;
+        reStartEnd  = true;
         for (byte r = 0; r <= 2; r++) n_Count_[r] = maxSecs;
-        sE_iter     = savedIter;           // restore sub-phase snapshot
+        sE_iter     = savedIter;
         shootDetail = p_Store.ifaaIndoor
                       ? (sEcount > 6 ? true : false)
-                      : ((sEcount % 2) == 1 ? false : true);
+                      : (savedIter % 2 == 0 ? true : false);
         clearMatrix(false);
-        return n_Count_[nID];              // >= 0, proceed
+        return n_Count_[nID];
       }
 
       case BUTTON2: {
         // ── Restart ───────────────────────────────────────────
         if (p_Store.isFlint && sEcount >= 8) {
-          // Flint ends 8-10: restart from 30m — rewind to end 7
-          sEcount = 7;                     // rewind to first walkup end
-          maxSecs = currentEndMax();       // recalculate for new sEcount
+          sEcount = 7;                   // rewind to first walkup end
+          maxSecs = currentEndMax();     // recalculate for new sEcount
         }
-        reStartEnd = true;
+        reStartEnd  = true;
         for (byte r = 0; r <= 2; r++) n_Count_[r] = maxSecs;
-        sE_iter     = deriveIterForEnd(sEcount); // first sub-phase of this end
+        sE_iter     = deriveIterForEnd(sEcount);
         shootDetail = p_Store.ifaaIndoor
                       ? (sEcount > 6 ? true : false)
                       : ((sEcount % 2) == 1 ? false : true);
         clearMatrix(false);
-        return n_Count_[nID];              // >= 0, proceed
+        return n_Count_[nID];
       }
 
       case BUTTON3:
-        return -1;                         // silent back to Screen 1
+        return -1;                       // silent back to Screen 1
 
       case BUTTON4:
-        return -2;                         // reconsider — propagates up
+        return -2;                       // reconsider — propagates up
     }
   }
 }
 
 
-
-// ----------------------------------------------------------------
-//  handleEmergencyRestart() Screen 1
-//  Screen 1 — called from goEmergencyButton().
-//
-//  Returns:
-//    >= 0  valid count — decision made, proceed
-//    -2    BTN4 pressed — reconsider, restore snapshot
-//  CHANGES:
-//    - BTN1 back-10 uses currentEndMax() ceiling — walkup-aware
-//    - BTN3 full reset: guards flintRunning against mid-round flip
-//    - OLED context line anti-wrap — 16 char hard limit, no spaces
-//      in labels, right-justified detail group
-//    - BTN1 ceiling uses currentEndMax()
-//    - BTN3 explicitly sets flintRunning=false before startOver
-//    - IFAA rows hardcoded E1-6 / E7-12 (safe — always 12 ends)
+// ================================================================
+//  handleEmergencyRestart()  — Screen 1
 // ================================================================
 int16_t handleEmergencyRestart(byte nID) {
 
@@ -728,41 +723,31 @@ int16_t handleEmergencyRestart(byte nID) {
     clearFromLine(1);
 
     // ── Row 1: context — 16 char hard limit ─────────────────────
-    // Format: left-justified context, right-justified detail group
-    // No spaces inside labels, no wrapping
     disp.setCursor(0, 1);
     disp.setFont(u8x8_font_5x7_f);
 
     if (p_Store.ifaaIndoor) {
-      // "IFAA E1-6  AB>CD" = 16 chars exactly
-      // "IFAA E7-12 DC>BA" = 16 chars exactly
-      if (sEcount <= 6) {
-        disp.print("IFAA E1-6  AB>CD");
-      } else {
-        disp.print("IFAA E7-12 DC>BA");
-      }
+      // Hardcoded — always exactly 16 chars, safe for E1-6 and E7-12
+      disp.print(sEcount <= 6 ? "IFAA E1-6  AB>CD"
+                              : "IFAA E7-12 DC>BA");
+
     } else if (p_Store.isFlint && sEcount > 6) {
+      // Flint walkup — label + distance padded to 16
       char buf[17];
       snprintf(buf, sizeof(buf), "Flint %s", flintWalk[sEcount - 7]);
       disp.print(buf);
-      int len = strlen(buf);
-      for (int i = len; i < 16; i++) disp.print(" ");
-        // } else if (p_Store.isFlint && sEcount > 6) {
-        //   // "Flint -->30 YD  " walkup with distance
-        //   disp.print("Flint ");
-        //   disp.print(flintWalk[sEcount - 7]); // e.g. "30 YD"
-        //   disp.print("       ");              // pad to 16
-      } else if (p_Store.isFlint) {
-      // "Flint end 3     " = standard Flint end
-      disp.print("Flint end ");
-      disp.print(sEcount);
-      disp.print("      ");              // pad to 16
+      for (int i = strlen(buf); i < 16; i++) disp.print(" ");
+
+    } else if (p_Store.isFlint) {
+      // Standard Flint end
+      printPadded16("Flint end ", sEcount);
+
     } else {
+      // WA — practice or competition, detail right-justified
       if (countPractice) {
-        printPadded16("Prac ", (p_Store.maxPrac - countPractice + 1));
-        // renders "Prac 1         AB" or "Prac 2         CD"
-        } else {
-            printPadded16("End ", sEcount);  // renders "End 3          AB"
+        printPadded16("Prac #", (p_Store.maxPrac - countPractice + 1));
+      } else {
+        printPadded16("End #", sEcount);
       }
     }
 
@@ -777,7 +762,7 @@ int16_t handleEmergencyRestart(byte nID) {
     disp.noInverse();
     disp.print("(steps back 10s)");
 
-    // ── BTN2: Restart options (Screen 2) ────────────────────────
+    // ── BTN2: Go to Screen 2 ─────────────────────────────────────
     disp.setCursor(0, 4);
     disp.setFont(u8x8_font_chroma48medium8_r);
     disp.inverse();
@@ -785,7 +770,7 @@ int16_t handleEmergencyRestart(byte nID) {
     disp.setCursor(0, 5);
     disp.setFont(u8x8_font_5x7_f);
     disp.noInverse();
-    disp.print("(restart options)");
+    disp.print("(-->options)    ");
 
     // ── BTN3: Full competition restart ───────────────────────────
     disp.setCursor(0, 6);
@@ -798,13 +783,12 @@ int16_t handleEmergencyRestart(byte nID) {
     disp.print("(full restart)  ");
     disp.setFont(u8x8_font_chroma48medium8_r);
 
-    uint8_t maxSecs = currentEndMax();   // walkup-aware ceiling
+    uint8_t maxSecs = currentEndMax();
 
     switch (waitButton()) {
 
       case BUTTON1:
-        // Back 10s — ceiling is currentEndMax(), not raw startCounts
-        // +11 because count already decremented once this second
+        // Back 10s — walkup-aware ceiling
         n_Count_[nID] = ((int)n_Count_[nID] + 11 > (int)maxSecs)
                         ? maxSecs
                         : n_Count_[nID] + 11;
@@ -813,24 +797,24 @@ int16_t handleEmergencyRestart(byte nID) {
 
       case BUTTON2: {
         int16_t result = handleEmergencyRestart_Screen2(nID);
-        if (result == -1) continue;      // BTN3 on Screen 2 — back here
-        if (result == -2) return -2;     // BTN4 on Screen 2 — propagate
+        if (result == -1) continue;      // BTN3 on Screen 2 — loop back
+        if (result == -2) return -2;     // BTN4 — propagate reconsider
         return result;
       }
 
       case BUTTON3:
-        // Full competition restart — wipe everything
         clearMatrix(false);
         flintRunning = false;            // always reset to Flint #1
         startOver    = true;
         memset(n_Count_, 0, sizeof(n_Count_));
-        return n_Count_[nID];            // 0 — triggers done/reset in loop()
+        return n_Count_[nID];            // 0 — triggers reset in loop()
 
       case BUTTON4:
         return -2;                       // reconsider — propagates up
     }
   }
 }
+
 
 
 //  CHANGES:
@@ -852,6 +836,7 @@ bool goEmergencyButton(uint8_t AIndex, byte nID) {
     emergencyReconsider = false;         // clear flag at entry
 
     goWhistle(5);
+    HC12.flush();
     stopSign();
     clearFromLine(1);
     disp.setCursor(4, 3);
@@ -863,7 +848,9 @@ bool goEmergencyButton(uint8_t AIndex, byte nID) {
     // ── Snapshot globals at moment of emergency ──────────────────
     int8_t snapIter   = sE_iter;
     int8_t snapEcount = sEcount;
-    bool   snapDetail = shootDetail;
+    bool snapDetail = p_Store.ifaaIndoor
+                  ? (sEcount > 6 ? true : false)
+                  : (sE_iter % 2 == 0 ? false : true);
     // p_Store.isFlint / p_Store.ifaaIndoor untouched by all
     // emergency paths — they live in p_Store (EEPROM-backed)
 
@@ -1145,9 +1132,9 @@ void debugEEPROM(byte lowAddress, byte eeAddress){
  * Handle printing line numbers for debugging 
  */
 void printDebugLine(bool dets, uint16_t lineNo, const char* FileName){
-  #ifndef DEBUG
-  return;
-  #endif  
+  // #ifndef DEBUG  
+  // return;
+  // #endif  
     Serial.print(F("We are at LINE:\t"));
     Serial.print(lineNo);
     Serial.print(F(" in TAB: "));

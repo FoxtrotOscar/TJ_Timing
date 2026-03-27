@@ -47,15 +47,26 @@ void goNormal_Op(void){
         (n_Count_[nID] == startCounts[p_Store.startCountsIndex+1] && sEcount > 6)) { // Flint walkup start    
       writeOLED_Data(1, nID);
       if (!next) {
-        // shootDetail = p_Store.ifaaIndoor 
-        //       ? (sEcount > 6 ? true : false) 
-        //       : (sE_iter % 2 == 0 ? false : true);                  // AB on odd, CD on even
+        sendDetail(true);                                    // detail display before barcount
+        doBarCount(archerIndex, nID);                        // walkup bargraph countdown
 
-        sendDetail(true);                                           // true/false = CD in upper/lower position
-        //printDebugLine(false, __LINE__, __NAME__); 
-        doBarCount(archerIndex, nID);                               // Countdown
+        if (reStartEnd && !startOver) {
+          // ── False start — operator pressed BTN4 during barcount
+          // reStartEnd set inside doCountdownBar() via BTN1 choice.
+          // Go back to READY screen, wait for green, re-run barcount.
+          reStartEnd = false;                                // clear flag
+          sE_iter--;                                        // undo the increment at top
+                                                            // of this loop iteration so
+                                                            // re-entry lands on same detail
+          //writeReady();                                   // show READY, wait for green BTN1
+          continue;                                         // back to top of while(continueOn)
+                                                            // re-runs n_Count_, sE_iter++,
+                                                            // sendDetail, doBarCount cleanly
+        }
+        if (!startOver) sendDetail(false);  // ← guard added
       }
-      sendDetail(false);                                            // true/false = CD in upper/lower position
+      sendDetail(false);                                     // detail display at start of shooting
+                                          // true/false = CD in upper/lower position
     } 
     unsigned long secCount = millis(); 
     do {} while ((millis() - secCount) % tick > 0);                 // initialise timer to a 000 start-point (slightly offset?)

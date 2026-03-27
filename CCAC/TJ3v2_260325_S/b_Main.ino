@@ -19,7 +19,8 @@ bool    emergencyReconsider = false;  // set true if operator chooses to reconsi
 
 void loop() {
   if ((sEcount > p_Store.maxEnds) || startOver) {               // test here for DONE or reset
-    if (p_Store.maxEnds != 1) {                       // skip for single-end rounds
+    //if (p_Store.maxEnds != 1) {                       // skip for single-end rounds
+    if (p_Store.maxEnds != 1 && !startOver) { 
 
       if (startOver) {
         // ── RESET path — emergency BTN3 full restart ─────────────
@@ -41,6 +42,8 @@ void loop() {
         disp.print("Proceed: BTN[1]");
 
         // Devolve to splash — operator taps card or BTN1 to restart
+        Serial.println("SPLASH");
+        printDebugLine(false, __LINE__, __NAME__);
         writeSplash(true);
 
       } else if (flintRunning) {
@@ -128,6 +131,8 @@ void loop() {
                     p_Store.maxPrac !=0 && p_Store.isFlint ? 1 : p_Store.maxPrac;     //and 1 prac only
     displayParamsOnOLED();
     disp.draw2x2String(0, 6, "..WAIT..");
+    Serial.println("SPLASH");
+    printDebugLine(false, __LINE__, __NAME__);
     writeSplash(true);                                          // Show Logo
     writeMenuCommands(); 
     continueOn = false;
