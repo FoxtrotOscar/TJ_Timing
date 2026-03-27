@@ -70,7 +70,7 @@ MFRC522::MIFARE_Key key;
 
 const uint16_t  tick          = 1000;
 
-const byte      startCounts[9] = {240, 120, 80, 40, 20, 180, 90, 180, 30};
+const byte      startCounts[9] = {240, 120, 80, 40, 20, 180, 90, 180, 45};
 const char*     flintWalk[5]  = {"30 YD", "25 YD", "20 YD", "15 YD", ""};
 const char*     flint[6]      = {"25 YD", "20 FT", "30 YD", "15 YD", "20 YD", "10 YD"};
 
@@ -85,24 +85,44 @@ uint8_t         dataStore[16]   = { 1, 10, 10, 2,         // |
                                     0, 0, 0, 0,           // |
                                     0, 0, 0, 0  };        // spares
 
+// const byte customerName[10] [4] = {
+//   {"DEMO",  [127, 212, 042, 198]},
+//   {"IFAA",  [127, 212, 042, 198]},
+//   {"CCAC",  [155, 136, 220, 028]},
+//   {"-",     [255, 255, 255, 255]},
+//   {"-",     [255, 255, 255, 255]},
+//   {"-",     [255, 255, 255, 255]},
+//   {"-",     [255, 255, 255, 255]},
+//   {"-",     [255, 255, 255, 255]},
+//   {"-",     [255, 255, 255, 255]},
+//   {"-",     [255, 255, 255, 255]}  
+// } ;                                 
+// const char customer[10] = {
+//   "DEMO", "IFAA", "CCAC", "TBAA", "-", "-", "-", "-", "-", "-"
+// };
+
+const struct {
+    char name[5]; // 4 characters + null terminator
+    byte values[4];
+} customerName[10] = {
+    {"DEMO", {127, 212, 42, 198}},
+    {"IFAA", {127, 212, 42, 198}},
+    {"CCAC", {155, 136, 220, 28}},
+    {"-",    {255, 255, 255, 255}},
+    {"-",    {255, 255, 255, 255}},
+    {"-",    {255, 255, 255, 255}},
+    {"-",    {255, 255, 255, 255}},
+    {"-",    {255, 255, 255, 255}},
+    {"-",    {255, 255, 255, 255}},
+    {"-",    {255, 255, 255, 255}}
+};
                                                                     
-// const byte Key12 =   127;
-// const byte Key13 =   212;
-// const byte Key14 =   42; 
-// const byte Key15 =   198;
 /*
 Keycard validity check mask
 */
-// IFAA
-// const uint8_t   Key12 = 127;
-// const uint8_t   Key13 = 212;
-// const uint8_t   Key14 = 42;
-// const uint8_t   Key15 = 198;
-// CCAC
-const uint8_t   Key12 = 155;
-const uint8_t   Key13 = 136;
-const uint8_t   Key14 = 220;
-const uint8_t   Key15 =  28;
+
+uint8_t customerCode = 0;
+const uint8_t keys = 4;
 
 
 const char*     teamParam[15] = {"-OFF-",          " T R ", "MT R ",  " T C ", "MT C ",
