@@ -20,45 +20,43 @@ void loop() {
     if (p_Store.maxEnds != 1) {                                 // But not for single ends
       clearFromLine(1);
       if (!p_Store.isFinals) {
-        u8x8.draw2x2String(0, 6, "~~DONE~~");
+        disp.draw2x2String(0, 6, "~~DONE~~");
       }
       lnNumber = 25;
       HC12.print(F("font 11\r"));
       HC12.flush();
-      if (p_Store.isFlint ) goWhistle(3);
+      if (p_Store.isFlint) goWhistle(3);
       
-      for (int p = 0; p < 5; p ++ ) {                           // flash the good news
+      for (int p = 0; p < 5; p ++ ) {                          // flash the good news
         clearMatrix(false);
         pauseMe(tick / 4);
-        sendSerialS(green, /*column=*/ 2, /*line=*/ lnNumber, "D O N E");
-        pauseMe(tick);
-      }
+        sendSerialS(green,/*col*/ 2,/*ln*/ lnNumber, "D O N E");
+        pauseMe(tick);      
+      } 
     }
     clearMatrix(false);
     wipeOLED();
-// two new lines re flint running in 25/07/21
-//
-
+    flintRunning = (!flintRunning && p_Store.isFlint)?  true : false;
+    countPractice = flintRunning ? 0 :                          // if Flint is running > 1st round then no prac 
+                    p_Store.maxPrac !=0 && p_Store.isFlint ? 1 : p_Store.maxPrac;     //and 1 prac only
     displayParamsOnOLED();
-    u8x8.draw2x2String(0, 6, "..WAIT..");
+    disp.draw2x2String(0, 6, "..WAIT..");
     writeSplash(true);                                          // Show Logo
     writeMenuCommands(); 
     continueOn = false;
     startOver = false;
     showWaiting(false);                                         // Turn off scrolling wait indic - if running
     sEcount = 1;
-    sE_iter = 0;
-    countPractice = p_Store.maxPrac;
-  }
+    sE_iter = 0;   //countPractice = p_Store.maxPrac;  deprecated because of line 39
+  } 
 
   continueOn = goMenu(true);
   showWaiting(false);                                           // Turn off scrolling wait indic - if running
   if (sEcount == 1 && countPractice == 0) {                     // If  after Practice and before first END
-    //showWaiting(false);
     if (p_Store.isFinals) {
       #ifndef DEBUG
       clearFromLine(5);
-      u8x8.draw2x2String(0, 6, " FINALS ");
+      disp.draw2x2String(0, 6, " FINALS ");
       clearMatrix(false);
       sendScrollW(/*speed=*/    4,                              // 3 - 15
                   /*loop=*/     0,
@@ -76,7 +74,7 @@ void loop() {
       } else  p_Store.whichArcher = 0;
     }
     clearFromLine(5);
-    u8x8.draw2x2String(0, 6, "SCORING!");
+    disp.draw2x2String(0, 6, "SCORING!");
     sEcount = 1;                                                //cope with flint start error after timetap
     clearMatrix(false);
     HC12.print(F("font 9\r"));  HC12.flush();                   // Then write SCORING
@@ -86,10 +84,10 @@ void loop() {
       clearMatrix(false);
     }
   } else {
-    //showWaiting(false);
+    if (p_Store.isFlint || p_Store.ifaaIndoor) p_Store.maxPrac = 1;
     if (sEcount == 1 && countPractice == p_Store.maxPrac) {
       clearFromLine(5);
-      u8x8.draw2x2String(0, 6, "PRACTICE");
+      disp.draw2x2String(0, 6, "PRACTICE");
       clearMatrix(true);
 
       HC12.print(F("font 10\r"));  HC12.flush();

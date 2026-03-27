@@ -45,7 +45,10 @@ void displayParamsOnOLED() {
   u8x8.setCursor(6, 3);
   u8x8.print(p_Store.maxPrac);
   u8x8.setCursor(6, 4);
+
+  
   u8x8.print(p_Store.Details);
+  
   //if (p_Store.ifaaIndoor && !sEcount) {u8x8.setCursor(10, 4); u8x8.print("IFAA");}
 }
 

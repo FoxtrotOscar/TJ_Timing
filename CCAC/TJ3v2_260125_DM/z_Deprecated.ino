@@ -73,20 +73,3 @@
 //   sendSerialS(2, 5, 29, "COLLECT");
 //   HC12.flush();
 // }
-
-/*
-from HC12.ino @line 250:
-
-  u8x8.inverse();                                           //  |
-  if (p_Store.teamPlay && p_Store.B_ScrCh) {                //  | only if there is a 2nd channel in use
-    // (p_Store.which_Scr_1st == 2) ?                          //  | 
-    //   u8x8.print(p_Store.B_ScrCh) :                         //  | write the current channel info on the controller
-    //   u8x8.print(p_Store.curChan);                          //  |
-    //u8x8.setCursor(14,0);
-    //newChan <= 9 ? u8x8.print("0" + newChan) : u8x8.print(newChan);
-    //u8x8.print(newChan);
-    //pauseMe(tick);
-    wipeOLED();
-  }                                                         //  |
-  u8x8.noInverse();   
-*/

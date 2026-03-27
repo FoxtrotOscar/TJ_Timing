@@ -7,13 +7,17 @@
 //#define Teensy40
 //#define RP2040
 
- #define DEMO
+#define disp  u8x8
+#define disp2 u8g2
+
+
+//#define DEMO
 //#define NIFAA
-//#define CCAC  // 08 06 2024
+#define CCAC  // 08 06 2024
 
 //#define DEBUG               // Kills splashscreen, whistles etc
 //#define DEBUG_t             // makes seconds shorter
-#define NOWHISTLE           // comment out before runtime
+//#define NOWHISTLE           // comment out before runtime
 
 /*  THE FOLLOWING IS A SPORT COUNT-DOWN TIMER, OPTIMISED
     FOR ARCHERY, BUT EASILY CONFIGURABLE FOR MANY OTHER SPORTS
@@ -67,6 +71,7 @@
 #include <U8g2lib.h>
 #include <SPI.h>
 #include <MFRC522.h>
+#include "Banner.h"
 
 #define   HC12 Serial1        // HC12 transmitter serial port
 #define   __CS0 10            // SSD1325 CS   OLED
@@ -88,7 +93,7 @@
 #endif
 
 #define   __NAME__ (strrchr(__FILE__,'\\') ? strrchr(__FILE__,'\\')+1 : __FILE__)
-                              // setup part of DEBUG string, so TAB can be reported
+                              // setup part of DEBUG string, so TABname can be reported
 #define   see(variableName) \
           Serial.print( F( #variableName" = ") ); \
           Serial.println(variableName); 
@@ -130,7 +135,7 @@ MFRC522::MIFARE_Key key;
    These are the main variables which will be addressable by the user
    via RFID card and, as a backup, via a button menu (OLED)
 */
-const int   startCounts[] = {240, 120, 80, 40, 20, 180, 90, 180, 45};
+const int   startCounts[] = {240, 120, 80, 40, 20, 180, 90, 180, 30};  //flint is 30sec per walk-up arrow, 20 between to change pos
 const char* flintWalk[5]  = {"30 YD", "25 YD", "20 YD", "15 YD", ""};
 const char* flint[6]      = {"25 YD", "20 FT", "30 YD", "15 YD", "20 YD", "10 YD"};
 
@@ -153,12 +158,12 @@ struct PARAMSTORE {
 
 
   uint8_t   ifaaIndoor          =  0;             //(12)  is this an Int. Field Archery Assoc. tournament?
-  uint8_t   Banner              =  1;             //(13)  Banner loaded ?
+  uint8_t   Banner              =  0;             //(13)  Banner loaded ?
   uint8_t   B_ScrCh             =  0;             //(14)  shows chann no. if dual screens are set up
   uint8_t   which_Scr_1st       =  0;             //(15)  false until screen-flip in progress, then 1 or 2 for A or B
 
-  uint8_t   PS16                =  0;             //(16)|___  Spares
-  uint8_t   PS17                =  0;             //(17)|
+  //uint8_t   PS16                =  0;             //(16)|___  Spares
+  //uint8_t   PS17                =  0;             //(17)|
 }  __attribute__ ((packed));
 struct    PARAMSTORE p_Store;
 
@@ -215,13 +220,13 @@ uint8_t     t_ShootOff    = 0;
 enum        Colours:  
     int     { red = 1, green = 2, orange = 3};
 bool        continueOn    = false;
+bool        flintRunning  = false;
 bool        next          = false;
 bool        startOver     = false;
 bool        intervalOn    = false;
 bool        started       = false;                // referencing the countdown timer status
 bool        reStartEnd    = false;
 bool        scrWait_Enable= false;                // status of waiting graphic scroll
-bool        demoMode      = true;
 uint16_t    lapsed        = 0;
 uint16_t    tempOffset    = 0;                    // used to hold the last format value in Clock
 long long   intervalTimer = 0;
@@ -236,7 +241,6 @@ enum ButtonValueMask {
   BUTTON3       = 4,                              // in binary: 00100
   BUTTON4       = 8                               // in binary: 01000
 };
-
 
 const char* menu0[] =   {
                         "Duration", 
@@ -253,37 +257,6 @@ const char* menu0[] =   {
 };
 
 
-// /* Here Banner info is prepared*/
-// static const char s0[] PROGMEM = "Archers";       // centre
-// static const char s1[] PROGMEM = " Welcome";      // top
-// static const char s2[] PROGMEM = " to the";        // top
-// static const char s3[] PROGMEM = "EIAC";          // centre
-// static const char s4[] PROGMEM = "2 0 2 6";       // bottom
-// static const char s5[] PROGMEM = "INDOOR  ";        // top
-// static const char s6[] PROGMEM = "Championship";  // centre
-// static const char s7[] PROGMEM = " Hosted by:";     // top
-// static const char s8[] PROGMEM = "IFAF";          // centre
-
-
-
-// const BannerText bannerChar[] PROGMEM = {
-//   { BANNER_CLEAR, nullptr, 200, 0,    0,    0   },
-//   { BANNER_TEXT,    s0,   4000, 11, orange, 24  },    // "Archers"
-//   { BANNER_CLEAR, nullptr, 200, 0,    0,    0   },  
-//   { BANNER_TEXT,    s1,   1000, 4,  green,  12   },    // " Welcome"
-//   { BANNER_TEXT,    s2,   1000, 4,  green,  25  },    // "to the"
-//   { BANNER_CLEAR, nullptr, 200, 0,    0,    0   },
-//   { BANNER_TEXT,    s3,   2500, 12, orange, 23  },   // " E. I. A. C."
-//   { BANNER_TEXT,    s4,   3000, 5,  red,    32  },    // "2 0 2 6"
-//   { BANNER_CLEAR, nullptr, 200, 0,    0,    0   },  
-//   { BANNER_TEXT,    s5,   2000, 10, green,  17  },    // "INDOOR "
-//   { BANNER_TEXT,    s6,   4000, 3, orange,  28  },    // "TOURNAMENT"
-//   { BANNER_CLEAR, nullptr, 200, 0,    0,    0   },
-//   { BANNER_TEXT,    s7,   2000, 4,  orange,  9  },    // "Hosted by:"
-//   { BANNER_TEXT,    s8,   5000, 11, green,  29  },    // "IFAF"
-//   { BANNER_CLEAR, nullptr, 200, 0,    0,    0   }
-// };
-
 #if defined Teensy32  || defined Teensy40
   const int button1Pin = 2;                       // the number of the pushbutton pin T3.2
   const int button2Pin = 3;
@@ -294,11 +267,7 @@ const char* menu0[] =   {
   const int button2Pin = 31;
   const int button3Pin = 30;
   const int button4Pin = 29;
-// #elif defined Teensy40
-//   const int button1Pin = 2;                       // the number of the pushbutton pin T4.0
-//   const int button2Pin = 3;
-//   const int button3Pin = 4;
-//   const int button4Pin = 5; 
+
 #else
   #error    Unsupported board selection.
 #endif
@@ -311,15 +280,15 @@ int prevState1 = HIGH;
 
 
 void setup() {
-  u8g2.begin();
-  u8x8.begin();
-  u8g2.setPowerSave(0);
-  u8x8.setFont(u8x8_font_chroma48medium8_r);        // u8g2.setFont(u8x8_font_amstrad_cpc_extended_f);
+  disp2.begin();
+  disp.begin();
+  disp2.setPowerSave(0);
+  disp.setFont(u8x8_font_chroma48medium8_r);        // disp2.setFont(u8x8_font_amstrad_cpc_extended_f);
   see(p_Store.teamPlay);
   wipeOLED();                                       // Clear the OLED, write header
-  u8g2.setContrast(255);
-  u8x8.draw2x2String(0, 2, " SYSTEM ");
-  u8x8.draw2x2String(0, 6, "STARTING");
+  disp2.setContrast(255);
+  disp.draw2x2String(0, 2, " SYSTEM ");
+  disp.draw2x2String(0, 6, "STARTING");
   see(p_Store.B_ScrCh);
   HC12.begin(BAUD);                                 // set SoftwareSerial Serial1 port: 2400
   //for (byte i = 0; i <=29; i++) EEPROM.put(i, 0); // clean the EEPROM  (dev only)
@@ -346,7 +315,7 @@ void setup() {
     //printDebugLine(false, __LINE__, __NAME__); 
   }
   pauseMe(tick);
-  if (EEPROM.read(27) == 180) demoMode = true;
+  //if (EEPROM.read(27) == 180) demoMode = true;
   pauseMe(tick);
   pinMode(button1Pin, INPUT_PULLUP);              // Button1 for START / PAUSE / RESUME / menu OK
   pinMode(button2Pin, INPUT_PULLUP);              // Button2 for RESTART / MENU / UP /
@@ -354,8 +323,8 @@ void setup() {
   pinMode(button4Pin, INPUT_PULLUP);              // Button4 for EMERGENCY STOP / menu EXIT, no change
   see(p_Store.B_ScrCh);
   wipeOLED();
-  u8x8.draw2x2String(0, 2, " SYSTEM ");
-  u8x8.draw2x2String(0, 4, "CHAN:");
+  disp.draw2x2String(0, 2, " SYSTEM ");
+  disp.draw2x2String(0, 4, "CHAN:");
   readChannel();                                  // fetch the current channel and display
   //printDebugLine(false, __LINE__, __NAME__); 
   SPI.begin();                                    // Init SPI bus
@@ -370,12 +339,12 @@ void setup() {
   goReboot();                                     // Reboot the screen unit
   pauseMe(2*tick);
   clearFromLine(6);
-  u8x8.setCursor(0, 6);
-  u8x8.inverse();
-  u8x8.print("Proceed:  BTN[1]");
-  u8x8.setCursor(0, 7);
-  u8x8.print("Change:   BTN[3]");
-  u8x8.noInverse();
+  disp.setCursor(0, 6);
+  disp.inverse();
+  disp.print("Proceed:  BTN[1]");
+  disp.setCursor(0, 7);
+  disp.print("Change:   BTN[3]");
+  disp.noInverse();
   pauseMe(tick);
   unsigned long offTimer = millis();              // start time-out clock
   for (;;) {
@@ -391,34 +360,40 @@ void setup() {
     }
   }
   HC12.print(F("^8H"));
-  if (demoMode) goDemoLoop();
+  bannerPrompt();
+  
   HC12.print(F("font 13\r"));                     //  Bignum font
   HC12.flush();
   wipeOLED();
   dispSrcFileDetails(__NAME__);                   // Show *this* file name on OLED
   pauseMe(tick);
   #ifdef CCAC 
-    u8x8.draw2x2String(4, 3, "CORK");
-    u8x8.draw2x2String(4, 5, "CITY");
+    disp.draw2x2String(4, 3, "CORK");
+    disp.draw2x2String(4, 5, "CITY");
   #else
-    u8x8.draw2x2String(0, 6, "..WAIT..");
+    disp.draw2x2String(0, 6, "..WAIT..");
   #endif
   #ifdef DEBUG 
   HC12.print("title\r"); 
   pauseMe(3000);
   #endif
+  Serial.println("SPLASH");
+  printDebugLine(false, __LINE__, __NAME__);
   writeSplash(true);                              // full splashscreen with animation
   if (p_Store.teamPlay)                           // as multi-screen is via card ONLY these vars are reset on startup  
   p_Store.teamPlay = 0;
   p_Store.isFlint  = 0;
+  p_Store.ifaaIndoor = 0;
   //pauseMe(2 * tick);
   writeInfoBigscreen();                           // Now info regarding setup on bigscreen
   clearFromLine(0);
   displayParamsOnOLED();                          // show current (default) setting
-  u8x8.draw2x2String(0, 6, "..WAIT..");
+  disp.draw2x2String(0, 6, "..WAIT..");
   writeSplash(false);                             // splash without animation
   shootDetail = 0;                                // bool for Detail odd/even, counters
   sE_iter = 0; 
   sEcount = 1;
+  //if (p_Store.isFlint || p_Store.ifaaIndoor) p_Store.maxPrac = 1;
+  p_Store.maxPrac = (p_Store.maxPrac !=0 && (p_Store.isFlint || p_Store.ifaaIndoor) ? 1 : p_Store.maxPrac);
   countPractice = p_Store.maxPrac; 
 }

@@ -101,7 +101,7 @@ void writeInfoBigscreen(void){
   sendSerialS( green, /*column=*/ 0, /*line=*/ lnNumber, "Practice");
   colNumber = 56;
   pauseMe(tick/4);
-  sendNumber(orange, colNumber, lnNumber, p_Store.maxPrac);
+  sendNumber(orange, colNumber, lnNumber, (p_Store.maxPrac && (p_Store.isFlint || p_Store.ifaaIndoor)) ? 1 : p_Store.maxPrac);
   pauseMe(tick/4);
   lnNumber += 7;                                                                // End duration
   sendSerialS( green, /*column=*/ 0, /*line=*/ lnNumber, "END ","Time: ");
@@ -133,11 +133,11 @@ byte goChooseArcher(void){
   bool setFlag        = false;
   for(;;) {  
     clearFromLine(1);
-    u8x8.setCursor(0, 2);
-    p_Store.teamPlay ? u8x8.print("Set 1st Team :-") : u8x8.print("Set 1st Player:-");
-    u8x8.setCursor(5, 4);
-    p_Store.teamPlay ? u8x8.print("Team   ") : u8x8.print("Archer ");
-    u8x8.print(menuArcher == 1 ? "A" : "B");
+    disp.setCursor(0, 2);
+    p_Store.teamPlay ? disp.print("Set 1st Team :-") : disp.print("Set 1st Player:-");
+    disp.setCursor(5, 4);
+    p_Store.teamPlay ? disp.print("Team   ") : disp.print("Archer ");
+    disp.print(menuArcher == 1 ? "A" : "B");
     doButtonMenu();
     delay(500);                // debouncing                                           
     switch (waitButton()) {
@@ -170,14 +170,14 @@ byte goChooseArcher(void){
 bool checkForShootoff(void){
   bool flag = false;
   clearFromLine(1);
-  u8x8.draw2x2String(0, 2, "SHOOTOFF");
-  u8x8.draw2x2String(0, 4, "NEEDED?");
-  u8x8.setCursor(0, 6);
-  u8x8.inverse();
-  u8x8.print("NO- END: BTN[1]");
-  u8x8.setCursor(0, 7);
-  u8x8.print("YES:     BTN[2]");
-  u8x8.noInverse();
+  disp.draw2x2String(0, 2, "SHOOTOFF");
+  disp.draw2x2String(0, 4, "NEEDED?");
+  disp.setCursor(0, 6);
+  disp.inverse();
+  disp.print("NO- END: BTN[1]");
+  disp.setCursor(0, 7);
+  disp.print("YES:     BTN[2]");
+  disp.noInverse();
   for (;;) {
     byte btn = readButtons();
     if (btn == BUTTON1) {                         // no, so
@@ -205,7 +205,7 @@ void writeShootOff(byte nID, bool AB){
     nID == 1 ? setControlChannel(p_Store.curChan) : setControlChannel(p_Store.B_ScrCh);
   }
   clearFromLine(4);
-  u8x8.draw2x2String(6, 4, "OK");                                         // acknowledge on controller                
+  disp.draw2x2String(6, 4, "OK");                                         // acknowledge on controller                
 }
 
 /*
@@ -435,8 +435,10 @@ uint8_t waitButton() {
     }
     checkIntervalTimer();
     //#ifndef DEBUG
-    if (getRFID()) { //if (getRFID(&p_Store)) {
+    if (getRFID()) {
       continueOn = false;
+      displayParamsOnOLED();
+      writeMenuCommands();
       printDebugLine(true, __LINE__, __NAME__);
     }
     //#endif
@@ -446,7 +448,7 @@ uint8_t waitButton() {
       while (readButtons() != 0) {
         delay(1);                                           // and now wait for button release as millis() clocks
         if (millis() - goTurnOff < 5000) {
-          u8x8.clearLine(((millis() - goTurnOff)/500)-1);   // clear down the screen line by line to indicate shutdown intent progress
+          disp.clearLine(((millis() - goTurnOff)/500)-1);   // clear down the screen line by line to indicate shutdown intent progress
         }
       }
                                         
@@ -470,10 +472,10 @@ bool goEmergencyButton(uint8_t AIndex, byte nID){
     goWhistle(5);
     stopSign();
     clearFromLine(1);
-    u8x8.setCursor(4,3);
-    u8x8.print("EMERGENCY");
-    u8x8.setCursor(6,5);
-    u8x8.print("STOP");
+    disp.setCursor(4,3);
+    disp.print("EMERGENCY");
+    disp.setCursor(6,5);
+    disp.print("STOP");
     pauseMe(5*tick);
     n_Count_[nID] = handleEmergencyRestart(nID);                     // go fetch the next step decision
     if (AIndex < 3){    
@@ -504,30 +506,30 @@ bool goEmergencyButton(uint8_t AIndex, byte nID){
  */
 int16_t handleEmergencyRestart(byte nID){
   clearFromLine(1);
-  u8x8.setCursor(0, 2);
-  u8x8.inverse(); 
-  u8x8.print("Resume:   BTN[1]");
-  u8x8.setCursor(0, 3);
-  u8x8.setFont(u8x8_font_5x7_f);
-  u8x8.noInverse();
-  u8x8.print("(steps back 10s)");
-  u8x8.setCursor(0, 4);
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.inverse();
-  u8x8.print("Restart:  BTN[2]");
-  u8x8.setCursor(0, 5);
-  u8x8.setFont(u8x8_font_5x7_f);
-  u8x8.noInverse();
-  u8x8.print("(recommence end)");
-  u8x8.setCursor(0, 6);
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.inverse();
-  u8x8.print("Reset ALL:BTN[3]");
-  u8x8.setCursor(0, 7);
-  u8x8.setFont(u8x8_font_5x7_f);
-  u8x8.noInverse();
-  u8x8.print("(reinitialize)");
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  disp.setCursor(0, 2);
+  disp.inverse(); 
+  disp.print("Resume:   BTN[1]");
+  disp.setCursor(0, 3);
+  disp.setFont(u8x8_font_5x7_f);
+  disp.noInverse();
+  disp.print("(steps back 10s)");
+  disp.setCursor(0, 4);
+  disp.setFont(u8x8_font_chroma48medium8_r);
+  disp.inverse();
+  disp.print("Restart:  BTN[2]");
+  disp.setCursor(0, 5);
+  disp.setFont(u8x8_font_5x7_f);
+  disp.noInverse();
+  disp.print("(recommence end)");
+  disp.setCursor(0, 6);
+  disp.setFont(u8x8_font_chroma48medium8_r);
+  disp.inverse();
+  disp.print("Reset ALL:BTN[3]");
+  disp.setCursor(0, 7);
+  disp.setFont(u8x8_font_5x7_f);
+  disp.noInverse();
+  disp.print("(reinitialize)");
+  disp.setFont(u8x8_font_chroma48medium8_r);
   
   uint8_t maxPossSecs = startCounts[p_Store.startCountsIndex];
   
@@ -557,10 +559,10 @@ void displayMenuPage(uint8_t idx, uint8_t selectionIdx) {
   
   if (idx == 0) {
     for (uint8_t i = 0; i < sizeof(menu0)/sizeof(menu0[0]); ++ i) {
-      u8x8.setCursor(0, i+1);
-      if (i == selectionIdx) u8x8.print("> ");
-      else u8x8.print("  ");
-      u8x8.print(menu0[i]);
+      disp.setCursor(0, i+1);
+      if (i == selectionIdx) disp.print("> ");
+      else disp.print("  ");
+      disp.print(menu0[i]);
     }
   }  
 }
@@ -578,8 +580,8 @@ void pauseMe(uint16_t holdOff){
 
 void goPowerOff(void){
   wipeOLED();
-  u8x8.draw2x2String(0, 2, "POWERING");
-  u8x8.draw2x2String(0, 6, "  DOWN  ");
+  disp.draw2x2String(0, 2, "POWERING");
+  disp.draw2x2String(0, 6, "  DOWN  ");
   HC12.print(F("^8L"));                                 // dim the logo after the period above
   writeSplash(false);                                 // write a dimmed splash - as a reminder to turn off...
 
@@ -602,17 +604,17 @@ void dispSrcFileDetails(const char* fileName ){
   if (dot_loc < 0) dot_loc = pgm_lastIndexOf(0,fileName);                   // if no dot, return end of string
   uint8_t c = 16 - dot_loc;
   uint8_t r = 1;
-  u8x8.setFont(u8x8_font_5x7_f);
+  disp.setFont(u8x8_font_5x7_f);
   for (int i = slash_loc+1; i < dot_loc; i++) {
     uint8_t b = pgm_read_byte(&fileName[i]);
     if (b != 0) {
-      u8x8.setCursor(c,r);      
-      u8x8.print((char) b);
+      disp.setCursor(c,r);      
+      disp.print((char) b);
       c++;
     }
     else break;
   }
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  disp.setFont(u8x8_font_chroma48medium8_r);
 }
 
 
@@ -775,37 +777,25 @@ void printDebugLine(bool dets, uint16_t lineNo, const char* FileName){
 void goDemoLoop() {
   
 
-// //  const char demoChar1[] = "Cuchulainn";
-//   const char demoChar2[] = "Archers";
+//  const char demoChar1[] = "Cuchulainn";
+  const char demoChar2[] = "Archers";
   
-//   const char demoChar3[] = "Welcome to";
-//   //const char demoChar4[] = "a  W.R.S.";
-//   const char demoChar4[] = "a Wintery";
-//   //const char demoChar5[] = "  W.R.S. ";
-//   const char demoChar6[] = " WA18 X 2";
-//   const char demoChar7[] = "Aim  for the";
-//   const char demoChar8[] = "GOLD";
-//   const char demoChar9[] = "C";                                   // |
-//   const char demoChar10 = 250;                                    // | CúCú Abú
+  const char demoChar3[] = "Welcome to";
+  //const char demoChar4[] = "a  W.R.S.";
+  const char demoChar4[] = "a Wintery";
+  //const char demoChar5[] = "  W.R.S. ";
+  const char demoChar6[] = " WA18 X 2";
+  const char demoChar7[] = "Aim  for the";
+  const char demoChar8[] = "GOLD";
+  const char demoChar9[] = "C";                                   // |
+  const char demoChar10 = 250;                                    // | CúCú Abú
 //  const char demoChar11[] = "Ab";                                 // | 
-
-  const char bannerChar2[] = "Archers";
-  
-  const char bannerChar3[] = "Welcome to";
-
-  const char bannerChar4[] = " E. I. A. C.";
-  const char bannerChar5[] = " 2 0 2 6 ";
-  const char bannerChar6[] = "INDOOR";
-
-  const char bannerChar7[] = "tournament";
-  const char bannerChar8[] = "Hosted by";
-  const char bannerChar9[] = "I  F  A  F";
   clearFromLine(1);
-  u8x8.draw2x2String(2, 2, "BANNER");
-  u8x8.draw2x2String(4, 4, "MODE");
-  u8x8.inverse();
-  u8x8.setCursor(0, 7);
-  u8x8.print("TO EXIT:  BTN[4]");
+  disp.draw2x2String(2, 2, "BANNER");
+  disp.draw2x2String(4, 4, "MODE");
+  disp.inverse();
+  disp.setCursor(0, 7);
+  disp.print("TO EXIT:  BTN[4]");
   for (;;) {
     clearMatrix(true);    
     writeSplash(true);
@@ -813,43 +803,52 @@ void goDemoLoop() {
     clearMatrix(true);
     timeOut(2000); if (!demoMode) break;    
     HC12.print(F("font 11\r"));    HC12.flush();
-    sendSerialS( orange, /*column=*/ 1, /*line=*/ 20, bannerChar2);
+    sendSerialS( orange, /*column=*/ 2, /*line=*/ 20, demoChar2);
     timeOut(2500); if (!demoMode) break;
     clearMatrix(false);    
     HC12.print(F("font 4\r"));    HC12.flush();
-    sendSerialS( green, /*column=*/ 4, /*line=*/ 10, bannerChar3);
-    timeOut(2200); if (!demoMode) break;
-    clearMatrix(false);
-    timeOut(800);
+    sendSerialS( green, /*column=*/ 4, /*line=*/ 10, demoChar3);
+    timeOut(1200); if (!demoMode) break;
     HC12.print(F("font 10\r"));    HC12.flush();
-    sendSerialS( orange, /*column=*/ 2 , /*line=*/ 18, bannerChar4);
-    timeOut(3000); if (!demoMode) break;
-    
+    sendSerialS( orange, /*column=*/ 0 , /*line=*/ 30, demoChar4);
+    timeOut(2000); if (!demoMode) break;
+    clearMatrix(false);
+    timeOut(500); if (!demoMode) break;
+    HC12.print(F("font 14\r"));    HC12.flush();
+    for (byte i = 4; i<=45; i+=28){
+      sendSerialS( orange, /*column=*/ i, /*line=*/ 25, demoChar9);        // | CúCú
+      sendChar( orange, /*column=*/ i + 15, /*line=*/ 25, demoChar10);
+    }
+//    HC12.print(F("font 4\r"));    HC12.flush();
+//    sendSerialS( green, /*column=*/ 25, /*line=*/ 10, demoChar5);    
+    timeOut(500); if (!demoMode) break;
     HC12.print(F("font 8\r"));    HC12.flush();
     
-    sendSerialS( green, /*column=*/ 9, /*line=*/ 31, bannerChar5);
+    sendSerialS( green, /*column=*/ 2, /*line=*/ 33, demoChar6);
     timeOut(4500); if (!demoMode) break;
     clearMatrix(false);
-    timeOut(1200); if (!demoMode) break;
-    HC12.print(F("font 14\r"));    HC12.flush();
-    clearMatrix(false);
-    HC12.print(F("font 8\r"));    HC12.flush();
-    sendSerialS( green, /*column=*/ 12, /*line=*/ 14, bannerChar6);    
-    timeOut(1000); if (!demoMode) break;
-
-    HC12.print(F("font 2\r"));    HC12.flush();
-    sendSerialS( orange, /*column=*/ 3, /*line=*/ 26, bannerChar7);    
-    timeOut(1800); if (!demoMode) break;
-    clearMatrix(false);
-    timeOut(500);
     HC12.print(F("font 4\r"));    HC12.flush();
-    sendSerialS( orange, /*column=*/ 9, /*line=*/ 10, bannerChar8);
+    sendSerialS( green, /*column=*/ 3, /*line=*/ 10, demoChar7);    
+    timeOut(800); if (!demoMode) break;
+    HC12.print(F("font 11\r"));    HC12.flush();
+    sendSerialS( orange, /*column=*/ 9, /*line=*/ 28, demoChar8);
     timeOut(3000); if (!demoMode) break;
-    //clearMatrix(false);
-    HC12.print(F("font 10\r"));    HC12.flush();
-    sendSerialS( green, /*column=*/ 8, /*line=*/ 28, bannerChar9);
-
-    timeOut(4000);       
+    clearMatrix(false);
+//    HC12.print(F("font 14\r"));    HC12.flush();
+//    for (byte n = 0; n <= 2; n++){
+//      for (byte i = 4; i<=45; i+=28){
+//      sendSerialS( orange, /*column=*/ i, /*line=*/ 30, demoChar9);
+//      sendChar( orange, /*column=*/ i + 15, /*line=*/ 30, demoChar10);
+//      }
+//      timeOut(500);
+//      clearMatrix();
+//      
+//      sendSerialS( green, /*column=*/ 10, /*line=*/ 30, demoChar11);
+//      sendChar( green, /*column=*/ 40, /*line=*/ 30, demoChar10);
+//      timeOut(500);
+//      clearMatrix();
+//    }
+    timeOut(2000);       
     if (!demoMode) break;
     
   }
@@ -857,98 +856,7 @@ void goDemoLoop() {
   return;
 }
 
-//   const char bannerChar2[] = "Archers";
-  
-//   const char bannerChar3[] = "Welcome to";
-//   //const char bannerChar4[] = "a  W.R.S.";
-//   const char bannerChar4[] = " E. I. A. C.";
-//   const char bannerChar5[] = " 2 0 2 6 ";
-//   const char bannerChar6[] = "INDOOR";
-//   const char bannerChar7[] = "2026";
-//   const char bannerChar8[] = "Hosted by";
-//   const char bannerChar9[] = " IFAF";                                   // |
-//   //const char bannerChar10 = 250;                                    // | CúCú Abú
-//   //  const char bannerChar11[] = "Ab";                                 // | 
-//   //int Sequence[] = {2, 3, 0, 4, 5, 6, 0, 8, 9};
-//   clearFromLine(1);
-//   disp.draw2x2String(2, 2, "BANNER");
-//   disp.draw2x2String(4, 4, "MODE");
-//   disp.inverse();
-//   disp.setCursor(0, 7);
-//   disp.print("TO EXIT:  BTN[4]");
 
-//   for (;;) {
-//     clearMatrix(true);    
-//     writeSplash(true);
-//     timeOut(2000); if (!bannerMode) break;
-//     clearMatrix(true);
-//     timeOut(2000); if (!bannerMode) break;    
-//     HC12.print(F("font 11\r"));    HC12.flush();
-//     // for (byte i = 0; i< (sizeof(Sequence)/sizeof(int)); ++i) {
-//     //   if (!bannerMode) break;
-//     //   if (bannerChar[i] == 0) {
-//     //     clearMatrix(false);
-//     //     timeOut(2500); 
-//     //     continue;
-//     //   }
-//     //   sendSerialS( orange, /*column=*/ 2, /*line=*/ 20, bannerChar[i]);
-//     //   timeOut(2500);// if (!bannerMode) break;
-       
-//     // }
-//     sendSerialS( orange, /*column=*/ 2, /*line=*/ 20, bannerChar2);
-//     timeOut(2500); if (!bannerMode) break;
-//     clearMatrix(false);    
-//     HC12.print(F("font 4\r"));    HC12.flush();
-//     sendSerialS( green, /*column=*/ 4, /*line=*/ 10, bannerChar3);
-//     timeOut(1200); if (!bannerMode) break;
-//     HC12.print(F("font 10\r"));    HC12.flush();
-//     sendSerialS( orange, /*column=*/ 0 , /*line=*/ 30, bannerChar4);
-//     timeOut(2000); if (!bannerMode) break;
-//     clearMatrix(false);
-//     sendSerialS( green, /*column=*/ 2, /*line=*/ 33, bannerChar6);
-//     timeOut(4500); if (!bannerMode) break;    
-//     timeOut(500); if (!bannerMode) break;
-//     HC12.print(F("font 14\r"));    HC12.flush();
-//     //for (byte i = 4; i<=45; i+=28){
-//       sendSerialS( orange, /*column= i*/0, /*line=*/ 25, bannerChar9);        // | CúCú
-//       //sendChar( orange, /*column=*/ i + 15, /*line=*/ 25, bannerChar10);
-//     //}
-//     //    HC12.print(F("font 4\r"));    HC12.flush();
-//   //    sendSerialS( green, /*column=*/ 25, /*line=*/ 10, bannerChar5);    
-//       timeOut(500); if (!bannerMode) break;
-//       HC12.print(F("font 8\r"));    HC12.flush();
-      
-//       sendSerialS( green, /*column=*/ 2, /*line=*/ 33, bannerChar6);
-//       timeOut(4500); if (!bannerMode) break;
-//       clearMatrix(false);
-//       HC12.print(F("font 4\r"));    HC12.flush();
-//       sendSerialS( green, /*column=*/ 3, /*line=*/ 10, bannerChar7);    
-//       timeOut(800); if (!bannerMode) break;
-//       HC12.print(F("font 11\r"));    HC12.flush();
-//       sendSerialS( orange, /*column=*/ 9, /*line=*/ 28, bannerChar8);
-//       timeOut(3000); if (!bannerMode) break;
-//       clearMatrix(false);
-//   //    HC12.print(F("font 14\r"));    HC12.flush();
-//   //    for (byte n = 0; n <= 2; n++){
-//   //      for (byte i = 4; i<=45; i+=28){
-//   //      sendSerialS( orange, /*column=*/ i, /*line=*/ 30, bannerChar9);
-//   //      sendChar( orange, /*column=*/ i + 15, /*line=*/ 30, bannerChar10);
-//   //      }
-//   //      timeOut(500);
-//   //      clearMatrix();
-//   //      
-//   //      sendSerialS( green, /*column=*/ 10, /*line=*/ 30, bannerChar11);
-//   //      sendChar( green, /*column=*/ 40, /*line=*/ 30, bannerChar10);
-//   //      timeOut(500);
-//   //      clearMatrix();
-//   //    }
-//     timeOut(2000);       
-//     if (!bannerMode) break;
-    
-//   }
-//   clearMatrix(false); 
-//   return;
-//   }
 void timeOut(long long intervalSet) {
   long long demoTimer = millis();  
  for(;;) {

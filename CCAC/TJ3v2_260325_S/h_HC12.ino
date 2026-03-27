@@ -27,7 +27,7 @@ void readChannel(void){
   bool read_error;                                          // to mark bad data
   char temp_str[4];
   byte u8x8ColNumber = 10;
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
+  disp.setFont(u8x8_font_chroma48medium8_r);
   temp_str[3] = '\0';
   byte pMe = 20;
 
@@ -59,24 +59,24 @@ void readChannel(void){
     if (!read_error) break;                                 // no errors - we are done, else go back to (;;)
   }                                                         // and re-commence query
   
-  u8x8.draw2x2String(u8x8ColNumber++, 4, temp_str);
+  disp.draw2x2String(u8x8ColNumber++, 4, temp_str);
   command_ON(false);                                        // disable Control Mode locally
 }
 
 void writeChannel_OLED (int channel){
-  u8x8.inverse();
-  u8x8.setCursor(1, 5);
-  u8x8.print("CH:");
-  u8x8.setCursor(5, 5);
-  u8x8.print("  ");
-  u8x8.setCursor((channel >9 ? 5 : 6), 5) ;
-  u8x8.print(channel);
-  u8x8.noInverse();
-  u8x8.setCursor(8, 5);
+  disp.inverse();
+  disp.setCursor(1, 5);
+  disp.print("CH:");
+  disp.setCursor(5, 5);
+  disp.print("  ");
+  disp.setCursor((channel >9 ? 5 : 6), 5) ;
+  disp.print(channel);
+  disp.noInverse();
+  disp.setCursor(8, 5);
   float chFrq = 433.4+(0.4*(channel-1.0));
-  u8x8.print(chFrq);
-  u8x8.setCursor(13, 5);
-  u8x8.print("MHz");
+  disp.print(chFrq);
+  disp.setCursor(13, 5);
+  disp.print("MHz");
 }
 
 
@@ -86,28 +86,28 @@ void writeChannel_OLED (int channel){
 bool alterChannelWarning(void){
   bool flag = false;  
   wipeOLED();
-  u8x8.setCursor(0, 2);
-  u8x8.print("    WARNING");
+  disp.setCursor(0, 2);
+  disp.print("    WARNING");
   
-  u8x8.setCursor(0, 3);
-  u8x8.print(" Chg. CHANNEL ");
-  u8x8.setCursor(0, 4);
-  u8x8.print("   GLOBALLY?  ");
-  u8x8.setCursor(0, 6);
-  u8x8.print(" [1]Yes / No[4]");
+  disp.setCursor(0, 3);
+  disp.print(" Chg. CHANNEL ");
+  disp.setCursor(0, 4);
+  disp.print("   GLOBALLY?  ");
+  disp.setCursor(0, 6);
+  disp.print(" [1]Yes / No[4]");
 
   for(;;){   
     switch (waitButton()){
       
       case BUTTON1:
-        u8x8.print(" OK. INITIATE... ");
+        disp.print(" OK. INITIATE... ");
         pauseMe(tick);
         flag = true;
         break;
       
       case BUTTON4:
-        u8x8.setCursor(0, 6);
-        u8x8.print("   CANCELLED   ");
+        disp.setCursor(0, 6);
+        disp.print("   CANCELLED   ");
         pauseMe(tick);
         //break;
         return false;
@@ -133,14 +133,14 @@ void new_Channel(bool alterGlobally) {
   uint8_t newChan = p_Store.curChan;
   for (;;){ 
     wipeOLED();
-    u8x8.setCursor(0, 1);
-    u8x8.inverse();
-    u8x8.print("CAUTION:");
-    u8x8.noInverse();
-    u8x8.setCursor(0, 2);
-    u8x8.print("Changing Channel");
-    u8x8.setCursor(0, 3);
-    u8x8.print(alterGlobally ? "   GLOBALLY" : "   LOCALLY");
+    disp.setCursor(0, 1);
+    disp.inverse();
+    disp.print("CAUTION:");
+    disp.noInverse();
+    disp.setCursor(0, 2);
+    disp.print("Changing Channel");
+    disp.setCursor(0, 3);
+    disp.print(alterGlobally ? "   GLOBALLY" : "   LOCALLY");
     
     bool flag = false;
     pauseMe(20);
@@ -155,10 +155,10 @@ void new_Channel(bool alterGlobally) {
         
         flag = true;                                        // good to go
         wipeOLED();
-        u8x8.setCursor(0, 2);
-        u8x8.print("System Channel:");
-        u8x8.setCursor(0, 3);
-        u8x8.print(alterGlobally ? "   GLOBALLY" : "   LOCALLY");
+        disp.setCursor(0, 2);
+        disp.print("System Channel:");
+        disp.setCursor(0, 3);
+        disp.print(alterGlobally ? "   GLOBALLY" : "   LOCALLY");
         writeChannel_OLED(newChan);
         pauseMe(2*tick);
         break;
@@ -247,7 +247,7 @@ byte setControlChannel(byte newChan){                       // Write to the cont
   } while (isOK == false);
   command_ON(false);                                        // Exit command & enter transparent mode
   op_Chan = newChan;                                        //  |
-                                        //  |
+
   return newChan;
 }
   
@@ -256,17 +256,17 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
   byte B_Chan = p_Store.curChan;
   if (EEPROM.read(18) == 1) {                               // If this screen channel selection is already done:
     clearFromLine(1);  
-    u8x8.setCursor(0, 4);
-    u8x8.print("A&B screens SET");
+    disp.setCursor(0, 4);
+    disp.print("A&B screens SET");
     pauseMe(tick);
-    u8x8.setCursor(0, 5);
-    u8x8.print("Keep     :BTN[2]");
-    u8x8.setCursor(0, 6);
-    u8x8.inverse();
-    u8x8.print("Redo SET: BTN[3]");
-    u8x8.noInverse();
-    u8x8.setCursor(0, 7);
-    u8x8.print("NO TeamPl:BTN[4]");
+    disp.setCursor(0, 5);
+    disp.print("Keep     :BTN[2]");
+    disp.setCursor(0, 6);
+    disp.inverse();
+    disp.print("Redo SET: BTN[3]");
+    disp.noInverse();
+    disp.setCursor(0, 7);
+    disp.print("NO TeamPl:BTN[4]");
     
     pauseMe(tick);
     bool flag = false;
@@ -284,8 +284,8 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
   
         case BUTTON4:                                     // EXIT Teamplay setup 
             clearFromLine(1);                        
-            u8x8.draw2x2String(5, 2, "Use");
-            u8x8.draw2x2String(0, 5, "ONE Chan");
+            disp.draw2x2String(5, 2, "Use");
+            disp.draw2x2String(0, 5, "ONE Chan");
             setControlChannel (p_Store.B_ScrCh);          // change frequency to the B chann 
             writeRemoteChannel(p_Store.curChan);          // set B chan back to main A channel.
             setControlChannel (p_Store.curChan);          // back to square 1
@@ -315,32 +315,32 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
     unsigned long toggle      = millis();
     bool          toggleFlag  = false;                   
     clearFromLine(0);
-    u8x8.setCursor(0, 0);
-    u8x8.inverse();
-    u8x8.print("  INSTRUCTIONS: ");
-    u8x8.noInverse();
+    disp.setCursor(0, 0);
+    disp.inverse();
+    disp.print("  INSTRUCTIONS: ");
+    disp.noInverse();
     pauseMe(500);
-    u8x8.setCursor(0, 2);
-    u8x8.print("Sel. A&B screens");
+    disp.setCursor(0, 2);
+    disp.print("Sel. A&B screens");
     pauseMe(500);
     for (;;) {                                            // Setup switch to B channel
-      u8x8.setCursor(0, 3);
+      disp.setCursor(0, 3);
       if (millis() - toggle >= _interval ) {              // setup a flashing OFF action-word
         toggleFlag = !toggleFlag;
         toggle = millis();
       }
-      toggleFlag ? u8x8.print("All A units:    ") : u8x8.print("All A units: OFF");
-      u8x8.setCursor(0, 4);
-      u8x8.print("All B units: ON");
-      u8x8.setCursor(0, 6);
-      toggleFlag ? u8x8.print("READY?  >BTN [2]") :u8x8.print("READY?  >BTN [ ]") ;
-      u8x8.setCursor(0, 7);
-      u8x8.print("Go Back >BTN [4]");
+      toggleFlag ? disp.print("All A units:    ") : disp.print("All A units: OFF");
+      disp.setCursor(0, 4);
+      disp.print("All B units: ON");
+      disp.setCursor(0, 6);
+      toggleFlag ? disp.print("READY?  >BTN [2]") :disp.print("READY?  >BTN [ ]") ;
+      disp.setCursor(0, 7);
+      disp.print("Go Back >BTN [4]");
       if (readButtons() == BUTTON2) break;                // exit the infinite loop here
       if (readButtons() == BUTTON4) {                     // Leave the process
         clearFromLine(0);
-        u8x8.draw2x2String(5, 2, "Use");
-        u8x8.draw2x2String(0, 5, "ONE Chan");
+        disp.draw2x2String(5, 2, "Use");
+        disp.draw2x2String(0, 5, "ONE Chan");
         pauseMe(1000);
         p_Store.teamPlay    -= 10;                        // Step to standard, single-chann Team setup
         p_Store.B_ScrCh     = 0;
@@ -350,7 +350,7 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
       }
     }
     clearFromLine(1);
-    u8x8.draw2x2String(0, 6, "..WAIT..");
+    disp.draw2x2String(0, 6, "..WAIT..");
     /* 
       *  Name the current chan: p_Store.curChan
       *  here select the channel (auto +5 with option to change)
@@ -377,16 +377,16 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
     pauseMe(tick);
     sendSerialS(green, /*column=*/ 0, /*line=*/ 31, "TEST:  OK");
     clearFromLine(3);
-    u8x8.inverse();
-    u8x8.setCursor(0, 4);
-    u8x8.print("Change Complete?");
-    u8x8.noInverse();
-    u8x8.setCursor(0, 5);
-    u8x8.print("OK:       BTN[1]");
-    u8x8.setCursor(0, 6);
-    u8x8.print("Retest:   BTN[3]");
-    u8x8.setCursor(0, 7);
-    u8x8.print("Redo:     BTN[4]");
+    disp.inverse();
+    disp.setCursor(0, 4);
+    disp.print("Change Complete?");
+    disp.noInverse();
+    disp.setCursor(0, 5);
+    disp.print("OK:       BTN[1]");
+    disp.setCursor(0, 6);
+    disp.print("Retest:   BTN[3]");
+    disp.setCursor(0, 7);
+    disp.print("Redo:     BTN[4]");
     bool flag = false;
     bool colFlag = false;                                   // setup a flag to alter the matrix screen retest response colour
     for (;;) {    // now switch all screens back on and confirm
@@ -394,15 +394,15 @@ void setB_Chan(void){                                       // in TEAMPLAY we us
         case BUTTON1:
           //wipeOLED();
           clearFromLine(3);
-          u8x8.inverse();
-          u8x8.setCursor(0, 4);
-          u8x8.print(" Now return ALL ");
-          u8x8.setCursor(0, 5);
-          u8x8.print(" displays to ON ");
+          disp.inverse();
+          disp.setCursor(0, 4);
+          disp.print(" Now return ALL ");
+          disp.setCursor(0, 5);
+          disp.print(" displays to ON ");
           pauseMe(5*tick);
-          u8x8.noInverse();
-          u8x8.setCursor(0, 7);
-          u8x8.print("Proceed:  BTN[1]");
+          disp.noInverse();
+          disp.setCursor(0, 7);
+          disp.print("Proceed:  BTN[1]");
           readyAB();
           wipeOLED();
           flag = true;
