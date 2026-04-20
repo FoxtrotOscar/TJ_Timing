@@ -775,39 +775,38 @@ void printDebugLine(bool dets, uint16_t lineNo, const char* FileName){
 void goDemoLoop() {
   
 
-// //  const char demoChar1[] = "Cuchulainn";
-//   const char demoChar2[] = "Archers";
-  
-//   const char demoChar3[] = "Welcome to";
-//   //const char demoChar4[] = "a  W.R.S.";
-//   const char demoChar4[] = "a Wintery";
-//   //const char demoChar5[] = "  W.R.S. ";
-//   const char demoChar6[] = " WA18 X 2";
-//   const char demoChar7[] = "Aim  for the";
-//   const char demoChar8[] = "GOLD";
-//   const char demoChar9[] = "C";                                   // |
-//   const char demoChar10 = 250;                                    // | CúCú Abú
-//  const char demoChar11[] = "Ab";                                 // | 
+  const char bannerChar1[]    = "abc";
+  const char bannerChar1a[]   = "def";
+  const char bannerChar2[]    = "ghi";
+  const char bannerChar2a[]   = "jkl";
+  const char bannerChar3[]    = "mno";
+  const char bannerChar3a[]   = "pqr";
+  const char bannerChar4[]    = "stu";
+  const char bannerChar4a[]   = "vwx";
+  const char bannerChar5[]    = "yz";
+  const char bannerChar1U[]   = "ABC";
+  const char bannerChar1Ua[]  = "DEF";
+  const char bannerChar2U[]   = "GHI";
+  const char bannerChar2Ua[]  = "JKL";
+  const char bannerChar3U[]   = "MNO";
+  const char bannerChar3Ua[]  = "PQR";
+  const char bannerChar4U[]   = "STU";
+  const char bannerChar5U[]   = "VWX";
+  const char bannerChar5Ua[]  = "YZ";
+  const char bannerChar6[]    = "112";
+  const char bannerChar6a[]   = "345";
+  const char bannerChar7[]    = "678";
+  const char bannerChar7a[]   = "90";
+  const char bannerChar8[]    = "!@'%^( )";
+  const char bannerChar9[]    = "\\&*\"";
+  const char bannerChar9a[]   = "?/-.";
+  const char bannerChar10[]   = ",#<>";
+  const char bannerChar10a[]  = ":+";
 
-  const char bannerChar1[] = "abcdefg";
-  const char bannerChar2[] = "hijklmn";
-  const char bannerChar3[] = "opqrstu";
-  const char bannerChar4[] = "vwxyz";
-  const char bannerChar1U[] = "ABCDEFG";
-  const char bannerChar2U[] = "HIJKLMN";
-  const char bannerChar3U[] = "OPQRSTU";
-  const char bannerChar4U[] = "VWXYZ";
-  const char bannerChar5[] = "11234567890";
-  const char bannerChar6[] = "!@'%^()&*";
-  const char bannerChar7[] = "?/-.,#<>:+";
-  // const char bannerChar5[] = " 2 0 2 6 ";
-  // const char bannerChar6[] = "INDO?/-.,#"OR";
-
-
-  const char bannerChar8[] = "Hosted by";
-  const char bannerChar9[] = "I  F  A  F";
-  const char* tests[11] = { bannerChar1, bannerChar2, bannerChar3, bannerChar4, bannerChar1U, bannerChar2U, bannerChar3U, bannerChar4U, bannerChar5, bannerChar6, bannerChar7 };
-  int fonH[18] = {5,5,7,8,8,10,10,10,12,16,16,24,28,32,0,32,10,7};
+  const char* tests[] = { bannerChar1, bannerChar1a, bannerChar2, bannerChar2a, bannerChar3, bannerChar3a, bannerChar4, bannerChar4a, bannerChar5, bannerChar1U, 
+                            bannerChar1Ua, bannerChar2U, bannerChar2Ua, bannerChar3U, bannerChar3Ua, bannerChar4U, bannerChar5U, bannerChar5Ua, 
+                            bannerChar6, bannerChar6a, bannerChar7, bannerChar7a, bannerChar8, bannerChar9, bannerChar9a, bannerChar10, bannerChar10a/*, bannerChar11, bannerChar12*/};
+  int fonH[19] = {5,5,7,8,8,10,10,10,12,16,16,24,28,32,0,32,10,7,8};
   clearFromLine(1);
   u8x8.draw2x2String(2, 2, "BANNER");
   u8x8.draw2x2String(4, 4, "MODE");
@@ -816,21 +815,49 @@ void goDemoLoop() {
   u8x8.print("TO EXIT:  BTN[4]");
 
   /*-------------------------------------------------------*/
-  int FONT = 1;
+  int FONT = 19;  //1, 2, 4, 5, 8, 9, 10, 11, 13, 14, 16, 17
+  int i = 0;    // current place in tests[]
+  int maxI = (sizeof(tests) / sizeof(tests[0]));
+  Serial.print("maxI: "); Serial.println(maxI);
+
+  clearMatrix(true);
+  HC12.print(F("font "));
+  HC12.print(4);
+  HC12.print(F("\r"));    HC12.flush();
+  sendSerialS( orange, /*column=*/ 12, /*line=*/ 24, "Font:" );
+  sendNumber(green, 48, 24, FONT);
+  pauseMe(2* tick);
   for (;;) {
-    clearMatrix(true);    
-    timeOut(2000); if (!demoMode) break;
-    HC12.print(F("font "));
-    HC12.print(FONT);
-    HC12.print(F("\r"));    HC12.flush();
+    do {      
+        clearMatrix(true);    
+        timeOut(500); if (!demoMode) break;
+        HC12.print(F("font "));
+        HC12.print(FONT);
+        HC12.print(F("\r"));    HC12.flush();
 
-     int i = 5;
-
-    for (int r = fonH[FONT]; r<32; r+=(fonH[FONT]+1)) {
+        
+        //int r = fonH[FONT-1] ;
+        for (int r = fonH[FONT-1] ; r<32; r+=(fonH[FONT-1]+1)) {
+          if (i<maxI) sendSerialS( green, /*column=*/ 1, /*line=*/ r, tests[i++]);
+          Serial.print("r: "); Serial.print(r); Serial.print(",  ");
+        }
+        Serial.print("I: "); Serial.print(i); Serial.print(",  ");
+        
+      do { } while (readButtons() != BUTTON1);
     
-      if (i<11) sendSerialS( green, /*column=*/ 1, /*line=*/ r, tests[i++]);
-      pauseMe(tick);
-    }
+    } while (i < maxI);
+    Serial.print("maxI: "); Serial.println(maxI);
+
+    int oldFONT = FONT;
+    FONT = 4;
+        HC12.print(F("font "));
+        HC12.print(FONT);
+        HC12.print(F("\r"));    HC12.flush();
+        delay(50);  
+    clearMatrix(true); 
+    sendSerialS( orange, /*column=*/ 5, /*line=*/ 24, "END font" );
+    sendNumber(green, 48, 24, oldFONT);
+
     for(;;){};
 
     sendSerialS( orange, /*column=*/ 1, /*line=*/ 20, bannerChar2);

@@ -1,6 +1,6 @@
  
 
-/*  STM32F103C8T6 as Serial translator and HC11 programmer
+/*  STM32F103C8T6 as Serial translator and HC12 programmer
  *  By F.Judge for the TimeJudge system
  *  - any character received on the HC12 port
  *  at BAUD [selected] is printed forward to  
@@ -20,6 +20,7 @@ HardwareSerial  Serial2(PA3, PA2);
 #define         BAUD              2400
 //#define         cBAUD             9600
 #define         setupPin          PA15
+
 const int       rebootPin     =   PB0;            // the reboot pulse output
 const int       whistlePin    =   PB1;            // the number of the LED pin
 
